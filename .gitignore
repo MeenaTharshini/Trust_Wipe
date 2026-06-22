@@ -23,3 +23,6 @@ backend/certificates/*.pdf
 
 # Temporary files
 *.tmp
+# RSA Keys
+backend/private.pem
+backend/public.pem
