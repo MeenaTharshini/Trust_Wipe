@@ -1,0 +1,94 @@
+/* RESET */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, sans-serif;
+  background: #020817;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* MAIN APP LAYOUT */
+
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #020817;
+}
+
+/* CONTENT AREA */
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  background: #020817;
+}
+
+/* 404 PAGE */
+
+.not-found {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.not-found h1 {
+  font-size: 5rem;
+}
+
+.not-found p {
+  color: #94a3b8;
+  margin-top: 10px;
+}
+
+/* TABLET */
+
+@media (max-width: 1024px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .main-content {
+    width: 100%;
+  }
+}
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.page-container {
+  padding: 30px;
+}
+
+@media (max-width: 768px) {
+
+  .page-container {
+    padding: 90px 16px 20px;
+  }
+
+}

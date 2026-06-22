@@ -1,0 +1,311 @@
+/* =========================
+   GLOBAL RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================
+   MAIN BACKGROUND
+========================= */
+.verify-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: radial-gradient(circle at top, #141a2b, #070a12 70%);
+  color: #fff;
+}
+
+/* =========================
+   TITLE + SUBTITLE
+========================= */
+.verify-container h1 {
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+
+  background: linear-gradient(90deg, #7f5af0, #2cb67d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* =========================
+   INPUT FIELD
+========================= */
+.verify-input {
+  width: 100%;
+  max-width: 480px;
+
+  margin-top: 25px;
+  padding: 14px 16px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+  font-size: 15px;
+
+  outline: none;
+  transition: 0.3s ease;
+}
+
+.verify-input:focus {
+  border-color: #7f5af0;
+  box-shadow: 0 0 12px rgba(127, 90, 240, 0.4);
+}
+
+/* =========================
+   MAIN BUTTON
+========================= */
+.verify-btn {
+  width: 100%;
+  max-width: 480px;
+
+  margin-top: 18px;
+  padding: 14px;
+
+  border: none;
+  border-radius: 12px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  color: white;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #7f5af0, #2cb67d);
+  transition: 0.3s ease;
+}
+
+.verify-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(127, 90, 240, 0.4);
+}
+
+.verify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   RESULT CARD (GLASS STYLE)
+========================= */
+.result-card {
+  width: 100%;
+  max-width: 700px;
+
+  margin-top: 30px;
+  padding: 28px;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+
+  animation: fadeIn 0.5s ease;
+}
+
+/* SUCCESS HEADER */
+.result-card h2 {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+
+  color: #2cb67d;
+  letter-spacing: 1px;
+}
+
+/* =========================
+   GRID DETAILS
+========================= */
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.result-grid p {
+  padding: 12px;
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.result-grid b {
+  color: #aaa;
+}
+
+/* SUCCESS TEXT */
+.success-text {
+  color: #2cb67d;
+  font-weight: 600;
+}
+
+/* =========================
+   HASH BOX
+========================= */
+.hash-box {
+  margin-top: 18px;
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hash-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.hash-box code {
+  font-size: 12px;
+  word-break: break-all;
+  color: #7f5af0;
+}
+
+/* =========================
+   CONFIRM MODAL (GLASS POPUP)
+========================= */
+.confirm-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 90%;
+  max-width: 420px;
+
+  padding: 24px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+
+  color: #fff;
+
+  animation: pop 0.3s ease;
+}
+
+.confirm-box h3 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.confirm-box p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* =========================
+   BUTTON ROW
+========================= */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.yes-btn,
+.no-btn {
+  flex: 1;
+  padding: 12px;
+
+  border-radius: 10px;
+  border: none;
+
+  cursor: pointer;
+  font-weight: 600;
+
+  transition: 0.3s ease;
+}
+
+/* YES BUTTON */
+.yes-btn {
+  background: linear-gradient(135deg, #2cb67d, #7f5af0);
+  color: white;
+}
+
+.yes-btn:hover {
+  transform: scale(1.03);
+}
+
+/* NO BUTTON */
+.no-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.no-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -55%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+@media (max-width: 768px) {
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .verify-container h1 {
+    font-size: 24px;
+  }
+}

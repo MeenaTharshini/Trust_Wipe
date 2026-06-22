@@ -1,0 +1,173 @@
+.wipe-progress-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 24px;
+
+  padding: 30px;
+
+  color: white;
+
+  width: 100%;
+  max-width: 500px;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.35);
+}
+
+.wipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+.wipe-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.connection {
+  font-size: .9rem;
+}
+
+.online {
+  color: #00ff9d;
+}
+
+.offline {
+  color: #ff5a7a;
+}
+
+/* CIRCLE */
+
+.circle-wrapper {
+  display: flex;
+  justify-content: center;
+
+  margin: 25px 0;
+}
+
+.progress-circle {
+  width: 180px;
+  height: 180px;
+
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+}
+
+.circle-inner {
+  width: 140px;
+  height: 140px;
+
+  background: #0f172a;
+
+  border-radius: 50%;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-inner h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.circle-inner span {
+  color: #94a3b8;
+}
+
+/* INFO GRID */
+
+.info-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 15px;
+
+  margin-top: 25px;
+}
+
+.info-card {
+  background: rgba(255,255,255,.04);
+
+  border-radius: 16px;
+
+  padding: 15px;
+}
+
+.info-card p {
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.info-card h4 {
+  margin: 0;
+}
+
+/* STATUS */
+
+.status-pill {
+  display: inline-block;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  margin-top: 20px;
+
+  font-weight: 600;
+}
+
+.running {
+  background: rgba(255,176,32,.15);
+  color: #ffb020;
+}
+
+.completed {
+  background: rgba(0,255,157,.15);
+  color: #00ff9d;
+}
+
+/* LOGS */
+
+.logs {
+  margin-top: 25px;
+}
+
+.logs h3 {
+  margin-bottom: 15px;
+}
+
+.log-item {
+  padding: 10px 12px;
+
+  border-left: 3px solid #00e5ff;
+
+  background: rgba(255,255,255,.03);
+
+  margin-bottom: 10px;
+
+  border-radius: 8px;
+}
+
+@media(max-width:768px){
+
+  .info-grid{
+    grid-template-columns:1fr;
+  }
+
+}

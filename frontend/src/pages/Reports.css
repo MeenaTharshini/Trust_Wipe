@@ -1,0 +1,244 @@
+.reports-page{
+  padding:30px;
+  color:white;
+}
+
+/* HERO */
+
+.reports-hero{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.hero-label{
+  color:#00e5ff;
+  letter-spacing:2px;
+  font-size:12px;
+}
+
+.reports-hero h1{
+  font-size:3rem;
+  margin:10px 0;
+}
+
+.hero-subtitle{
+  color:#94a3b8;
+}
+
+.export-btn{
+  background:#00e5ff;
+  color:black;
+  border:none;
+  padding:14px 22px;
+  border-radius:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* KPI */
+
+.reports-kpi-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.report-card{
+  background:rgba(15,23,42,.8);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:20px;
+  padding:24px;
+  backdrop-filter:blur(20px);
+}
+
+.report-card span{
+  color:#94a3b8;
+}
+
+.report-card h2{
+  margin-top:10px;
+  font-size:2rem;
+}
+
+.success h2{
+  color:#00ff9d;
+}
+
+.warning h2{
+  color:#f59e0b;
+}
+
+.info h2{
+  color:#00e5ff;
+}
+
+/* COMPLIANCE */
+
+.compliance-panel{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:30px;
+
+  margin-bottom:30px;
+
+  border-radius:24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,229,255,.15),
+      rgba(15,23,42,.9)
+    );
+
+  border:1px solid rgba(0,229,255,.2);
+}
+
+.compliance-panel h2{
+  font-size:3rem;
+}
+
+.compliance-panel span{
+  color:#94a3b8;
+}
+
+.shield{
+  font-size:4rem;
+}
+
+/* CARDS */
+
+.analytics-card{
+  background:rgba(15,23,42,.8);
+
+  border-radius:20px;
+
+  padding:25px;
+
+  margin-bottom:25px;
+
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.section-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+/* PROGRESS */
+
+.progress-track{
+  height:14px;
+
+  background:#1e293b;
+
+  border-radius:999px;
+
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #00e5ff,
+      #00ff9d
+    );
+
+  border-radius:999px;
+}
+
+/* INSIGHTS */
+
+.insights-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(240px,1fr));
+
+  gap:20px;
+
+  margin-bottom:25px;
+}
+
+.insights-grid h1{
+  margin-top:10px;
+  font-size:2.3rem;
+}
+
+/* TABLE */
+
+.table-wrapper{
+  overflow-x:auto;
+}
+
+.report-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.report-table th{
+  text-align:left;
+  color:#94a3b8;
+  padding:16px;
+}
+
+.report-table td{
+  padding:16px;
+  border-top:
+    1px solid rgba(255,255,255,.05);
+}
+
+.status-badge{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.completed{
+  background:rgba(0,255,157,.15);
+  color:#00ff9d;
+}
+
+.running{
+  background:rgba(0,229,255,.15);
+  color:#00e5ff;
+}
+
+.pending{
+  background:rgba(245,158,11,.15);
+  color:#f59e0b;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  .reports-page{
+    padding:90px 16px 20px;
+  }
+
+  .reports-hero h1{
+    font-size:2rem;
+  }
+
+  .compliance-panel{
+    flex-direction:column;
+    text-align:center;
+    gap:20px;
+  }
+
+}

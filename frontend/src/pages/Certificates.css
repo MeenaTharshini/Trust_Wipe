@@ -1,0 +1,353 @@
+/* ================= GLOBAL ================= */
+
+.certificate-page {
+  min-height: 100vh;
+  background: #0b1220;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* ================= TOP ACTION BAR ================= */
+
+.top-actions {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.wipe-btn,
+.secondary-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.wipe-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.secondary-btn {
+  background: #1f2937;
+  color: white;
+}
+
+/* ================= A4 CERTIFICATE CONTAINER ================= */
+
+.certificate {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  color: #111827;
+  position: relative;
+  padding: 28mm 22mm;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ================= WATERMARK ================= */
+
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 64px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.06);
+  letter-spacing: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 16px;
+}
+
+.title-block h1 {
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin: 0;
+  color: #111827;
+}
+
+.title-block h2 {
+  font-size: 16px;
+  margin: 6px 0 10px;
+  color: #2563eb;
+  letter-spacing: 0.5px;
+}
+
+.title-block p {
+  font-size: 12.5px;
+  color: #4b5563;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+.seal {
+  border: 2px solid #2563eb;
+  color: #2563eb;
+  padding: 10px 14px;
+  font-weight: 700;
+  border-radius: 8px;
+  font-size: 12px;
+  height: fit-content;
+}
+
+/* ================= DIVIDER ================= */
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 18px 0;
+}
+
+/* ================= SECTIONS ================= */
+
+.section {
+  margin-top: 18px;
+}
+
+.section h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #111827;
+  margin-bottom: 10px;
+  border-left: 4px solid #2563eb;
+  padding-left: 10px;
+}
+
+/* ================= GRID ================= */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.box {
+  background: #f9fafb;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.box label {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.box value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ================= STATUS ================= */
+
+.green {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* ================= TAGS ================= */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags span {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 6px 10px;
+  font-size: 11px;
+  border-radius: 20px;
+  border: 1px solid #dbeafe;
+}
+
+/* ================= HASH ================= */
+
+.hash {
+  background: #07152f;
+  color: #00ff88;
+
+  padding: 15px;
+
+  border-radius: 6px;
+
+  font-family: monospace;
+
+  font-size: 12px;
+
+  word-break: break-all;
+
+  overflow-wrap: break-word;
+
+  white-space: normal;
+}
+
+.note {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* ================= SIGNATURES ================= */
+
+.signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  gap: 20px;
+}
+
+.sign {
+  width: 45%;
+  text-align: center;
+}
+
+.sign .line {
+  height: 1px;
+  background: #111827;
+  margin-bottom: 8px;
+}
+
+.sign p {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sign span {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ================= FOOTER ================= */
+
+.footer {
+  margin-top: 30px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1024px) {
+  .certificate {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+}
+
+@media (max-width: 768px) {
+  .certificate {
+    width: 100%;
+    padding: 18mm 12mm;
+    transform: scale(1);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .signatures {
+    flex-direction: column;
+  }
+
+  .sign {
+    width: 100%;
+  }
+}
+@media (max-width: 992px) {
+
+  .certificate {
+    padding: 25px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .seal {
+    margin-top: 15px;
+  }
+}
+@media (max-width: 768px) {
+
+  .certificate {
+    padding: 15px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .signatures {
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .title-block h1 {
+    font-size: 22px;
+  }
+
+  .title-block h2 {
+    font-size: 16px;
+  }
+}
+/* ================= PDF FIX ================= */
+
+@media print {
+  .top-actions {
+    display: none;
+  }
+
+  .certificate {
+    box-shadow: none;
+    transform: none;
+  }
+}
+.pdf-mode {
+  width: 210mm !important;
+  min-height: 297mm !important;
+  transform: none !important;
+  zoom: 1 !important;
+}

@@ -1,0 +1,25 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Environment variables
+backend/.env
+
+# Logs
+*.log
+
+# Build
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+
+# Certificates generated at runtime
+backend/certificates/*.pdf
+
+# Temporary files
+*.tmp
