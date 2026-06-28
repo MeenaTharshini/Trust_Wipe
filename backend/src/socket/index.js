@@ -6,19 +6,21 @@ export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"],
     },
   });
 
   io.on("connection", (socket) => {
-    console.log("⚡ Client connected:", socket.id);
+    console.log("🟢 SOCKET CONNECTED:", socket.id);
 
-    socket.on("disconnect", () => {
-      console.log("❌ Client disconnected:", socket.id);
+    socket.on("disconnect", (reason) => {
+      console.log("🔴 DISCONNECTED:", reason);
     });
   });
 
   return io;
 };
 
-export const getIO = () => io;
+export const getIO = () => {
+  if (!io) throw new Error("Socket not initialized");
+  return io;
+};

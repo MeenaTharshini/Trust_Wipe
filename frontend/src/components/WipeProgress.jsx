@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import socket from "../services/socket";
 import "./WipeProgress.css";
 
-const socket = io("http://localhost:5000", {
-  transports: ["websocket"],
-  reconnection: true,
-});
 
 function WipeProgress({ jobId }) {
 
@@ -40,7 +36,7 @@ function WipeProgress({ jobId }) {
 
     const handler = (data) => {
 
-      if (data.jobId === jobId) {
+      if (data._id === jobId) {
 
         setProgressData(data);
 
@@ -134,7 +130,7 @@ function WipeProgress({ jobId }) {
 
         <div className="info-card">
           <p>Job ID</p>
-          <h4>{progressData.jobId}</h4>
+          <h4>{progressData._id}</h4>
         </div>
 
         <div className="info-card">

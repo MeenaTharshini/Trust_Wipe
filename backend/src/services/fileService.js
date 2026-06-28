@@ -1,17 +1,10 @@
 import fs from "fs";
 
-export const readFileData = (path) => {
-  const data = fs.readFileSync(path, "utf-8");
-
+export const readJSON = (filePath) => {
+  const data = fs.readFileSync(filePath, "utf-8");
   return JSON.parse(data);
 };
 
-export const writeFileData = (
-  path,
-  data
-) => {
-  fs.writeFileSync(
-    path,
-    JSON.stringify(data, null, 2)
-  );
+export const writeJSON = (filePath, data) => {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };

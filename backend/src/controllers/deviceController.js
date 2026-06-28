@@ -1,110 +1,67 @@
 import Device from "../models/Device.js";
+import fs from "fs";
+import path from "path";
 
-// CREATE DEVICE
-export const addDevice = async (req, res) => {
+// CREATE DEVICE (FIXED)
+export const createDevice = async (req, res) => {
   try {
+    const { deviceName, serialNumber, storageType, capacity, location } = req.body;
+
+    const storagePath = path.join(
+      process.cwd(),
+      "src/storage",
+      `device-${serialNumber}`
+    );
+
+    // create folder for wipe engine
+    if (!fs.existsSync(storagePath)) {
+      fs.mkdirSync(storagePath, { recursive: true });
+    }
+
     const device = await Device.create({
-      deviceName: req.body.deviceName,
-      serialNumber: req.body.serialNumber,
-      storageType: req.body.storageType,
-      capacity: req.body.capacity,
-      location: req.body.location,
+      deviceName,
+      serialNumber,
+      storageType,
+      capacity,
+      location,
+      storagePath,
       status: "Pending",
     });
 
     res.status(201).json(device);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// GET ALL DEVICES
+// GET DEVICES
 export const getDevices = async (req, res) => {
   try {
-    const devices = await Device.find().sort({
-      createdAt: -1,
-    });
-
+    const devices = await Device.find().sort({ createdAt: -1 });
     res.json(devices);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// GET DEVICE BY ID
-export const getDeviceById = async (req, res) => {
-  try {
-    const device = await Device.findById(req.params.id);
-
-    if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: "Device not found",
-      });
-    }
-
-    res.json(device);
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-
-// UPDATE DEVICE
-export const updateDevice = async (req, res) => {
-  try {
-    const device = await Device.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: "Device not found",
-      });
-    }
-
-    res.json(device);
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-
-// DELETE DEVICE
+// DELETE DEVICE (FIXED)
 export const deleteDevice = async (req, res) => {
   try {
-    const device = await Device.findByIdAndDelete(
-      req.params.id
-    );
+    const { id } = req.params;
+
+    const device = await Device.findByIdAndDelete(id);
 
     if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: "Device not found",
-      });
+      return res.status(404).json({ message: "Device not found" });
     }
 
-    res.json({
-      success: true,
-      message: "Device deleted successfully",
-    });
+    // optionally remove storage folder
+    if (device.storagePath && fs.existsSync(device.storagePath)) {
+      fs.rmSync(device.storagePath, { recursive: true, force: true });
+    }
+
+    res.json({ message: "Device deleted successfully" });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };

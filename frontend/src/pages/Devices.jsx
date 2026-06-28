@@ -31,32 +31,47 @@ function Devices() {
 
   // ---------------- REGISTER ----------------
   const registerDevice = async () => {
-    try {
-      await axios.post("http://localhost:5000/api/devices", form);
+  try {
+    await axios.post(
+      "http://localhost:5000/api/devices",
+      form,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-      setForm({
-        deviceName: "",
-        serialNumber: "",
-        storageType: "",
-        capacity: "",
-        location: "",
-      });
+    setForm({
+      deviceName: "",
+      serialNumber: "",
+      storageType: "",
+      capacity: "",
+      location: "",
+    });
 
-      loadDevices();
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    loadDevices();
+  } catch (err) {
+    console.log("ADD ERROR:", err.response?.data || err.message);
+  }
+};
 
   // ---------------- DELETE ----------------
   const deleteDevice = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/devices/${id}`);
-      loadDevices();
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  try {
+    console.log("DELETING DEVICE:", id);
+
+    const res = await axios.delete(
+      `http://localhost:5000/api/devices/${id}`
+    );
+
+    console.log("DELETE RESPONSE:", res.data);
+
+    loadDevices();
+  } catch (err) {
+    console.log("DELETE ERROR:", err.response?.data || err.message);
+  }
+};
 
   // ---------------- FILTER ----------------
   const filtered = devices.filter((d) => {

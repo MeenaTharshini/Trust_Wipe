@@ -10,12 +10,9 @@ import deviceRoutes from "./routes/deviceRoutes.js";
 import wipeRoutes from "./routes/wipeRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 import { initSocket } from "./socket/index.js";
-
-// ========================
-// ENV CONFIG
-// ========================
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,16 +21,13 @@ dotenv.config({
   path: path.join(__dirname, "../.env"),
 });
 
-// DEBUG
-console.log("PORT =", process.env.PORT);
-console.log("MONGO_URI =", process.env.MONGO_URI);
-
-// ========================
-// EXPRESS APP
-// ========================
-
 const app = express();
+const server = http.createServer(app);
 
+// ================= SOCKET =================
+initSocket(server);
+
+// ================= MIDDLEWARE =================
 app.use(cors());
 app.use(express.json());
 
@@ -42,19 +36,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// ========================
-// ROUTES
-// ========================
-
+// ================= ROUTES =================
+app.use("/api/auth", authRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/wipe", wipeRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/certificate", certificateRoutes);
 
-// ========================
-// 404 HANDLER
-// ========================
+// ================= HEALTH CHECK =================
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK" });
+});
 
+// ================= 404 =================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -62,54 +56,33 @@ app.use((req, res) => {
   });
 });
 
-// ========================
-// ERROR HANDLER
-// ========================
-
+// ================= ERROR HANDLER =================
 app.use((err, req, res, next) => {
-  console.error("🔥 Server Error:", err);
-
+  console.error("🔥 ERROR:", err);
   res.status(500).json({
     success: false,
-    message: "Internal Server Error",
+    message: err.message,
   });
 });
 
-// ========================
-// SERVER + SOCKET
-// ========================
-
-const server = http.createServer(app);
-
-initSocket(server);
-
-// ========================
-// MONGODB CONNECTION
-// ========================
-
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  console.error("❌ MONGO_URI missing in .env");
-  process.exit(1);
-}
-
+app.post("/test", (req, res) => {
+  console.log("TEST HIT", req.body);
+  res.json({ ok: true });
+});
+app.use("/api/verification", (req, res, next) => {
+  console.log("🔥 verification middleware reached");
+  next();
+}, verificationRoutes);
+// ================= DB =================
 mongoose
-  .connect(MONGO_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
 
-    const PORT = process.env.PORT || 5000;
-
-    server.listen(PORT, () => {
-      console.log(
-        `🚀 TrustWipe running on port ${PORT}`
-      );
+    server.listen(process.env.PORT || 5000, () => {
+      console.log("🚀 TrustWipe running");
     });
   })
   .catch((err) => {
-    console.error(
-      "❌ MongoDB Connection Failed:",
-      err.message
-    );
+    console.error("❌ DB ERROR:", err);
   });

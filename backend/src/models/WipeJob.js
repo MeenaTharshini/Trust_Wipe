@@ -5,35 +5,58 @@ const wipeJobSchema = new mongoose.Schema(
     deviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Device",
-      required: true
+      required: true,
+    },
+
+    initiatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    algorithm: {
+      type: String,
+      default: "NIST 800-88 Clear",
     },
 
     progress: {
       type: Number,
-      default: 0
+      default: 0,
+      min: 0,
+      max: 100,
     },
 
     status: {
       type: String,
-      enum: ["running", "completed", "failed"],
-      default: "running"
+      enum: ["pending", "running", "completed", "failed"],
+      default: "running",
     },
 
-    // 🔐 NEW: audit trail (tamper-proofing backbone)
     events: [
       {
-        type: String
-      }
+        message: String,
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
     ],
 
-    startedAt: {
-      type: Date,
-      default: Date.now
+    verificationHash: String,
+    verificationStatus: {
+      type: String,
+      default: "Pending",
     },
 
-    completedAt: Date
+    failureReason: String,
+
+    startedAt: Date,
+    completedAt: Date,
+    duration: Number,
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model("WipeJob", wipeJobSchema);

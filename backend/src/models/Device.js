@@ -2,26 +2,52 @@ import mongoose from "mongoose";
 
 const deviceSchema = new mongoose.Schema(
   {
-    deviceName: String,
-    serialNumber: String,
-    storageType: String,
-    capacity: String,
+    deviceName: {
+      type: String,
+      required: true,
+    },
+
+    serialNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    storageType: {
+      type: String,
+      default: "Unknown",
+    },
+
+    capacity: {
+      type: String,
+      default: "N/A",
+    },
+
+    location: {
+      type: String,
+      default: "N/A",
+    },
+
+    storagePath: {
+      type: String,
+      required: false,
+    },
 
     status: {
       type: String,
+      enum: ["Pending", "Wiping", "Completed", "Failed"],
       default: "Pending",
     },
 
-    location: String,
-
-    // 🔥 ADD THIS (VERY IMPORTANT FIX)
     currentJobId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WipeJob",
       default: null,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model("Device", deviceSchema);

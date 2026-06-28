@@ -1,24 +1,24 @@
-import { Server } from "socket.io";
+import { io } from "socket.io-client";
 
-let io;
+const socket = io("http://localhost:5000", {
+  transports: ["websocket"],
+  autoConnect: true,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  timeout: 10000,
+});
 
-export const initSocket = (server) => {
-  io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-  });
+// ✅ connection debug (important)
+socket.on("connect", () => {
+  console.log("🟢 SOCKET CONNECTED:", socket.id);
+});
 
-  io.on("connection", (socket) => {
-    console.log("⚡ Client connected:", socket.id);
+socket.on("disconnect", () => {
+  console.log("🔴 SOCKET DISCONNECTED");
+});
 
-    socket.on("disconnect", () => {
-      console.log("❌ Client disconnected:", socket.id);
-    });
-  });
+socket.on("connect_error", (err) => {
+  console.log("⚠️ SOCKET ERROR:", err.message);
+});
 
-  return io;
-};
-
-export const getIO = () => io;
+export default socket;
