@@ -1,7 +1,6 @@
 import WipeJob from "../models/WipeJob.js";
 import Device from "../models/Device.js";
 import Certificate from "../models/Certificate.js";
-import { getIO } from "../socket/index.js";
 
 import crypto from "crypto";
 import fs from "fs";
@@ -9,6 +8,8 @@ import path from "path";
 
 import { wipeFile } from "../services/fileWipeService.js";
 import { generateCertificate } from "../certificateEngine/generateCertificate.js";
+import { getIO } from "../socket/index.js";
+
 export const runWipeEngine = async (deviceId) => {
   const io = getIO();
 
@@ -29,39 +30,29 @@ export const runWipeEngine = async (deviceId) => {
 
   const job = await WipeJob.create({
     deviceId,
+    algorithm: "NIST 800-88 Clear",
     progress: 0,
     status: "running",
+    verificationStatus: "Pending",
+    totalFiles: 0,
+    wipedFiles: 0,
+    events: [
+      {
+        message: "Secure wipe process started",
+      },
+    ],
     startedAt: new Date(),
-    events: [],
   });
 
   await Device.findByIdAndUpdate(deviceId, {
-  status: "running",
-  currentJobId: job._id,
-});
+    status: "Wiping",
+    currentJobId: job._id,
+  });
 
   io.emit("device-updated");
-  const safeJob = job.toObject();
-
-io.emit("wipe-progress", safeJob);
+  io.emit("wipe-progress", job.toObject());
 
   try {
-    // ==================================
-    // START WIPE
-    // ==================================
-
-    job.events.push({
-      message: "Secure wipe process started",
-    });
-
-    job.progress = 10;
-
-    await job.save();
-    io.emit("wipe-progress", job.toObject());
-    // ==================================
-    // GET FILES
-    // ==================================
-
     const storagePath = device.storagePath;
 
     if (!storagePath || !fs.existsSync(storagePath)) {
@@ -71,152 +62,103 @@ io.emit("wipe-progress", safeJob);
     const files = fs.readdirSync(storagePath);
 
     console.log("FILES FOUND:", files);
-    console.log("TOTAL FILES:", files.length);
+
+    job.totalFiles = files.length;
+    await job.save();
 
     const totalFiles = files.length || 1;
-
     let processed = 0;
+
+    job.progress = 10;
+    await job.save();
+
+    io.emit("wipe-progress", job.toObject());
 
     // ==================================
     // WIPE FILES
     // ==================================
 
     for (const file of files) {
-      const filePath = path.join(
-        storagePath,
-        file
-      );
+      const filePath = path.join(storagePath, file);
 
-      console.log(
-        "START WIPE:",
-        filePath
-      );
+      console.log("START WIPE:", filePath);
 
       await wipeFile(filePath);
 
-      console.log(
-        "FINISHED WIPE:",
-        filePath
-      );
+      console.log("FINISHED WIPE:", filePath);
 
       processed++;
 
+      job.wipedFiles = processed;
+
       job.progress =
         10 +
-        Math.floor(
-          (processed / totalFiles) * 70
-        );
+        Math.floor((processed / totalFiles) * 70);
+
+      job.events.push({
+        message: `Wiped ${file}`,
+      });
 
       await job.save();
 
-      console.log(
-        "PROGRESS:",
-        job.progress
-      );
-
-      io.emit(
-        "wipe-progress",
-        job
-      );
+      io.emit("wipe-progress", job.toObject());
     }
 
     // ==================================
     // VERIFICATION
     // ==================================
 
-    console.log(
-      "ENTERING VERIFICATION"
-    );
+    console.log("ENTERING VERIFICATION");
 
     const wipeEvidence = {
-      deviceId:
-        device._id.toString(),
-
-      serialNumber:
-        device.serialNumber,
-
-      wipedFiles:
-        files,
-
-      completedAt:
-        new Date(),
+      deviceId: device._id.toString(),
+      serialNumber: device.serialNumber,
+      algorithm: "NIST 800-88 Clear",
+      totalFiles: files.length,
+      completedAt: new Date(),
     };
 
-    console.log(
-      "HASH START"
-    );
+    const verificationHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(wipeEvidence))
+      .digest("hex");
 
-    const verificationHash =
-      crypto
-        .createHash("sha256")
-        .update(
-          JSON.stringify(
-            wipeEvidence
-          )
-        )
-        .digest("hex");
+    console.log("HASH CREATED");
 
-    console.log(
-      "HASH CREATED"
-    );
-
-    job.verificationHash =
-      verificationHash;
-
+    job.verificationHash = verificationHash;
     job.verificationStatus = "VERIFIED";
-
     job.progress = 90;
 
     job.events.push({
-      message:
-        "Verification completed",
+      message: "Verification completed",
     });
 
     await job.save();
 
-    io.emit(
-      "wipe-progress",
-      job
-    );
+    io.emit("wipe-progress", job.toObject());
 
     // ==================================
     // DIGITAL SIGNATURE
     // ==================================
 
-    console.log(
-      "READING PRIVATE KEY"
+    const privateKey = fs.readFileSync(
+      path.resolve("private.pem"),
+      "utf8"
     );
 
-    const privateKey =
-      fs.readFileSync(
-        path.resolve(
-          "private.pem"
-        ),
-        "utf8"
-      );
-
-    console.log(
-      "PRIVATE KEY LOADED"
+    const signer = crypto.createSign(
+      "RSA-SHA256"
     );
 
-    const signer =
-      crypto.createSign(
-        "RSA-SHA256"
-      );
+    signer.update(verificationHash);
+    signer.end();
 
-    signer.update(
-      verificationHash
+    const signature = signer.sign(
+      privateKey,
+      "base64"
     );
 
-    const signature =
-      signer.sign(
-        privateKey,
-        "base64"
-      );
-
-    console.log(
-      "SIGNATURE CREATED"
-    );
+    console.log("SIGNATURE CREATED");
 
     // ==================================
     // CERTIFICATE
@@ -225,13 +167,14 @@ io.emit("wipe-progress", safeJob);
     const certificate =
       await Certificate.create({
         certificateId:
-          "CERT-" +
-          Date.now(),
+          "CERT-" + Date.now(),
 
-        deviceId,
+        deviceId: device._id,
 
-        jobId:
-          job._id,
+        jobId: job._id,
+
+        sanitizationStandard:
+          "NIST SP 800-88 Rev.1",
 
         algorithm:
           "NIST 800-88 Clear",
@@ -245,7 +188,8 @@ io.emit("wipe-progress", safeJob);
       });
 
     console.log(
-      "CERTIFICATE SAVED"
+      "CERTIFICATE SAVED:",
+      certificate._id
     );
 
     const pdfPath =
@@ -254,14 +198,16 @@ io.emit("wipe-progress", safeJob);
         device.deviceName
       );
 
-    certificate.pdfUrl =
-      pdfPath;
+    certificate.pdfUrl = pdfPath;
 
     await certificate.save();
 
-    console.log(
-      "PDF GENERATED"
-    );
+    job.certificateId =
+      certificate.certificateId;
+
+    await job.save();
+
+    console.log("PDF GENERATED");
 
     // ==================================
     // COMPLETE
@@ -269,23 +215,16 @@ io.emit("wipe-progress", safeJob);
 
     job.progress = 100;
 
-    job.status =
-      "completed";
+    job.status = "completed";
 
-    job.completedAt =
-      new Date();
+    job.completedAt = new Date();
 
-    job.duration =
-      Math.floor(
-        (
-          job.completedAt -
-          job.startedAt
-        ) / 1000
-      );
+    job.duration = Math.floor(
+      (job.completedAt - job.startedAt) / 1000
+    );
 
     job.events.push({
-      message:
-        "Certificate generated",
+      message: "Certificate generated",
     });
 
     await job.save();
@@ -293,25 +232,21 @@ io.emit("wipe-progress", safeJob);
     await Device.findByIdAndUpdate(
       deviceId,
       {
-        status:
-          "Completed",
+        status: "Completed",
       }
     );
 
     io.emit(
       "wipe-progress",
-      job
+      job.toObject()
     );
 
-    io.emit(
-      "device-updated"
-    );
+    io.emit("device-updated");
 
-    console.log(
-      "WIPE COMPLETED"
-    );
+    console.log("WIPE COMPLETED");
 
     return job;
+
   } catch (err) {
     console.error(
       "WIPE ENGINE ERROR:",
@@ -319,9 +254,7 @@ io.emit("wipe-progress", safeJob);
     );
 
     job.status = "failed";
-
-    job.failureReason =
-      err.message;
+    job.failureReason = err.message;
 
     await job.save();
 
@@ -334,12 +267,10 @@ io.emit("wipe-progress", safeJob);
 
     io.emit(
       "wipe-progress",
-      job
+      job.toObject()
     );
 
-    io.emit(
-      "device-updated"
-    );
+    io.emit("device-updated");
 
     throw err;
   }

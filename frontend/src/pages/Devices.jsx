@@ -7,18 +7,25 @@ function Devices() {
 
   const [form, setForm] = useState({
     deviceName: "",
+    manufacturer: "",
+    modelNumber: "",
     serialNumber: "",
+    deviceType: "",
     storageType: "",
     capacity: "",
+    owner: "",
     location: "",
+    storagePath: "",
   });
 
   const [search, setSearch] = useState("");
 
-  // ---------------- LOAD DEVICES ----------------
   const loadDevices = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/devices");
+      const res = await axios.get(
+        "http://localhost:5000/api/devices"
+      );
+
       setDevices(res.data || []);
     } catch (err) {
       console.log(err);
@@ -29,103 +36,190 @@ function Devices() {
     loadDevices();
   }, []);
 
-  // ---------------- REGISTER ----------------
   const registerDevice = async () => {
-  try {
-    await axios.post(
-      "http://localhost:5000/api/devices",
-      form,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    try {
+      await axios.post(
+        "http://localhost:5000/api/devices",
+        form,
+        {
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+        }
+      );
 
-    setForm({
-      deviceName: "",
-      serialNumber: "",
-      storageType: "",
-      capacity: "",
-      location: "",
+      setForm({
+        deviceName: "",
+        manufacturer: "",
+        modelNumber: "",
+        serialNumber: "",
+        deviceType: "",
+        storageType: "",
+        capacity: "",
+        owner: "",
+        location: "",
+        storagePath: "",
+      });
+
+      loadDevices();
+    } catch (err) {
+      console.log(
+        "ADD ERROR:",
+        err.response?.data ||
+          err.message
+      );
+    }
+  };
+
+  const deleteDevice = async (
+    id
+  ) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/devices/${id}`
+      );
+
+      loadDevices();
+    } catch (err) {
+      console.log(
+        "DELETE ERROR:",
+        err.response?.data ||
+          err.message
+      );
+    }
+  };
+
+  const filtered =
+    devices.filter((d) => {
+      const q =
+        search.toLowerCase();
+
+      return (
+        d.deviceName
+          ?.toLowerCase()
+          .includes(q) ||
+        d.serialNumber
+          ?.toLowerCase()
+          .includes(q)
+      );
     });
 
-    loadDevices();
-  } catch (err) {
-    console.log("ADD ERROR:", err.response?.data || err.message);
-  }
-};
-
-  // ---------------- DELETE ----------------
-  const deleteDevice = async (id) => {
-  try {
-    console.log("DELETING DEVICE:", id);
-
-    const res = await axios.delete(
-      `http://localhost:5000/api/devices/${id}`
-    );
-
-    console.log("DELETE RESPONSE:", res.data);
-
-    loadDevices();
-  } catch (err) {
-    console.log("DELETE ERROR:", err.response?.data || err.message);
-  }
-};
-
-  // ---------------- FILTER ----------------
-  const filtered = devices.filter((d) => {
-    const q = search.toLowerCase();
-    return (
-      d.deviceName?.toLowerCase().includes(q) ||
-      d.serialNumber?.toLowerCase().includes(q)
-    );
-  });
-
-  // ---------------- UI ----------------
   return (
     <div className="devices">
 
-      {/* HERO */}
       <section className="devices-hero">
         <div>
-          <p className="label">ASSET MANAGEMENT</p>
-          <h1>Device Command Center</h1>
+          <p className="label">
+            ASSET MANAGEMENT
+          </p>
+
+          <h1>
+            Device Command Center
+          </h1>
+
           <p className="subtitle">
-            Enterprise device lifecycle & secure destruction tracking
+            Enterprise device
+            lifecycle &
+            secure destruction
+            tracking
           </p>
         </div>
 
         <div className="hero-card">
-          <span>Total Devices</span>
-          <h2>{devices.length}</h2>
+          <span>
+            Total Devices
+          </span>
+
+          <h2>
+            {devices.length}
+          </h2>
         </div>
       </section>
 
-      {/* KPI */}
       <section className="kpi">
-        <div>Total <h3>{devices.length}</h3></div>
+
+        <div>
+          Total
+          <h3>
+            {devices.length}
+          </h3>
+        </div>
+
         <div className="warn">
-          Pending <h3>{devices.filter(d => d.status === "Pending").length}</h3>
+          Pending
+          <h3>
+            {
+              devices.filter(
+                (d) =>
+                  d.status ===
+                  "Pending"
+              ).length
+            }
+          </h3>
         </div>
+
         <div className="ok">
-          Completed <h3>{devices.filter(d => d.status === "Completed").length}</h3>
+          Completed
+          <h3>
+            {
+              devices.filter(
+                (d) =>
+                  d.status ===
+                  "Completed"
+              ).length
+            }
+          </h3>
         </div>
+
         <div className="info">
-          Compliance <h3>100%</h3>
+          Compliance
+          <h3>100%</h3>
         </div>
+
       </section>
 
-      {/* REGISTER */}
       <section className="panel">
-        <h2>Register Device</h2>
+
+        <h2>
+          Register Device
+        </h2>
 
         <div className="form">
+
           <input
             placeholder="Device Name"
             value={form.deviceName}
             onChange={(e) =>
-              setForm({ ...form, deviceName: e.target.value })
+              setForm({
+                ...form,
+                deviceName:
+                  e.target.value,
+              })
+            }
+          />
+
+          <input
+            placeholder="Manufacturer"
+            value={form.manufacturer}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                manufacturer:
+                  e.target.value,
+              })
+            }
+          />
+
+          <input
+            placeholder="Model Number"
+            value={form.modelNumber}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                modelNumber:
+                  e.target.value,
+              })
             }
           />
 
@@ -133,28 +227,101 @@ function Devices() {
             placeholder="Serial Number"
             value={form.serialNumber}
             onChange={(e) =>
-              setForm({ ...form, serialNumber: e.target.value })
+              setForm({
+                ...form,
+                serialNumber:
+                  e.target.value,
+              })
             }
           />
 
           <select
-            value={form.storageType}
+            value={form.deviceType}
             onChange={(e) =>
-              setForm({ ...form, storageType: e.target.value })
+              setForm({
+                ...form,
+                deviceType:
+                  e.target.value,
+              })
             }
           >
-            <option value="">Storage Type</option>
-            <option>SSD</option>
-            <option>HDD</option>
-            <option>NVMe</option>
-            <option>USB</option>
+            <option value="">
+              Device Type
+            </option>
+
+            <option>
+              Laptop
+            </option>
+
+            <option>
+              Desktop
+            </option>
+
+            <option>
+              Server
+            </option>
+
+            <option>
+              External HDD
+            </option>
+
+            <option>
+              USB Drive
+            </option>
+          </select>
+
+          <select
+            value={form.storageType}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                storageType:
+                  e.target.value,
+              })
+            }
+          >
+            <option value="">
+              Storage Type
+            </option>
+
+            <option>
+              HDD
+            </option>
+
+            <option>
+              SSD
+            </option>
+
+            <option>
+              NVMe
+            </option>
+
+            <option>
+              USB
+            </option>
           </select>
 
           <input
-            placeholder="Capacity"
+            placeholder="Capacity (GB)"
             value={form.capacity}
             onChange={(e) =>
-              setForm({ ...form, capacity: e.target.value })
+              setForm({
+                ...form,
+                capacity:
+                  e.target.value,
+              })
+            }
+          />
+
+          <input
+            placeholder="Asset Owner"
+            value={form.owner}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                owner:
+                  e.target.value,
+              })
             }
           />
 
@@ -162,92 +329,189 @@ function Devices() {
             placeholder="Location"
             value={form.location}
             onChange={(e) =>
-              setForm({ ...form, location: e.target.value })
+              setForm({
+                ...form,
+                location:
+                  e.target.value,
+              })
             }
           />
+
+          <input
+            placeholder="Storage Path (D:/DemoDrive)"
+            value={form.storagePath}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                storagePath:
+                  e.target.value,
+              })
+            }
+          />
+
         </div>
 
-        <button className="btn" onClick={registerDevice}>
+        <button
+          className="btn"
+          onClick={
+            registerDevice
+          }
+        >
           Register Device
         </button>
+
       </section>
 
-      {/* SEARCH */}
       <section className="searchBox">
         <input
           placeholder="Search by name or serial..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(
+              e.target.value
+            )
+          }
         />
       </section>
 
       <section className="grid">
-  {filtered.map((d) => (
-    <div className="device-card" key={d._id}>
 
-      <div className="card-glow"></div>
+        {filtered.map((d) => (
 
-      <div className="device-header">
+          <div
+            className="device-card"
+            key={d._id}
+          >
 
-        <div className="device-avatar">
-          💻
-        </div>
+            <div className="device-header">
 
-        <div className="device-title">
-          <h3>{d.deviceName}</h3>
-          <p>{d.serialNumber}</p>
-        </div>
+              <div className="device-avatar">
+                💻
+              </div>
 
-        <span
-          className={`status-pill ${d.status?.toLowerCase()}`}
-        >
-          {d.status}
-        </span>
+              <div className="device-title">
 
-      </div>
+                <h3>
+                  {d.deviceName}
+                </h3>
 
-      <div className="device-specs">
+                <p>
+                  {
+                    d.serialNumber
+                  }
+                </p>
 
-        <div className="spec-box">
-          <span>Storage</span>
-          <strong>{d.storageType}</strong>
-        </div>
+              </div>
 
-        <div className="spec-box">
-          <span>Capacity</span>
-          <strong>{d.capacity}</strong>
-        </div>
+              <span
+                className={`status-pill ${d.status?.toLowerCase()}`}
+              >
+                {d.status}
+              </span>
 
-        <div className="spec-box">
-          <span>Location</span>
-          <strong>{d.location}</strong>
-        </div>
+            </div>
 
-        <div className="spec-box">
-          <span>Compliance</span>
-          <strong>NIST 800-88</strong>
-        </div>
+            <div className="device-specs">
 
-      </div>
+              <div className="spec-box">
+                <span>
+                  Manufacturer
+                </span>
+                <strong>
+                  {
+                    d.manufacturer
+                  }
+                </strong>
+              </div>
 
-      <div className="device-actions">
+              <div className="spec-box">
+                <span>
+                  Model
+                </span>
+                <strong>
+                  {
+                    d.modelNumber
+                  }
+                </strong>
+              </div>
 
-        <button className="details-btn">
-          Details
-        </button>
+              <div className="spec-box">
+                <span>
+                  Type
+                </span>
+                <strong>
+                  {
+                    d.deviceType
+                  }
+                </strong>
+              </div>
 
-        <button
-          className="delete-btn"
-          onClick={() => deleteDevice(d._id)}
-        >
-          Delete
-        </button>
+              <div className="spec-box">
+                <span>
+                  Storage
+                </span>
+                <strong>
+                  {
+                    d.storageType
+                  }
+                </strong>
+              </div>
 
-      </div>
+              <div className="spec-box">
+                <span>
+                  Capacity
+                </span>
+                <strong>
+                  {d.capacity} GB
+                </strong>
+              </div>
 
-    </div>
-  ))}
-</section>
+              <div className="spec-box">
+                <span>
+                  Owner
+                </span>
+                <strong>
+                  {d.owner}
+                </strong>
+              </div>
+
+              <div className="spec-box">
+                <span>
+                  Location
+                </span>
+                <strong>
+                  {
+                    d.location
+                  }
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="device-actions">
+
+              <button className="details-btn">
+                Details
+              </button>
+
+              <button
+                className="delete-btn"
+                onClick={() =>
+                  deleteDevice(
+                    d._id
+                  )
+                }
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </section>
 
     </div>
   );

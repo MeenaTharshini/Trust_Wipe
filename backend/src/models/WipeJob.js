@@ -28,13 +28,52 @@ const wipeJobSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "running", "completed", "failed"],
+      enum: [
+        "pending",
+        "running",
+        "completed",
+        "failed",
+      ],
       default: "running",
+    },
+
+    totalFiles: {
+      type: Number,
+      default: 0,
+    },
+
+    wipedFiles: {
+      type: Number,
+      default: 0,
+    },
+
+    verificationHash: {
+      type: String,
+      default: "",
+    },
+
+    verificationStatus: {
+      type: String,
+      enum: [
+        "Pending",
+        "VERIFIED",
+        "FAILED",
+      ],
+      default: "Pending",
+    },
+
+    certificateId: {
+      type: String,
+      default: "",
     },
 
     events: [
       {
-        message: String,
+        message: {
+          type: String,
+          required: true,
+        },
+
         timestamp: {
           type: Date,
           default: Date.now,
@@ -42,21 +81,32 @@ const wipeJobSchema = new mongoose.Schema(
       },
     ],
 
-    verificationHash: String,
-    verificationStatus: {
+    failureReason: {
       type: String,
-      default: "Pending",
+      default: "",
     },
 
-    failureReason: String,
+    startedAt: {
+      type: Date,
+      default: Date.now,
+    },
 
-    startedAt: Date,
-    completedAt: Date,
-    duration: Number,
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+
+    duration: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model("WipeJob", wipeJobSchema);
+export default mongoose.model(
+  "WipeJob",
+  wipeJobSchema
+);
