@@ -4,13 +4,13 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./Certificates.css";
+import { QRCodeCanvas } from "qrcode.react";
 
 function Certificates() {
   const location = useLocation();
   const navigate = useNavigate();
-
 const [certificate, setCertificate] = useState(null);
-const [certificates, setCertificates] = useState([]);  
+const [device, setDevice] = useState(null); 
 const certificateRef = useRef(null);
 
   // ---------------- LOAD CERTIFICATE ----------------
@@ -52,6 +52,7 @@ const certificateRef = useRef(null);
       );
 
       setCertificate(res.data);
+setDevice(null);
 
     } catch (err) {
       console.error(
@@ -78,18 +79,18 @@ const certificateRef = useRef(null);
       setTimeout(resolve, 500)
     );
 
-    const canvas = await html2canvas(
-      element,
-      {
-        scale: 4,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: 794,
-        height: 1123,
-        windowWidth: 794,
-        windowHeight: 1123,
-      }
-    );
+    const canvas = await html2canvas(element, {
+  scale: 3,
+  useCORS: true,
+  backgroundColor: "#ffffff",
+
+  // 🔥 THIS IS THE KEY FIX
+  windowWidth: element.scrollWidth,
+  windowHeight: element.scrollHeight,
+
+  scrollX: 0,
+  scrollY: 0,
+});
 
     const imgData =
       canvas.toDataURL("image/png");
@@ -165,159 +166,223 @@ const certificateRef = useRef(null);
       {/* ================= CERTIFICATE ================= */}
       <div ref={certificateRef} className="certificate">
 
-        {/* WATERMARK */}
-        <div className="watermark">TRUSTWIPE VERIFIED</div>
+  <div className="certificate-header">
+    <h1>TRUSTWIPE SECURITY AUTHORITY</h1>
 
-        {/* HEADER */}
-        <div className="header">
-          <div className="title-block">
-            <h1>TRUSTWIPE SECURITY AUTHORITY</h1>
-            <h2>DATA SANITIZATION CERTIFICATE</h2>
+    <h2>DATA SANITIZATION CERTIFICATE</h2>
 
-            <p>
-              This certificate confirms the secure, irreversible and
-              cryptographically verified destruction of digital data in compliance
-              with international security standards.
-            </p>
-          </div>
+    <p>
+      This certificate confirms the secure, irreversible and
+      cryptographically verified destruction of digital data
+      in compliance with international security standards.
+    </p>
 
-          <div className="seal">VERIFIED</div>
-        </div>
+    <div className="verified-badge">
+      VERIFIED
+    </div>
+  </div>
 
-        <div className="divider" />
+  <div className="section">
+    <h3>1. Certification Statement</h3>
 
-        {/* SECTION 1 */}
-        <div className="section">
-          <h3>1. Certification Statement</h3>
-          <p>
-            The referenced digital asset has undergone secure sanitization using
-            TrustWipe verified destruction protocols ensuring irreversible data erasure.
-          </p>
-        </div>
+    <p>
+      The referenced digital asset has undergone secure
+      sanitization using TrustWipe verified destruction
+      protocols ensuring irreversible data erasure.
+    </p>
+  </div>
 
-        {/* SECTION 2 */}
-        <div className="section">
-          <h3>2. Certificate Details</h3>
+  <div className="two-column">
 
-          <div className="grid">
+    <div className="section compact">
+      <h3>2. Certificate Details</h3>
 
-            <div className="box">
-              <label>Certificate ID</label>
-              <value>{certificate.certificateId}</value>
-            </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Certificate ID</td>
+            <td>{certificate.certificateId}</td>
+          </tr>
 
-            <div className="box">
-              <label>Job Reference</label>
-              <value>{jobId}</value>
-            </div>
+          <tr>
+            <td>Job Reference</td>
+            <td>{jobId}</td>
+          </tr>
 
-            <div className="box">
-              <label>Status</label>
-              <value className="green">
-  {certificate.status}
-</value>
-           </div>
+          <tr>
+            <td>Status</td>
+            <td>{certificate.status}</td>
+          </tr>
 
-            <div className="box">
-              <label>Algorithm</label>
-              <value>{certificate.algorithm || "RSA-SHA256"}</value>
-            </div>
+          <tr>
+            <td>Algorithm</td>
+            <td>{certificate.algorithm}</td>
+          </tr>
 
-            <div className="box">
-              <label>Issue Date</label>
-              <value>
-  {new Date(certificate.createdAt).toLocaleString()}
-</value>
-            </div>
+          <tr>
+            <td>Issue Date</td>
+            <td>
+              {new Date(
+                certificate.createdAt
+              ).toLocaleString()}
+            </td>
+          </tr>
 
-            <div className="box">
-              <label>Authority</label>
-              <value>TrustWipe Security Authority</value>
-            </div>
+          <tr>
+            <td>Authority</td>
+            <td>
+              TrustWipe Security Authority
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-          </div>
-        </div>
+    <div className="section compact">
+      <h3>3. Device Information</h3>
 
-        {/* SECTION 3 */}
-        <div className="section">
-          <h3>3. Device Information</h3>
+      <table>
+        <tbody>
+          <tr>
+            <td>Model</td>
+            <td>{certificate.deviceModel}</td>
+          </tr>
 
-          <div className="grid">
+          <tr>
+            <td>Manufacturer</td>
+            <td>
+              {certificate.manufacturer ||
+                "Dell"}
+            </td>
+          </tr>
 
-            <div className="box">
-              <label>Model</label>
-              <value>{certificate.deviceModel || "N/A"}</value>
-            </div>
+          <tr>
+            <td>Serial Number</td>
+            <td>
+              {certificate.serialNumber}
+            </td>
+          </tr>
 
-            <div className="box">
-              <label>Storage Type</label>
-              <value>{certificate.storageType || "N/A"}</value>
-            </div>
+          <tr>
+            <td>Storage Type</td>
+            <td>
+              {certificate.storageType}
+            </td>
+          </tr>
 
-            <div className="box">
-              <label>Capacity</label>
-              <value>{certificate.capacity || "N/A"}</value>
-            </div>
+          <tr>
+            <td>Capacity</td>
+            <td>
+              {certificate.capacity} GB
+            </td>
+          </tr>
 
-            <div className="box">
-              <label>Serial Number</label>
-              <value>{certificate.serialNumber || "N/A"}</value>
-            </div>
+          <tr>
+            <td>Status</td>
+            <td>Sanitized</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-          </div>
-        </div>
+  </div>
 
-        {/* SECTION 4 */}
-        <div className="section">
-          <h3>4. Compliance Standards</h3>
+  <div className="two-column">
 
-          <div className="tags">
-            <span>NIST SP 800-88</span>
-            <span>ISO 27001</span>
-            <span>GDPR</span>
-            <span>HIPAA</span>
-            <span>DoD 5220.22-M</span>
-          </div>
-        </div>
+    <div className="section compact">
+      <h3>4. Verification Summary</h3>
 
-        {/* SECTION 5 */}
-        <div className="section">
-          <h3>5. Cryptographic Signature</h3>
+      <table>
+        <tbody>
+          
 
-          <div className="hash">
-            {certificate.hash || certificate.signature || "NO_SIGNATURE"}
-          </div>
+          <tr>
+            <td>Method</td>
+            <td>
+              {
+                certificate.verificationMethod
+              }
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-          <p className="note">
-            This signature ensures integrity and tamper-proof validation.
-          </p>
-        </div>
+    <div className="section compact">
+      <h3>5. Compliance Standards</h3>
 
-        {/* SIGNATURES */}
-        <div className="signatures">
-
-          <div className="sign">
-            <div className="line"></div>
-            <p>Chief Verification Officer</p>
-            <span>TrustWipe Security Authority</span>
-          </div>
-
-          <div className="sign">
-            <div className="line"></div>
-            <p>Digital Validation Seal</p>
-            <span>Cryptographically Verified</span>
-          </div>
-
-        </div>
-
-        {/* FOOTER */}
-        <div className="footer">
-          <span>Certificate ID: {certificate.certificateId}</span>
-          <span>Generated by TrustWipe System</span>
-        </div>
-
+      <div className="tags">
+        <span>NIST SP 800-88 Rev.1</span>
+        <span>ISO 27001</span>
+        <span>GDPR</span>
+        <span>HIPAA</span>
+        <span>DoD 5220.22-M</span>
       </div>
     </div>
+
+  </div>
+
+  <div className="section compact">
+    <h3>6. Cryptographic Evidence</h3>
+
+    <label>Verification Hash</label>
+
+    <div className="hash">
+      {certificate.verificationHash}
+    </div>
+  </div>
+  
+  <div className="section compact">
+    <h3>7. Digital Signature</h3>
+
+    <div className="signature-box">
+      {certificate.signature}
+    </div>
+
+    <p className="note">
+      RSA-SHA256 digital signature used
+      for tamper-proof validation and
+      certificate authenticity.
+    </p>
+  </div>
+  <div className="qr-section">
+  <h3>Scan to Verify</h3>
+
+  <QRCodeCanvas
+    value={`http://localhost:5173/verify/${certificate.certificateId}`}
+    size={90}
+    level="H"
+  />
+
+  <p className="qr-text">
+    Verify authenticity using TrustWipe secure verification system
+  </p>
+</div>
+  <div className="certificate-footer">
+
+    <div>
+      <strong>
+        Chief Verification Officer
+      </strong>
+      
+      <br />
+      TrustWipe Security Authority
+    </div>
+
+    <div>
+      <strong>
+        Cryptographically Verified
+      </strong>
+      <br />
+      Certificate ID:
+      {" "}
+      {certificate.certificateId}
+    </div>
+
+  </div>
+
+</div>
+</div>
   );
 }
 

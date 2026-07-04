@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const certificateSchema = new mongoose.Schema(
   {
-    // Enterprise Certificate Number
     certificateId: {
       type: String,
       unique: true,
@@ -10,77 +9,97 @@ const certificateSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Device
     deviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Device",
       required: true,
     },
 
-    // Related Wipe Job
     jobId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WipeJob",
       required: true,
     },
 
-    // Sanitization Standard
     sanitizationStandard: {
       type: String,
       default: "NIST SP 800-88 Rev.1",
     },
 
-    // Wiping Algorithm
     algorithm: {
       type: String,
-      default: "RSA-SHA256",
+      default: "NIST SP 800-88 Clear",
     },
 
-    // SHA-256 Hash generated during verification
+    verificationMethod: {
+      type: String,
+      default:
+        "SHA-256 + Content Validation",
+    },
+
     verificationHash: {
       type: String,
       default: "",
     },
 
-    // Digital Signature
     signature: {
       type: String,
       default: "",
     },
 
-    // Verification Result
     verificationStatus: {
       type: String,
-      enum: ["VERIFIED", "FAILED", "PENDING"],
+      enum: [
+        "VERIFIED",
+        "FAILED",
+        "PENDING",
+      ],
       default: "VERIFIED",
     },
 
-    // User who issued certificate
+    wipedFiles: {
+      type: Number,
+      default: 0,
+    },
+    verifiedFiles: {
+  type: Number,
+  default: 0,
+},
+
+verificationFailures: {
+  type: Number,
+  default: 0,
+},
+
+verificationEvidenceHash: {
+  type: String,
+  default: "",
+},
+    wipeCompletedAt: {
+      type: Date,
+    },
+
     issuedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
 
-    // Certificate Issue Date
     issuedAt: {
       type: Date,
       default: Date.now,
     },
 
-    // PDF Storage Path
     pdfUrl: {
       type: String,
       default: "",
     },
 
-    // Certificate Remarks
     remarks: {
       type: String,
       default: "",
     },
 
-    // Certificate Active/Revoked
     active: {
       type: Boolean,
       default: true,
@@ -91,4 +110,7 @@ const certificateSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Certificate", certificateSchema);
+export default mongoose.model(
+  "Certificate",
+  certificateSchema
+);

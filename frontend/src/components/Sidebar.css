@@ -1,213 +1,362 @@
-/* =========================
-   BASE SIDEBAR
-========================= */
+:root{
+  --sidebar-width:270px;
 
-.sidebar {
-  width: 270px;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
+  --bg:#070b14;
+  --panel:rgba(15,23,42,.88);
 
-  background: rgba(10, 14, 25, 0.82);
-  backdrop-filter: blur(20px);
+  --border:rgba(255,255,255,.08);
 
-  border-right: 1px solid rgba(255,255,255,0.06);
+  --text:#f8fafc;
+  --muted:#94a3b8;
 
-  display: flex;
-  flex-direction: column;
+  --primary:#00e5ff;
+  --success:#00e676;
 
-  padding: 20px;
-  transition: transform 0.3s ease;
+  --shadow:
+  0 10px 35px rgba(0,0,0,.4);
+
+  --radius:20px;
 }
 
-/* =========================
+/* ==================================================
+   SIDEBAR
+================================================== */
+
+.sidebar{
+  position:fixed;
+  top:0;
+  left:0;
+
+  width:var(--sidebar-width);
+  height:100vh;
+
+  display:flex;
+  flex-direction:column;
+
+  padding:22px;
+
+  background:
+  rgba(15,23,42,.85);
+
+  backdrop-filter:blur(18px);
+
+  border-right:
+  1px solid var(--border);
+
+  z-index:1000;
+
+  overflow-y:auto;
+}
+
+/* ==================================================
    BRAND
-========================= */
+================================================== */
 
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.sidebar-brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
 
-  padding: 10px 0 20px;
+  margin-bottom:30px;
 }
 
-.logo {
-  width: 42px;
-  height: 42px;
+.brand-icon{
+  width:48px;
+  height:48px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius:14px;
 
-  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  color: white;
+  background:
+  linear-gradient(
+    135deg,
+    #00e5ff,
+    #0094ff
+  );
+
+  color:white;
+
+  box-shadow:
+  0 0 25px rgba(0,229,255,.25);
 }
 
-.sidebar-brand h2 {
-  font-size: 18px;
-  color: #fff;
+.sidebar-brand h2{
+  color:white;
+  font-size:20px;
 }
 
-.sidebar-brand p {
-  font-size: 12px;
-  color: #94a3b8;
+.sidebar-brand span{
+  color:var(--muted);
+  font-size:12px;
 }
 
-/* =========================
-   NAV
-========================= */
+/* ==================================================
+   NAVIGATION
+================================================== */
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+.sidebar-nav{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.nav-link{
+  display:flex;
+  align-items:center;
+  gap:12px;
 
-  padding: 12px 14px;
-  border-radius: 10px;
+  padding:14px 16px;
 
-  color: #cbd5e1;
-  text-decoration: none;
+  border-radius:14px;
 
-  transition: 0.2s ease;
+  color:#cbd5e1;
+  text-decoration:none;
+
+  transition:.25s;
 }
 
-.sidebar-link:hover {
-  background: rgba(255,255,255,0.05);
-  transform: translateX(4px);
-  color: white;
+.nav-link svg{
+  flex-shrink:0;
+}
+
+.nav-link:hover{
+  background:
+  rgba(255,255,255,.04);
+
+  color:white;
+
+  transform:translateX(4px);
 }
 
 /* ACTIVE */
-.sidebar-link.active {
-  background: rgba(59,130,246,0.15);
-  border: 1px solid rgba(59,130,246,0.35);
-  color: white;
-  position: relative;
+
+.nav-link.active{
+  background:
+  rgba(0,229,255,.10);
+
+  border:
+  1px solid rgba(0,229,255,.18);
+
+  color:white;
+
+  position:relative;
 }
 
-.sidebar-link.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  width: 3px;
-  height: 60%;
-  background: #3b82f6;
-  border-radius: 10px;
+.nav-link.active::before{
+  content:"";
+
+  position:absolute;
+
+  left:-1px;
+  top:15%;
+
+  width:4px;
+  height:70%;
+
+  border-radius:10px;
+
+  background:var(--primary);
+
+  box-shadow:
+  0 0 12px var(--primary);
 }
 
-/* =========================
+/* ==================================================
    FOOTER
-========================= */
+================================================== */
 
-.sidebar-footer {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.sidebar-footer{
+  margin-top:auto;
+
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
 
-.card {
-  padding: 14px;
-  border-radius: 14px;
+.footer-card{
+  padding:16px;
 
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
+  border-radius:18px;
+
+  background:var(--panel);
+
+  border:1px solid var(--border);
+
+  box-shadow:var(--shadow);
 }
 
-/* compliance row */
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.footer-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 10px #22c55e;
+.status-dot{
+  width:10px;
+  height:10px;
+
+  border-radius:50%;
+
+  background:var(--success);
+
+  box-shadow:
+  0 0 12px var(--success);
 }
 
-.bar {
-  height: 6px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 8px;
+.footer-card h4{
+  color:white;
+  margin-top:10px;
 }
 
-.bar div {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, #22c55e, #38bdf8);
+.footer-card small{
+  color:var(--muted);
 }
 
-/* =========================
-   TOGGLE BUTTON
-========================= */
+.progress{
+  width:100%;
+  height:6px;
 
-.menu-toggle {
-  display: none;
+  margin:10px 0;
 
-  position: fixed;
-  top: 18px;
-  left: 18px;
-  z-index: 1200;
+  border-radius:999px;
 
-  width: 44px;
-  height: 44px;
+  overflow:hidden;
 
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08);
-
-  background: rgba(15,23,42,0.9);
-  color: white;
-
-  cursor: pointer;
+  background:
+  rgba(255,255,255,.08);
 }
 
-.menu-toggle.open {
-  transform: rotate(90deg);
+.progress-fill{
+  width:100%;
+  height:100%;
+
+  background:
+  linear-gradient(
+    90deg,
+    #00e676,
+    #00e5ff
+  );
 }
 
-/* =========================
+.score-label{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.footer-card h1{
+  margin-top:10px;
+
+  color:var(--primary);
+
+  font-size:34px;
+}
+
+/* ==================================================
+   MOBILE BUTTON
+================================================== */
+
+.sidebar-toggle{
+  display:none;
+
+  position:fixed;
+
+  top:16px;
+  left:16px;
+
+  width:48px;
+  height:48px;
+
+  border:none;
+
+  border-radius:14px;
+
+  color:white;
+
+  background:
+  rgba(15,23,42,.95);
+
+  backdrop-filter:blur(15px);
+
+  border:
+  1px solid rgba(255,255,255,.08);
+
+  z-index:1200;
+
+  cursor:pointer;
+
+  transition:.3s;
+}
+
+.sidebar-toggle:hover{
+  transform:scale(1.05);
+}
+
+.sidebar-toggle.active{
+  transform:rotate(180deg);
+}
+.sidebar-toggle{
+  box-shadow:
+    0 0 15px rgba(0,229,255,.15);
+}
+
+.sidebar-toggle:hover{
+  box-shadow:
+    0 0 25px rgba(0,229,255,.35);
+}
+/* ==================================================
    OVERLAY
-========================= */
+================================================== */
 
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 999;
+.sidebar-overlay{
+  position:fixed;
+  inset:0;
+
+  background:
+  rgba(0,0,0,.65);
+
+  backdrop-filter:blur(4px);
+
+  z-index:999;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* ==================================================
+   SCROLLBAR
+================================================== */
 
-@media (max-width: 900px) {
-  .sidebar {
-    transform: translateX(-100%);
-    z-index: 1000;
+.sidebar::-webkit-scrollbar{
+  width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+  background:
+  rgba(255,255,255,.15);
+
+  border-radius:20px;
+}
+
+/* ==================================================
+   TABLET / MOBILE
+================================================== */
+
+@media(max-width:992px){
+
+  .sidebar{
+    transform:translateX(-100%);
+    transition:.35s ease;
   }
 
-  .sidebar.open {
-    transform: translateX(0);
+  .sidebar.show{
+    transform:translateX(0);
   }
 
-  .menu-toggle {
-    display: flex;
+  .sidebar-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 0 15px rgba(0,229,255,.15);
   }
+
 }

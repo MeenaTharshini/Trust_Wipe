@@ -1,25 +1,22 @@
 import fs from "fs";
 import crypto from "crypto";
 
-const CHUNK_SIZE = 1024 * 1024; // 1MB
+const CHUNK_SIZE = 1024 * 1024;
 
-const overwritePass = async (
-  filePath,
+const overwritePass = (
+  fd,
   size,
-  mode
+  pattern
 ) => {
 
-  const fd =
-    fs.openSync(filePath, "r+");
+  let offset = 0;
 
-  let written = 0;
-
-  while (written < size) {
+  while (offset < size) {
 
     const remaining =
-      size - written;
+      size - offset;
 
-    const currentChunk =
+    const chunk =
       Math.min(
         CHUNK_SIZE,
         remaining
@@ -27,29 +24,26 @@ const overwritePass = async (
 
     let buffer;
 
-    if (mode === "zero") {
+    switch (pattern) {
 
-      buffer =
-        Buffer.alloc(
-          currentChunk,
+      case "zero":
+        buffer = Buffer.alloc(
+          chunk,
           0x00
         );
+        break;
 
-    } else if (
-      mode === "ones"
-    ) {
+      case "random":
+        buffer =
+          crypto.randomBytes(
+            chunk
+          );
+        break;
 
-      buffer =
-        Buffer.alloc(
-          currentChunk,
-          0xFF
-        );
-
-    } else {
-
-      buffer =
-        crypto.randomBytes(
-          currentChunk
+      default:
+        buffer = Buffer.alloc(
+          chunk,
+          0x00
         );
     }
 
@@ -57,29 +51,19 @@ const overwritePass = async (
       fd,
       buffer,
       0,
-      currentChunk,
-      written
+      chunk,
+      offset
     );
 
-    written += currentChunk;
+    offset += chunk;
   }
 
   fs.fsyncSync(fd);
-
-  fs.closeSync(fd);
 };
 
 export const wipeFile = async (
   filePath
 ) => {
-
-  if (
-    !fs.existsSync(filePath)
-  ) {
-    throw new Error(
-      `File not found: ${filePath}`
-    );
-  }
 
   const stats =
     fs.statSync(filePath);
@@ -87,25 +71,22 @@ export const wipeFile = async (
   const size =
     stats.size;
 
-  await overwritePass(
-    filePath,
-    size,
-    "zero"
-  );
+  const fd =
+    fs.openSync(filePath, "r+");
 
-  await overwritePass(
-    filePath,
-    size,
-    "ones"
-  );
-
-  await overwritePass(
-    filePath,
+  // NIST Clear
+  overwritePass(
+    fd,
     size,
     "random"
   );
 
-  fs.unlinkSync(filePath);
+  overwritePass(
+    fd,
+    size,
+    "zero"
+  );
+  fs.closeSync(fd);
 
   return true;
 };

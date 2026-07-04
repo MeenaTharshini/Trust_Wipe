@@ -3,14 +3,14 @@
 .certificate-page {
   min-height: 100vh;
   background: #0b1220;
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* ================= TOP ACTION BAR ================= */
+/* ================= TOP BAR ================= */
 
 .top-actions {
   width: 100%;
@@ -20,18 +20,23 @@
   margin-bottom: 20px;
 }
 
-.wipe-btn,
+.primary-btn,
 .secondary-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: 600;
   border: none;
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
-.wipe-btn {
+.primary-btn {
   background: #2563eb;
   color: white;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
 }
 
 .secondary-btn {
@@ -39,133 +44,134 @@
   color: white;
 }
 
-/* ================= A4 CERTIFICATE CONTAINER ================= */
+.secondary-btn:hover {
+  background: #111827;
+}
+
+/* ================= CERTIFICATE CONTAINER ================= */
 
 .certificate {
   width: 210mm;
-  min-height: 297mm;
-  background: white;
+  height: 297mm;
+  background: #ffffff;
   color: #111827;
+
+  padding: 18mm;
+  box-sizing: border-box;
+
   position: relative;
-  padding: 28mm 22mm;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
-  border-radius: 6px;
   overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  box-shadow: 0 0 0 1px #000, 0 0 0 10px #f3f4f6;
 }
 
 /* ================= WATERMARK ================= */
 
-.watermark {
+.certificate::before {
+  content: "TRUSTWIPE";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-30deg);
-  font-size: 64px;
-  font-weight: 800;
-  color: rgba(0, 0, 0, 0.06);
-  letter-spacing: 6px;
-  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: 900;
+  color: rgba(37, 99, 235, 0.05);
+  letter-spacing: 12px;
+  z-index: 0;
   pointer-events: none;
 }
 
 /* ================= HEADER ================= */
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 16px;
+.certificate-header {
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+  position: relative;
+  z-index: 1;
 }
 
-.title-block h1 {
-  font-size: 20px;
-  letter-spacing: 1px;
+.certificate-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
   margin: 0;
-  color: #111827;
 }
 
-.title-block h2 {
-  font-size: 16px;
-  margin: 6px 0 10px;
+.certificate-header h2 {
+  font-size: 13px;
   color: #2563eb;
-  letter-spacing: 0.5px;
+  margin: 6px 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.title-block p {
-  font-size: 12.5px;
+.certificate-header p {
+  font-size: 11px;
   color: #4b5563;
-  max-width: 500px;
   line-height: 1.5;
 }
 
-.seal {
-  border: 2px solid #2563eb;
-  color: #2563eb;
-  padding: 10px 14px;
+.verified-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 14px;
+  border: 1px solid #16a34a;
+  color: #16a34a;
+  font-size: 10px;
   font-weight: 700;
-  border-radius: 8px;
-  font-size: 12px;
-  height: fit-content;
-}
-
-/* ================= DIVIDER ================= */
-
-.divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 18px 0;
+  border-radius: 20px;
 }
 
 /* ================= SECTIONS ================= */
 
 .section {
-  margin-top: 18px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .section h3 {
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #111827;
-  margin-bottom: 10px;
-  border-left: 4px solid #2563eb;
-  padding-left: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 /* ================= GRID ================= */
 
-.grid {
+.two-column {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.box {
-  background: #f9fafb;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+/* ================= TABLE ================= */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
 }
 
-.box label {
-  display: block;
-  font-size: 11px;
+td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+td:first-child {
   color: #6b7280;
-  margin-bottom: 4px;
-}
-
-.box value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #111827;
-}
-
-/* ================= STATUS ================= */
-
-.green {
-  color: #059669;
-  font-weight: 700;
+  width: 45%;
+  font-weight: 500;
 }
 
 /* ================= TAGS ================= */
@@ -173,167 +179,98 @@
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tags span {
   background: #eff6ff;
   color: #1d4ed8;
-  padding: 6px 10px;
-  font-size: 11px;
-  border-radius: 20px;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 999px;
   border: 1px solid #dbeafe;
 }
 
 /* ================= HASH ================= */
 
 .hash {
-  background: #07152f;
+  background: #000;
   color: #00ff88;
-
-  padding: 15px;
-
-  border-radius: 6px;
-
-  font-family: monospace;
-
-  font-size: 12px;
-
+  padding: 12px;
+  font-size: 10px;
+  font-family: "Courier New", monospace;
+  border-left: 4px solid #00ff88;
   word-break: break-all;
-
-  overflow-wrap: break-word;
-
-  white-space: normal;
 }
 
+/* ================= NOTE ================= */
+
 .note {
-  font-size: 11px;
+  font-size: 9px;
   color: #6b7280;
   margin-top: 6px;
 }
 
-/* ================= SIGNATURES ================= */
+/* ================= SIGNATURE ================= */
 
-.signatures {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 30px;
-  gap: 20px;
-}
-
-.sign {
-  width: 45%;
+.signature-box {
+  background: #f9fafb;
+  border: 1px dashed #9ca3af;
+  padding: 10px;
+  font-size: 10px;
   text-align: center;
 }
 
-.sign .line {
-  height: 1px;
-  background: #111827;
-  margin-bottom: 8px;
+.sig-line {
+  margin: 6px 0;
+  font-weight: bold;
+  letter-spacing: 2px;
 }
 
-.sign p {
-  font-size: 12px;
-  font-weight: 600;
-  margin: 0;
-}
+/* ================= SEAL ================= */
 
-.sign span {
-  font-size: 11px;
-  color: #6b7280;
+.seal {
+  position: absolute;
+  right: 25px;
+  top: 120px;
+  width: 90px;
+  height: 90px;
+  border: 2px solid #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #16a34a;
+  text-align: center;
+  transform: rotate(-15deg);
+  z-index: 2;
 }
 
 /* ================= FOOTER ================= */
 
-.footer {
-  margin-top: 30px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 10px;
+.certificate-footer {
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 10px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+  position: relative;
+  z-index: 1;
 }
 
-/* ================= RESPONSIVE ================= */
+/* ================= PDF MODE FIX ================= */
 
-@media (max-width: 1024px) {
-  .certificate {
-    transform: scale(0.85);
-    transform-origin: top center;
-  }
+.pdf-mode {
+  transform: none !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  overflow: hidden !important;
 }
 
-@media (max-width: 768px) {
-  .certificate {
-    width: 100%;
-    padding: 18mm 12mm;
-    transform: scale(1);
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .signatures {
-    flex-direction: column;
-  }
-
-  .sign {
-    width: 100%;
-  }
-}
-@media (max-width: 992px) {
-
-  .certificate {
-    padding: 25px;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .seal {
-    margin-top: 15px;
-  }
-}
-@media (max-width: 768px) {
-
-  .certificate {
-    padding: 15px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .signatures {
-    flex-direction: column;
-    gap: 25px;
-  }
-
-  .footer {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .title-block h1 {
-    font-size: 22px;
-  }
-
-  .title-block h2 {
-    font-size: 16px;
-  }
-}
-/* ================= PDF FIX ================= */
+/* ================= PRINT ================= */
 
 @media print {
   .top-actions {
@@ -345,9 +282,54 @@
     transform: none;
   }
 }
-.pdf-mode {
-  width: 210mm !important;
-  min-height: 297mm !important;
-  transform: none !important;
-  zoom: 1 !important;
+
+/* ================= TABLET ================= */
+
+@media (max-width: 768px) {
+  .certificate {
+    width: 100%;
+    height: auto;
+    padding: 16px;
+  }
+
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 480px) {
+  .certificate-header h1 {
+    font-size: 16px;
+  }
+
+  .certificate-header h2 {
+    font-size: 12px;
+  }
+
+  table {
+    font-size: 9px;
+  }
+
+  .hash {
+    font-size: 8px;
+  }
+
+  .signature-box {
+    font-size: 9px;
+  }
+}
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.qr-text {
+  font-size: 9px;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 5px;
 }

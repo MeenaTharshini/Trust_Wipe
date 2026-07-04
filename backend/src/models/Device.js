@@ -28,10 +28,16 @@ const deviceSchema = new mongoose.Schema(
       default: "N/A",
     },
 
-    storagePath: {
-      type: String,
-      required: false,
-    },
+    files: [
+      {
+        fileName: String,
+        fileSize: String,
+        status: {
+          type: String,
+          default: "Pending",
+        },
+      },
+    ],
 
     status: {
       type: String,

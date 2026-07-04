@@ -7,7 +7,6 @@ import Devices from "./pages/Devices";
 import Verification from "./pages/Verification";
 import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
-
 import "./App.css";
 
 function App() {
@@ -48,7 +47,7 @@ function App() {
               path="/reports"
               element={<Reports />}
             />
-
+            <Route path="/verify/:id" element={<VerifyCertificate/>} />
             <Route
               path="/wipe-jobs"
               element={<Navigate to="/" replace />}

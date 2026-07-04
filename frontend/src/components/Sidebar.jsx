@@ -1,61 +1,87 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+
 import {
   LayoutDashboard,
   Database,
   ShieldCheck,
   FileText,
-  BarChart3,
+  BarChart3,Radar,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 
 import "./Sidebar.css";
 
 function Sidebar() {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const menus = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard },
-    { name: "Devices", path: "/devices", icon: Database },
-    { name: "Verification", path: "/verification", icon: ShieldCheck },
-    { name: "Verify Certificate", path: "/verify-certificate", icon: FileText },
-    { name: "Reports", path: "/reports", icon: BarChart3 },
-
+    {
+      name: "Dashboard",
+      path: "/",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Devices",
+      path: "/devices",
+      icon: Database,
+    },
+    {
+      name: "Verification",
+      path: "/verification",
+      icon: ShieldCheck,
+    },
+    {
+      name: "Verify Certificate",
+      path: "/verify-certificate",
+      icon: FileText,
+    },
+    {
+      name: "Reports",
+      path: "/reports",
+      icon: BarChart3,
+    },
   ];
 
   return (
     <>
-      {/* TOGGLE (mobile only) */}
+      {/* MOBILE TOGGLE */}
       <button
-        className={`menu-toggle ${isOpen ? "open" : ""}`}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`sidebar-toggle ${open ? "active" : ""}`}
+        onClick={() => setOpen(!open)}
       >
-        {isOpen ? <X size={22} /> : <Menu size={22} />}
+        {open ? <X size={22} /> : <Radar size={22} />}
       </button>
 
       {/* OVERLAY */}
-      {isOpen && (
-        <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
+      {open && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setOpen(false)}
+        />
       )}
 
       {/* SIDEBAR */}
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+      <aside className={`sidebar ${open ? "show" : ""}`}>
 
-        {/* BRAND */}
+        {/* LOGO */}
         <div className="sidebar-brand">
-          <div className="logo">
-            <ShieldCheck size={22} />
+
+          <div className="brand-icon">
+            <Shield size={24} />
           </div>
 
           <div>
             <h2>TrustWipe</h2>
-            <p>SOC Console</p>
+            <span>SOC Console</span>
           </div>
+
         </div>
 
-        {/* NAV */}
+        {/* NAVIGATION */}
         <nav className="sidebar-nav">
           {menus.map((item) => {
             const Icon = item.icon;
@@ -64,9 +90,11 @@ function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setIsOpen(false)}
-                className={`sidebar-link ${
-                  location.pathname === item.path ? "active" : ""
+                onClick={() => setOpen(false)}
+                className={`nav-link ${
+                  location.pathname === item.path
+                    ? "active"
+                    : ""
                 }`}
               >
                 <Icon size={18} />
@@ -79,24 +107,31 @@ function Sidebar() {
         {/* FOOTER */}
         <div className="sidebar-footer">
 
-          <div className="card">
-            <div className="row">
+          <div className="footer-card">
+
+            <div className="footer-top">
               <span>Compliance</span>
-              <span className="dot" />
+              <div className="status-dot" />
             </div>
 
             <h4>NIST 800-88</h4>
 
-            <div className="bar">
-              <div />
+            <div className="progress">
+              <div className="progress-fill" />
             </div>
 
             <small>Certified Security Standard</small>
+
           </div>
 
-          <div className="card">
-            <span>Security Score</span>
-            <h2>99.8%</h2>
+          <div className="footer-card">
+
+            <span className="score-label">
+              Security Score
+            </span>
+
+            <h1>99.8%</h1>
+
           </div>
 
         </div>

@@ -16,7 +16,7 @@ const wipeJobSchema = new mongoose.Schema(
 
     algorithm: {
       type: String,
-      default: "NIST 800-88 Clear",
+      default: "NIST SP 800-88 Clear",
     },
 
     progress: {
@@ -62,6 +62,35 @@ const wipeJobSchema = new mongoose.Schema(
       default: "Pending",
     },
 
+    verificationMethod: {
+      type: String,
+      default:
+        "Post-Wipe Content Validation",
+    },
+
+    verificationBlocksChecked: {
+      type: Number,
+      default: 0,
+    },
+
+    verificationResult: {
+      type: String,
+      default: "",
+    },
+    verificationEvidenceHash: {
+  type: String,
+  default: "",
+},
+
+verificationFailures: {
+  type: Number,
+  default: 0,
+},
+
+verifiedFiles: {
+  type: Number,
+  default: 0,
+},
     certificateId: {
       type: String,
       default: "",

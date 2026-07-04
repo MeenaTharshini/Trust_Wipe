@@ -1,31 +1,52 @@
-import crypto from "crypto";
 import fs from "fs";
+import crypto from "crypto";
 
-const publicKey =
-  fs.readFileSync(
-    "./public.pem",
-    "utf8"
-  );
-
-export const verifySignature = (
-  verificationHash,
-  signature
+export const verifyFile = (
+  filePath
 ) => {
 
-  const verifier =
-    crypto.createVerify(
-      "RSA-SHA256"
-    );
+  try {
 
-  verifier.update(
-    verificationHash
-  );
+    if (!fs.existsSync(filePath)) {
+      return {
+        verified: false,
+        reason: "File Missing",
+      };
+    }
 
-  verifier.end();
+    const data =
+      fs.readFileSync(filePath);
 
-  return verifier.verify(
-    publicKey,
-    signature,
-    "base64"
-  );
+    const hash =
+      crypto
+        .createHash("sha256")
+        .update(data)
+        .digest("hex");
+
+    let allZero = true;
+
+    for (const byte of data) {
+
+      if (byte !== 0) {
+        allZero = false;
+        break;
+      }
+
+    }
+
+    return {
+      verified: allZero,
+      hash,
+      size: data.length,
+    };
+
+  } catch (err) {
+
+    return {
+      verified: false,
+      reason: err.message,
+    };
+
+  }
+
 };

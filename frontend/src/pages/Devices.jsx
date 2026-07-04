@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./Devices.css";
-
+import {
+  FiMonitor,
+  FiHardDrive,
+  FiCpu,
+  FiMapPin,
+  FiUser,
+  FiHash,
+} from "react-icons/fi";
 function Devices() {
   const [devices, setDevices] = useState([]);
 
@@ -104,38 +111,57 @@ function Devices() {
           .includes(q)
       );
     });
+    const getDeviceIcon = (type) => {
+  switch (type?.toLowerCase()) {
+    case "desktop":
+      return <FiMonitor />;
+    case "laptop":
+      return <FiMonitor />;
+    case "server":
+      return <FiCpu />;
+    case "external hdd":
+      return <FiHardDrive />;
+    case "usb drive":
+      return <FiHardDrive />;
+    default:
+      return <FiMonitor />;
+  }
+};
 
   return (
     <div className="devices">
 
       <section className="devices-hero">
-        <div>
-          <p className="label">
-            ASSET MANAGEMENT
-          </p>
 
-          <h1>
-            Device Command Center
-          </h1>
+  <div className="hero-content">
 
-          <p className="subtitle">
-            Enterprise device
-            lifecycle &
-            secure destruction
-            tracking
-          </p>
-        </div>
+    <p className="hero-label">
+      ASSET MANAGEMENT
+    </p>
 
-        <div className="hero-card">
-          <span>
-            Total Devices
-          </span>
+    <h1>
+      Device Command Center
+    </h1>
 
-          <h2>
-            {devices.length}
-          </h2>
-        </div>
-      </section>
+    <p>
+      Enterprise device lifecycle management,
+      inventory tracking and secure destruction
+      operations.
+    </p>
+
+  </div>
+
+  <div className="hero-card">
+
+    <FiHardDrive size={50} />
+
+    <h2>{devices.length}</h2>
+
+    <span>Total Devices</span>
+
+  </div>
+
+</section>
 
       <section className="kpi">
 
@@ -386,8 +412,8 @@ function Devices() {
             <div className="device-header">
 
               <div className="device-avatar">
-                💻
-              </div>
+  {getDeviceIcon(d.deviceType)}
+</div>
 
               <div className="device-title">
 
@@ -413,80 +439,28 @@ function Devices() {
 
             <div className="device-specs">
 
-              <div className="spec-box">
-                <span>
-                  Manufacturer
-                </span>
-                <strong>
-                  {
-                    d.manufacturer
-                  }
-                </strong>
-              </div>
+  <div className="mini-stat">
+    <span>Storage</span>
+    <h4>{d.storageType || "--"}</h4>
+  </div>
 
-              <div className="spec-box">
-                <span>
-                  Model
-                </span>
-                <strong>
-                  {
-                    d.modelNumber
-                  }
-                </strong>
-              </div>
+  <div className="mini-stat">
+    <span>Capacity</span>
+    <h4>{d.capacity || "--"} GB</h4>
+  </div>
 
-              <div className="spec-box">
-                <span>
-                  Type
-                </span>
-                <strong>
-                  {
-                    d.deviceType
-                  }
-                </strong>
-              </div>
+  <div className="mini-stat">
+    <span>Location</span>
+    <h4>{d.location || "--"}</h4>
+  </div>
 
-              <div className="spec-box">
-                <span>
-                  Storage
-                </span>
-                <strong>
-                  {
-                    d.storageType
-                  }
-                </strong>
-              </div>
+  <div className="mini-stat">
+    <span>Status</span>
+    <h4>{d.status || "Completed"}</h4>
+  </div>
 
-              <div className="spec-box">
-                <span>
-                  Capacity
-                </span>
-                <strong>
-                  {d.capacity} GB
-                </strong>
-              </div>
+</div>
 
-              <div className="spec-box">
-                <span>
-                  Owner
-                </span>
-                <strong>
-                  {d.owner}
-                </strong>
-              </div>
-
-              <div className="spec-box">
-                <span>
-                  Location
-                </span>
-                <strong>
-                  {
-                    d.location
-                  }
-                </strong>
-              </div>
-
-            </div>
 
             <div className="device-actions">
 

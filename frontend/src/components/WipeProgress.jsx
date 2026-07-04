@@ -5,20 +5,10 @@ import "./WipeProgress.css";
 function WipeProgress({ jobId }) {
   const [job, setJob] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [logs, setLogs] = useState([]);
-
-  // ---------------- SOCKET STATUS ----------------
 
   useEffect(() => {
-    const onConnect = () => {
-      console.log("SOCKET CONNECTED");
-      setConnected(true);
-    };
-
-    const onDisconnect = () => {
-      console.log("SOCKET DISCONNECTED");
-      setConnected(false);
-    };
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
@@ -31,48 +21,20 @@ function WipeProgress({ jobId }) {
     };
   }, []);
 
-  // ---------------- WIPE EVENTS ----------------
-
   useEffect(() => {
     if (!jobId) return;
 
     const handleProgress = (data) => {
-      console.log("WIPE EVENT:", data);
-
-      if (String(data._id) !== String(jobId)) {
-        return;
-      }
-
+      if (String(data._id) !== String(jobId)) return;
       setJob(data);
-
-      if (data.events?.length) {
-        const latest =
-          data.events[data.events.length - 1];
-
-        setLogs((prev) => {
-          if (prev[0] === latest.message) {
-            return prev;
-          }
-
-          return [
-            latest.message,
-            ...prev,
-          ].slice(0, 10);
-        });
-      }
     };
 
     socket.on("wipe-progress", handleProgress);
 
     return () => {
-      socket.off(
-        "wipe-progress",
-        handleProgress
-      );
+      socket.off("wipe-progress", handleProgress);
     };
   }, [jobId]);
-
-  // ---------------- WAITING ----------------
 
   if (!job) {
     return (
@@ -84,130 +46,209 @@ function WipeProgress({ jobId }) {
 
   const progress = job.progress || 0;
 
-  const circleStyle = {
-    background: `conic-gradient(
-      #00e5ff ${progress * 3.6}deg,
-      #1e293b 0deg
-    )`,
+  const formatDate = (date) => {
+    if (!date) return "--";
+    return new Date(date).toLocaleString();
   };
 
-  // ---------------- STATUS TEXT ----------------
+  const stages = [
+    "Random Overwrite",
+    "Zero Overwrite",
+    "Verification",
+    "SHA-256 Hash",
+    "RSA Signature",
+    "Certificate",
+    "Completed",
+  ];
 
-  let phase = "Initializing";
-
-  if (progress >= 20 && progress < 80) {
-    phase = "Secure Wiping";
-  }
-
-  if (progress >= 80 && progress < 100) {
-    phase = "Verification";
-  }
-
-  if (progress === 100) {
-    phase = "Completed";
-  }
-
-  // ---------------- UI ----------------
+  const activeStage =
+    progress >= 100 ? 6 :
+    progress >= 97 ? 5 :
+    progress >= 94 ? 4 :
+    progress >= 90 ? 3 :
+    progress >= 80 ? 2 :
+    progress >= 50 ? 1 : 0;
 
   return (
     <div className="wipe-progress-card">
 
       <div className="wipe-header">
-
-        <div className="wipe-title">
-          Live Wipe Monitor
+        <div>
+          <h2>Trust Wipe Monitor</h2>
+          <p className="sub">
+            Live Sanitization Tracking
+          </p>
         </div>
 
         <div
-          className={
-            connected
-              ? "connection online"
-              : "connection offline"
-          }
+          className={`connection ${
+            connected ? "online" : "offline"
+          }`}
         >
-          {connected
-            ? "● Connected"
-            : "● Offline"}
+          {connected ? "● LIVE" : "● OFFLINE"}
         </div>
-
       </div>
 
       <div className="circle-wrapper">
-
         <div
           className="progress-circle"
-          style={circleStyle}
+          style={{
+            background: `conic-gradient(
+              #00e5ff ${progress * 3.6}deg,
+              rgba(255,255,255,.08) 0deg
+            )`,
+          }}
         >
           <div className="circle-inner">
-            <h2>{progress}%</h2>
+            <h1>{progress}%</h1>
             <span>Completed</span>
           </div>
         </div>
-
       </div>
 
-      <div
-        className={`status-pill ${
-          job.status || "running"
-        }`}
-      >
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{
+            width: `${progress}%`,
+          }}
+        />
+      </div>
+
+      <div className={`status-pill ${job.status}`}>
         {job.status}
       </div>
 
       <div className="info-grid">
+        <div className="info-card">
+          <span>Algorithm</span>
+          <h4>{job.algorithm}</h4>
+        </div>
 
         <div className="info-card">
-          <p>Job ID</p>
+          <span>Files Wiped</span>
           <h4>
-            {String(job._id).slice(0, 8)}
+            {job.wipedFiles}/{job.totalFiles}
           </h4>
         </div>
 
         <div className="info-card">
-          <p>Phase</p>
-          <h4>{phase}</h4>
+          <span>Verification</span>
+          <h4>{job.verificationStatus}</h4>
         </div>
 
         <div className="info-card">
-          <p>Verification</p>
-          <h4>
-            {job.verificationStatus ||
-              "Pending"}
-          </h4>
-        </div>
-
-        <div className="info-card">
-          <p>Duration</p>
+          <span>Duration</span>
           <h4>
             {job.duration
               ? `${job.duration}s`
               : "--"}
           </h4>
         </div>
+      </div>
 
+      <div className="section">
+        <h3>Current Stage</h3>
+
+        <div className="timeline">
+          {stages.map((stage, index) => (
+            <div
+              key={index}
+              className={`timeline-item ${
+                index <= activeStage
+                  ? "done"
+                  : ""
+              }`}
+            >
+              <div className="timeline-dot" />
+              <span>{stage}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="section">
+        <h3>Verification Hash</h3>
+
+        <div className="hash-box">
+          {job.verificationHash
+            ? job.verificationHash
+            : "Pending"}
+        </div>
+      </div>
+
+      <div className="section">
+        <h3>Certificate</h3>
+
+        <div className="certificate-box">
+          <p>
+            Certificate ID
+          </p>
+
+          <h4>
+            {job.certificateId ||
+              "Pending"}
+          </h4>
+        </div>
+      </div>
+
+      <div className="timestamps">
+        <div>
+          <span>Started</span>
+          <p>
+            {formatDate(
+              job.startedAt
+            )}
+          </p>
+        </div>
+
+        <div>
+          <span>Completed</span>
+          <p>
+            {formatDate(
+              job.completedAt
+            )}
+          </p>
+        </div>
       </div>
 
       <div className="logs">
+        <h3>Audit Timeline</h3>
 
-        <h3>Activity Logs</h3>
+        {job.events?.length ? (
+          [...job.events]
+            .reverse()
+            .map(
+              (
+                event,
+                index
+              ) => (
+                <div
+                  key={index}
+                  className="log-item"
+                >
+                  <div>
+                    {
+                      event.message
+                    }
+                  </div>
 
-        {logs.length === 0 ? (
-          <div className="log-item">
-            Waiting for events...
-          </div>
+                  <small>
+                    {event.timestamp
+                      ? new Date(
+                          event.timestamp
+                        ).toLocaleTimeString()
+                      : ""}
+                  </small>
+                </div>
+              )
+            )
         ) : (
-          logs.map((log, index) => (
-            <div
-              key={index}
-              className="log-item"
-            >
-              {log}
-            </div>
-          ))
+          <div className="log-item">
+            No records found
+          </div>
         )}
-
       </div>
-
     </div>
   );
 }

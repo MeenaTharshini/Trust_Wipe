@@ -198,22 +198,23 @@ export const verifyCertificate = async (
   try {
     const { certificateId } = req.params;
 
-    const certificate = await Certificate.findOne({
-      certificateId,
-    }).populate("deviceId");
+    const certificate =
+      await Certificate.findOne({
+        certificateId,
+      }).populate("deviceId");
 
-    console.log(
-  "CERTIFICATE DATA:",
-  JSON.stringify(certificate, null, 2)
-);
     if (!certificate) {
       return res.status(404).json({
         status: "Invalid",
-        message: "Certificate not found",
+        message:
+          "Certificate not found",
       });
     }
 
     return res.status(200).json({
+      // =================================
+      // CERTIFICATE DETAILS
+      // =================================
       certificateId:
         certificate.certificateId,
 
@@ -226,38 +227,82 @@ export const verifyCertificate = async (
       algorithm:
         certificate.algorithm,
 
-      signature:
-        certificate.signature,
+      sanitizationStandard:
+        certificate.sanitizationStandard,
 
       createdAt:
         certificate.createdAt,
 
+      issuedAt:
+        certificate.issuedAt,
+
+      wipeCompletedAt:
+        certificate.wipeCompletedAt,
+
+      // =================================
+      // VERIFICATION DATA
+      // =================================
+      verificationMethod:
+        certificate.verificationMethod,
+
+      verificationHash:
+        certificate.verificationHash,
+
+      verificationEvidenceHash:
+        certificate.verificationEvidenceHash,
+
+      verificationStatus:
+        certificate.verificationStatus,
+
+      wipedFiles:
+        certificate.wipedFiles,
+
+      verifiedFiles:
+        certificate.verifiedFiles,
+
+      verificationFailures:
+        certificate.verificationFailures,
+
+      remarks:
+        certificate.remarks || "",
+
+      // =================================
+      // DIGITAL SIGNATURE
+      // =================================
+      signature:
+        certificate.signature,
+
+      // =================================
+      // DEVICE DATA
+      // =================================
       deviceModel:
-        certificate.deviceId?.deviceName ||
-        "N/A",
+        certificate.deviceId
+          ?.deviceName || "N/A",
 
       serialNumber:
-        certificate.deviceId?.serialNumber ||
-        "N/A",
+        certificate.deviceId
+          ?.serialNumber || "N/A",
 
       storageType:
-        certificate.deviceId?.storageType ||
-        "N/A",
+        certificate.deviceId
+          ?.storageType || "N/A",
 
       capacity:
-        certificate.deviceId?.capacity ||
-        "N/A",
+        certificate.deviceId
+          ?.capacity || "N/A",
 
       location:
-        certificate.deviceId?.location ||
-        "N/A",
+        certificate.deviceId
+          ?.location || "N/A",
     });
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
+      message:
+        "Internal Server Error",
+      error:
+        error.message,
     });
   }
 };

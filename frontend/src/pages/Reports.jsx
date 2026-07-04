@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+
+import {
+  FiBarChart2,
+  FiShield,
+  FiCheckCircle,
+  FiClock,
+  FiHardDrive,
+  FiFileText,
+  FiDownload,
+  FiActivity,
+} from "react-icons/fi";
+
 import "./Reports.css";
 
 function Reports() {
   const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDevices();
@@ -15,13 +28,15 @@ function Reports() {
         "http://localhost:5000/api/devices"
       );
 
-      setDevices(res.data);
+      setDevices(res.data || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const total = devices.length;
+  const totalAssets = devices.length;
 
   const completed = devices.filter(
     (d) => d.status === "Completed"
@@ -36,133 +51,153 @@ function Reports() {
   ).length;
 
   const completionRate =
-    total > 0
-      ? Math.round((completed / total) * 100)
+    totalAssets > 0
+      ? Math.round((completed / totalAssets) * 100)
       : 0;
 
+  const complianceScore = 100;
+
   return (
-    <div className="reports-page">
+    <div className="reports">
 
       {/* HERO */}
+      <section className="reports-hero">
 
-      <div className="reports-hero">
-
-        <div>
+        <div className="hero-content">
           <p className="hero-label">
-            TRUSTWIPE ANALYTICS
+            COMPLIANCE & ANALYTICS
           </p>
 
-          <h1>Reports & Compliance</h1>
+          <h1>
+            TrustWipe Reports Center
+          </h1>
 
-          <p className="hero-subtitle">
-            Enterprise-grade reporting and
-            sanitization performance insights.
+          <p>
+            Enterprise reporting, audit trails,
+            compliance monitoring and wipe analytics.
           </p>
         </div>
 
-        <button className="export-btn">
-          📄 Export Report
-        </button>
+      </section>
 
-      </div>
+      {/* KPI SECTION */}
+      <section className="stats-grid">
 
-      {/* KPI */}
-
-      <div className="reports-kpi-grid">
-
-        <div className="report-card">
-          <span>Total Assets</span>
-          <h2>{total}</h2>
+        <div className="stat-card">
+          <FiHardDrive />
+          <div>
+            <span>Total Assets</span>
+            <h2>{totalAssets}</h2>
+          </div>
         </div>
 
-        <div className="report-card success">
-          <span>Completed Wipes</span>
-          <h2>{completed}</h2>
+        <div className="stat-card success">
+          <FiCheckCircle />
+          <div>
+            <span>Completed Wipes</span>
+            <h2>{completed}</h2>
+          </div>
         </div>
 
-        <div className="report-card warning">
-          <span>Pending</span>
-          <h2>{pending}</h2>
+        <div className="stat-card warning">
+          <FiClock />
+          <div>
+            <span>Pending</span>
+            <h2>{pending}</h2>
+          </div>
         </div>
 
-        <div className="report-card info">
-          <span>Running Jobs</span>
-          <h2>{wiping}</h2>
+        <div className="stat-card info">
+          <FiActivity />
+          <div>
+            <span>Running Jobs</span>
+            <h2>{wiping}</h2>
+          </div>
         </div>
 
-      </div>
+      </section>
 
       {/* COMPLIANCE */}
-
-      <div className="compliance-panel">
+      <section className="compliance-card">
 
         <div>
-          <p>Compliance Score</p>
-          <h2>99.8%</h2>
-          <span>NIST 800-88 Certified</span>
+          <p>Compliance Readiness</p>
+          <h1>{complianceScore}%</h1>
+
+          <span>
+            NIST 800-88 • GDPR • ISO 27001
+          </span>
         </div>
 
-        <div className="shield">
-          🛡️
+        <FiShield size={80} />
+
+      </section>
+
+      {/* ANALYTICS */}
+      <section className="analytics-grid">
+
+        <div className="panel">
+
+          <div className="panel-header">
+            <FiBarChart2 />
+            <h2>Completion Rate</h2>
+          </div>
+
+          <div className="progress-track">
+            <div
+              className="progress-fill"
+              style={{
+                width: `${completionRate}%`,
+              }}
+            />
+          </div>
+
+          <h3>{completionRate}%</h3>
+
         </div>
 
-      </div>
+        <div className="panel">
 
-      {/* COMPLETION */}
+          <div className="panel-header">
+            <FiFileText />
+            <h2>Certificates</h2>
+          </div>
 
-      <div className="analytics-card">
-
-        <div className="section-header">
-          <h2>Wipe Completion Rate</h2>
-          <span>{completionRate}%</span>
-        </div>
-
-        <div className="progress-track">
-
-          <div
-            className="progress-fill"
-            style={{
-              width: `${completionRate}%`,
-            }}
-          />
-
-        </div>
-
-      </div>
-
-      {/* INSIGHTS */}
-
-      <div className="insights-grid">
-
-        <div className="analytics-card">
-          <h3>Success Rate</h3>
-          <h1>99.8%</h1>
-        </div>
-
-        <div className="analytics-card">
-          <h3>Devices Processed</h3>
           <h1>{completed}</h1>
+
+          <p>
+            Certificates Generated
+          </p>
+
         </div>
 
-        <div className="analytics-card">
-          <h3>Awaiting Action</h3>
-          <h1>{pending}</h1>
+        <div className="panel">
+
+          <div className="panel-header">
+            <FiShield />
+            <h2>Audit Status</h2>
+          </div>
+
+          <h1>READY</h1>
+
+          <p>
+            Enterprise Compliance Verified
+          </p>
+
         </div>
 
-      </div>
+      </section>
 
       {/* TABLE */}
+      <section className="panel">
 
-      <div className="analytics-card">
-
-        <div className="section-header">
-          <h2>Asset Report</h2>
-          <span>{total} Assets</span>
+        <div className="panel-title">
+          Asset Compliance Report
         </div>
 
         <div className="table-wrapper">
 
-          <table className="report-table">
+          <table>
 
             <thead>
               <tr>
@@ -188,12 +223,8 @@ function Reports() {
                   <td>
 
                     <span
-                      className={`status-badge ${
-                        device.status === "Completed"
-                          ? "completed"
-                          : device.status === "Wiping"
-                          ? "running"
-                          : "pending"
+                      className={`badge ${
+                        device.status.toLowerCase()
                       }`}
                     >
                       {device.status}
@@ -211,7 +242,7 @@ function Reports() {
 
         </div>
 
-      </div>
+      </section>
 
     </div>
   );
