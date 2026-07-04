@@ -20,7 +20,35 @@ const certificateSchema = new mongoose.Schema(
       ref: "WipeJob",
       required: true,
     },
+    manufacturer: {
+  type: String,
+  default: "",
+},
 
+modelNumber: {
+  type: String,
+  default: "",
+},
+
+owner: {
+  type: String,
+  default: "",
+},
+
+location: {
+  type: String,
+  default: "",
+},
+
+deviceType: {
+  type: String,
+  default: "",
+},
+
+storagePath: {
+  type: String,
+  default: "",
+},
     sanitizationStandard: {
       type: String,
       default: "NIST SP 800-88 Rev.1",

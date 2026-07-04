@@ -191,57 +191,39 @@ export const generateCertificate = async (req, res) => {
   }
 };
 
-export const verifyCertificate = async (
-  req,
-  res
-) => {
+export const verifyCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;
 
-    const certificate =
-      await Certificate.findOne({
-        certificateId,
-      }).populate("deviceId");
+    const certificate = await Certificate.findOne({
+      certificateId,
+    }).populate("deviceId");
 
     if (!certificate) {
       return res.status(404).json({
         status: "Invalid",
-        message:
-          "Certificate not found",
+        message: "Certificate not found",
       });
     }
 
+    const device = certificate.deviceId;
+
     return res.status(200).json({
-      // =================================
-      // CERTIFICATE DETAILS
-      // =================================
-      certificateId:
-        certificate.certificateId,
+      certificateId: certificate.certificateId,
+      jobId: certificate.jobId,
 
-      jobId:
-        certificate.jobId,
-
-      status:
+      status: certificate.verificationStatus,
+      verificationStatus:
         certificate.verificationStatus,
 
-      algorithm:
-        certificate.algorithm,
+      algorithm: certificate.algorithm,
 
       sanitizationStandard:
         certificate.sanitizationStandard,
 
-      createdAt:
-        certificate.createdAt,
+      createdAt: certificate.createdAt,
+      issuedAt: certificate.issuedAt,
 
-      issuedAt:
-        certificate.issuedAt,
-
-      wipeCompletedAt:
-        certificate.wipeCompletedAt,
-
-      // =================================
-      // VERIFICATION DATA
-      // =================================
       verificationMethod:
         certificate.verificationMethod,
 
@@ -250,9 +232,6 @@ export const verifyCertificate = async (
 
       verificationEvidenceHash:
         certificate.verificationEvidenceHash,
-
-      verificationStatus:
-        certificate.verificationStatus,
 
       wipedFiles:
         certificate.wipedFiles,
@@ -263,46 +242,65 @@ export const verifyCertificate = async (
       verificationFailures:
         certificate.verificationFailures,
 
-      remarks:
-        certificate.remarks || "",
-
-      // =================================
-      // DIGITAL SIGNATURE
-      // =================================
       signature:
         certificate.signature,
 
-      // =================================
-      // DEVICE DATA
-      // =================================
+      // quick fields
       deviceModel:
-        certificate.deviceId
-          ?.deviceName || "N/A",
+        device?.deviceName || "N/A",
 
       serialNumber:
-        certificate.deviceId
-          ?.serialNumber || "N/A",
+        device?.serialNumber || "N/A",
 
       storageType:
-        certificate.deviceId
-          ?.storageType || "N/A",
+        device?.storageType || "N/A",
 
       capacity:
-        certificate.deviceId
-          ?.capacity || "N/A",
+        device?.capacity || "N/A",
 
       location:
-        certificate.deviceId
-          ?.location || "N/A",
+        device?.location || "N/A",
+
+      // FULL DEVICE OBJECT
+      device: {
+        manufacturer:
+          device?.manufacturer || "N/A",
+
+        modelNumber:
+          device?.modelNumber || "N/A",
+
+        owner:
+          device?.owner || "N/A",
+
+        deviceType:
+          device?.deviceType || "N/A",
+
+        storagePath:
+          device?.storagePath || "N/A",
+
+        deviceName:
+          device?.deviceName || "N/A",
+
+        serialNumber:
+          device?.serialNumber || "N/A",
+
+        storageType:
+          device?.storageType || "N/A",
+
+        capacity:
+          device?.capacity || "N/A",
+
+        location:
+          device?.location || "N/A",
+      },
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      message:
-        "Internal Server Error",
-      error:
-        error.message,
+      message: "Internal Server Error",
+      error: error.message,
     });
   }
 };

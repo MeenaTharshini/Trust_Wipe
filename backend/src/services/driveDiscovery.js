@@ -1,87 +1,51 @@
-import fs from "fs";
-import path from "path";
+import os from "os";
+import { exec } from "child_process";
 
-/*
-=========================================
-RECURSIVE FILE DISCOVERY
-=========================================
-Returns every file inside a folder
-and all subfolders.
-=========================================
-*/
+export const discoverDrives = async () => {
+  const platform = os.platform();
 
-export const discoverFiles = (rootPath) => {
-  const files = [];
+  return new Promise((resolve, reject) => {
+    if (platform === "win32") {
+      exec(
+        `powershell "Get-PhysicalDisk | Select FriendlyName,SerialNumber,MediaType,Size | ConvertTo-Json"`,
+        (err, stdout) => {
+          if (err) return reject(err);
 
-  const scan = (currentPath) => {
-    if (!fs.existsSync(currentPath)) {
-      return;
-    }
+          try {
+            const disks = JSON.parse(stdout);
 
-    const items = fs.readdirSync(currentPath);
+            const list = Array.isArray(disks)
+              ? disks
+              : [disks];
 
-    for (const item of items) {
-      const fullPath = path.join(
-        currentPath,
-        item
+            resolve(
+              list.map((disk) => ({
+                deviceName:
+                  disk.FriendlyName,
+
+                serialNumber:
+                  disk.SerialNumber,
+
+                storageType:
+                  disk.MediaType,
+
+                capacity: (
+                  disk.Size /
+                  1024 /
+                  1024 /
+                  1024
+                ).toFixed(2) + " GB",
+              }))
+            );
+          } catch (e) {
+            reject(e);
+          }
+        }
       );
-
-      const stats =
-        fs.statSync(fullPath);
-
-      if (stats.isDirectory()) {
-        scan(fullPath);
-      } else {
-        files.push({
-          name: item,
-          path: fullPath,
-          size: stats.size,
-          extension:
-            path.extname(item),
-          createdAt:
-            stats.birthtime,
-          modifiedAt:
-            stats.mtime,
-        });
-      }
     }
-  };
 
-  scan(rootPath);
-
-  return files;
-};
-
-/*
-=========================================
-GET DIRECTORY STATISTICS
-=========================================
-*/
-
-export const getDirectoryStats = (
-  rootPath
-) => {
-  const discoveredFiles =
-    discoverFiles(rootPath);
-
-  const totalFiles =
-    discoveredFiles.length;
-
-  const totalBytes =
-    discoveredFiles.reduce(
-      (sum, file) =>
-        sum + file.size,
-      0
-    );
-
-  return {
-    totalFiles,
-    totalBytes,
-    totalMB: (
-      totalBytes /
-      1024 /
-      1024
-    ).toFixed(2),
-    files: discoveredFiles,
-  };
+    else {
+      resolve([]);
+    }
+  });
 };

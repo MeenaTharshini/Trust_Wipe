@@ -4,13 +4,27 @@ import Certificate from "../models/Certificate.js";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-
+import { wipeFile } from "../services/fileWipeService.js";
+import { getFilesFromFolder } from "../services/fileService.js";
 import { generateCertificate } from "../certificateEngine/generateCertificate.js";
 import { getIO } from "../socket/index.js";
 
-export const runWipeEngine = async (deviceId) => {
-  const io = getIO();
+/**
+ * Helper: emit safely
+ */
+const emitEvent = (event, data) => {
+  try {
+    const io = getIO();
+    io.emit(event, data);
+  } catch (err) {
+    console.error("Socket emit error:", err.message);
+  }
+};
 
+/**
+ * MAIN WIPE ENGINE
+ */
+export const runWipeEngine = async (deviceId) => {
   const device = await Device.findById(deviceId);
 
   if (!device) {
@@ -23,9 +37,12 @@ export const runWipeEngine = async (deviceId) => {
   });
 
   if (existingJob) {
-    throw new Error("Wipe already running");
+    throw new Error("Wipe already running for this device");
   }
 
+  // ==============================
+  // CREATE JOB
+  // ==============================
   const job = await WipeJob.create({
     deviceId,
     algorithm: "NIST 800-88 Clear",
@@ -34,11 +51,7 @@ export const runWipeEngine = async (deviceId) => {
     verificationStatus: "Pending",
     totalFiles: 0,
     wipedFiles: 0,
-    events: [
-      {
-        message: "Secure wipe process started",
-      },
-    ],
+    events: [{ message: "Secure wipe process started" }],
     startedAt: new Date(),
   });
 
@@ -47,45 +60,211 @@ export const runWipeEngine = async (deviceId) => {
     currentJobId: job._id,
   });
 
-  io.emit("device-updated");
-  io.emit("wipe-progress", job.toObject());
+  emitEvent("device-updated");
+  emitEvent("wipe-progress", job.toObject());
 
   try {
-    const files = device.files || [];
-
-if (files.length === 0) {
-  throw new Error(
-    "No virtual files found for device"
-  );
+    if (!device.storagePath) {
+  throw new Error("No storage path configured");
 }
-    console.log("FILES FOUND:", files);
+
+const files = getFilesFromFolder(
+  device.storagePath
+);
+
+if (!files.length) {
+  console.log(
+    "No files found. Continuing verification."
+  );
+
+  job.totalFiles = 0;
+  job.wipedFiles = 0;
+
+  job.events.push({
+    message:
+      "Folder scanned successfully. No files found for sanitization.",
+  });
+
+  await job.save();
+
+  const evidence = [];
+
+  const evidenceHash = crypto
+    .createHash("sha256")
+    .update(JSON.stringify(evidence))
+    .digest("hex");
+
+  const verificationHash = crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify({
+        deviceId: device._id.toString(),
+        serialNumber: device.serialNumber,
+        timestamp: new Date().toISOString(),
+      })
+    )
+    .digest("hex");
+
+  job.verificationHash = verificationHash;
+  job.verificationEvidenceHash =
+    evidenceHash;
+
+  job.verifiedFiles = 0;
+  job.verificationFailures = 0;
+
+  job.verificationMethod =
+    "Folder Scan Verification";
+
+  job.verificationStatus = "VERIFIED";
+
+  job.verificationResult =
+    "Folder was scanned successfully. No files were found.";
+
+  job.progress = 100;
+  job.status = "completed";
+  job.completedAt = new Date();
+
+  await job.save();
+
+  const privateKey = fs.readFileSync(
+    path.resolve("private.pem"),
+    "utf8"
+  );
+
+  const signer = crypto.createSign(
+    "RSA-SHA256"
+  );
+
+  signer.update(verificationHash);
+  signer.end();
+
+  const signature = signer.sign(
+    privateKey,
+    "base64"
+  );
+
+  const certificate =
+    await Certificate.create({
+      certificateId: `TW-${Date.now()}`,
+      deviceId: device._id,
+      jobId: job._id,
+
+      sanitizationStandard:
+        "NIST SP 800-88 Rev.1",
+
+      algorithm: job.algorithm,
+
+      verificationMethod:
+        "Folder Scan Verification",
+
+      verificationHash,
+      verificationEvidenceHash:
+        evidenceHash,
+
+      verificationStatus:
+        "VERIFIED",
+
+      wipedFiles: 0,
+      verifiedFiles: 0,
+      verificationFailures: 0,
+
+      signature,
+
+      remarks:
+        "No files were present in the selected folder.",
+
+      // DEVICE DATA
+deviceModel:
+  certificate.deviceId?.deviceName || "N/A",
+
+serialNumber:
+  certificate.deviceId?.serialNumber || "N/A",
+
+storageType:
+  certificate.deviceId?.storageType || "N/A",
+
+capacity:
+  certificate.deviceId?.capacity || "N/A",
+
+location:
+  certificate.deviceId?.location || "N/A",
+
+device: {
+  deviceName:
+    certificate.deviceId?.deviceName || "",
+
+  manufacturer:
+    certificate.deviceId?.manufacturer || "",
+
+  modelNumber:
+    certificate.deviceId?.modelNumber || "",
+
+  serialNumber:
+    certificate.deviceId?.serialNumber || "",
+
+  owner:
+    certificate.deviceId?.owner || "",
+
+  location:
+    certificate.deviceId?.location || "",
+
+  deviceType:
+    certificate.deviceId?.deviceType || "",
+
+  storageType:
+    certificate.deviceId?.storageType || "",
+
+  capacity:
+    certificate.deviceId?.capacity || "",
+
+  storagePath:
+    certificate.deviceId?.storagePath || "",
+},
+
+      verificationConfidence: 100,
+    });
+
+  await generateCertificate(
+    certificate,
+    device
+  );
+
+  await Device.findByIdAndUpdate(
+    device._id,
+    {
+      status: "Completed",
+    }
+  );
+
+  emitEvent("device-updated");
+
+  return job;
+}
 
     job.totalFiles = files.length;
     await job.save();
 
-    const totalFiles = files.length || 1;
+    // ==============================
+    // WIPE PHASE (SIMULATED FOR NOW)
+    // ==============================
     let processed = 0;
 
     job.progress = 10;
     await job.save();
-
-    io.emit("wipe-progress", job.toObject());
-
-    // ==================================
-    // WIPE FILES
-    // ==================================
+    emitEvent("wipe-progress", job.toObject());
 
     for (const file of files) {
-
   console.log(
-    "START WIPE:",
-    file.fileName
+    `🔥 WIPING FILE: ${file.fileName}`
   );
 
-  // Simulate secure wipe
-  await new Promise(resolve =>
-    setTimeout(resolve, 1000)
+  const result = await wipeFile(
+    file.path
   );
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
   processed++;
 
@@ -94,7 +273,7 @@ if (files.length === 0) {
   job.progress =
     10 +
     Math.floor(
-      (processed / totalFiles) * 70
+      (processed / files.length) * 70
     );
 
   job.events.push({
@@ -103,283 +282,234 @@ if (files.length === 0) {
 
   await job.save();
 
-  io.emit(
+  emitEvent(
     "wipe-progress",
     job.toObject()
   );
 }
 
-   // ==================================
-// ADVANCED VERIFICATION
-// ==================================
+    // ==============================
+    // VERIFICATION PHASE
+    // ==============================
+    job.progress = 85;
+    job.events.push({
+      message: "Performing post-wipe verification",
+    });
 
-job.progress = 85;
+    await job.save();
+    emitEvent("wipe-progress", job.toObject());
 
-job.events.push({
-  message: "Performing advanced post-wipe verification",
-});
+    const evidence = [];
 
-await job.save();
+    let verifiedFiles = 0;
+    let verificationFailures = 0;
 
-io.emit(
-  "wipe-progress",
-  job.toObject()
-);
+    for (const file of files) {
+  const exists = fs.existsSync(file.path);
 
-let verifiedFiles = 0;
-let verificationFailures = 0;
+  if (exists) {
+    verificationFailures++;
 
-const evidence = [];
+    evidence.push({
+      file: file.fileName,
+      path: file.path,
+      verified: false,
+    });
+  } else {
+    verifiedFiles++;
 
-for (const file of files) {
+    evidence.push({
+      file: file.fileName,
+      path: file.path,
+      verified: true,
+    });
+  }
+}
 
-  const result = {
-    verified: true,
-    hash: crypto
+    const evidenceHash = crypto
       .createHash("sha256")
-      .update(file.fileName)
-      .digest("hex"),
-    size: file.fileSize,
-  };
+      .update(JSON.stringify(evidence))
+      .digest("hex");
 
-  evidence.push({
-    file: file.fileName,
-    verified: result.verified,
-    hash: result.hash,
-    size: result.size,
-  });
+    const verificationData = {
+      deviceId: device._id.toString(),
+      serialNumber: device.serialNumber,
+      algorithm: job.algorithm,
+      verifiedFiles,
+      verificationFailures,
+      evidenceHash,
+      timestamp: new Date().toISOString(),
+    };
 
-  verifiedFiles++;
-}
+    const verificationHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(verificationData))
+      .digest("hex");
 
-const verificationEvidenceHash = crypto
-  .createHash("sha256")
-  .update(JSON.stringify(evidence))
-  .digest("hex");
+    job.verificationHash = verificationHash;
+    job.verificationEvidenceHash = evidenceHash;
+    job.verifiedFiles = verifiedFiles;
+    job.verificationFailures = verificationFailures;
+    job.verificationBlocksChecked = verifiedFiles;
+    job.verificationMethod = "SHA-256 Evidence Validation";
 
-const verificationData = {
-  deviceId: device._id.toString(),
-  serialNumber: device.serialNumber,
-  algorithm: "NIST SP 800-88 Clear",
-  verifiedFiles,
-  verificationFailures,
-  evidenceHash: verificationEvidenceHash,
-  timestamp: new Date().toISOString(),
-};
+    job.verificationStatus =
+      verificationFailures === 0 ? "VERIFIED" : "FAILED";
 
-const verificationHash = crypto
-  .createHash("sha256")
-  .update(JSON.stringify(verificationData))
-  .digest("hex");
+    job.verificationResult =
+      verificationFailures === 0
+        ? `${verifiedFiles} files verified successfully`
+        : `${verificationFailures} verification failures`;
 
-job.verificationHash = verificationHash;
+    job.progress = 90;
+    job.events.push({ message: job.verificationResult });
 
-job.verificationEvidenceHash =
-  verificationEvidenceHash;
+    await job.save();
+    emitEvent("wipe-progress", job.toObject());
 
-job.verifiedFiles =
-  verifiedFiles;
+    // ==============================
+    // DIGITAL SIGNATURE
+    // ==============================
+    const privateKey = fs.readFileSync(
+      path.resolve("private.pem"),
+      "utf8"
+    );
 
-job.verificationFailures =
-  verificationFailures;
+    const signer = crypto.createSign("RSA-SHA256");
+    signer.update(verificationHash);
+    signer.end();
 
-job.verificationBlocksChecked =
-  verifiedFiles;
+    const signature = signer.sign(privateKey, "base64");
 
-job.verificationMethod =
-  "Content Validation + SHA-256 Evidence Hash";
-
-if (verificationFailures === 0) {
-
-  job.verificationStatus =
-    "VERIFIED";
-
-  job.verificationResult =
-    `${verifiedFiles} files successfully verified`;
-
-} else {
-
-  job.verificationStatus =
-    "FAILED";
-
-  job.verificationResult =
-    `${verificationFailures} files failed verification`;
-
-}
-
-job.progress = 90;
-
-job.events.push({
-  message:
-    job.verificationResult,
-});
-
-await job.save();
-
-io.emit(
-  "wipe-progress",
-  job.toObject()
-);
-// ==================================
-// DIGITAL SIGNATURE
-// ==================================
-
-const privateKey =
-  fs.readFileSync(
-    path.resolve(
-      "private.pem"
-    ),
-    "utf8"
-  );
-
-const signer =
-  crypto.createSign(
-    "RSA-SHA256"
-  );
-
-signer.update(
-  verificationHash
-);
-
-signer.end();
-
-const signature =
-  signer.sign(
-    privateKey,
-    "base64"
-  );
-
-// ==================================
-// CERTIFICATE
-// ==================================
-
-const certificate = await Certificate.create({
+    // ==============================
+    // CERTIFICATE CREATION
+    // ==============================
+    const certificate = await Certificate.create({
   certificateId: `TW-${Date.now()}`,
 
   deviceId: device._id,
-
   jobId: job._id,
 
-  sanitizationStandard:
-    "NIST SP 800-88 Rev.1",
+  sanitizationStandard: "NIST SP 800-88 Rev.1",
+  algorithm: job.algorithm,
 
-  algorithm:
-    "NIST SP 800-88 Clear",
+  verificationMethod: job.verificationMethod,
 
-  verificationMethod:
-    job.verificationMethod,
+  verificationHash,
+  verificationEvidenceHash: evidenceHash,
 
-  verificationHash:
-    job.verificationHash,
+  verificationStatus: job.verificationStatus,
 
-  verificationEvidenceHash:
-    job.verificationEvidenceHash,
-
-  verificationStatus:
-    job.verificationStatus,
-
-  wipedFiles:
-    job.wipedFiles,
-
-  verifiedFiles:
-    job.verifiedFiles,
-
-  verificationFailures:
-    job.verificationFailures,
+  wipedFiles: job.wipedFiles || 0,
+  verifiedFiles: job.verifiedFiles || 0,
+  verificationFailures: job.verificationFailures || 0,
 
   signature,
 
-  wipeCompletedAt:
-    new Date(),
+  issuedAt: new Date(),
+  wipeCompletedAt: new Date(),
 
-  remarks:
-    job.verificationResult,
+  remarks: job.verificationResult,
 
   deviceModel:
-    device.deviceName,
+  device.deviceName || "N/A",
 
-  storageType:
-    device.storageType,
+serialNumber:
+  device.serialNumber || "N/A",
 
-  capacity:
-    device.capacity,
+storageType:
+  device.storageType || "N/A",
+
+capacity:
+  device.capacity || "N/A",
+
+location:
+  device.location || "N/A",
+
+device: {
+  deviceName:
+    device.deviceName || "",
+
+  manufacturer:
+    device.manufacturer || "",
+
+  modelNumber:
+    device.modelNumber || "",
 
   serialNumber:
-    device.serialNumber,
+    device.serialNumber || "",
+
+  owner:
+    device.owner || "",
+
+  location:
+    device.location || "",
+
+  deviceType:
+    device.deviceType || "",
+
+  storageType:
+    device.storageType || "",
+
+  capacity:
+    device.capacity || "",
+
+  storagePath:
+    device.storagePath || "",
+},
 
   verificationConfidence:
-    verificationFailures === 0 ? 100 : 0,
+    verificationFailures === 0
+      ? 100
+      : 0,
 });
 
-job.certificateId =
-  certificate.certificateId;
+    await generateCertificate(certificate, device);
 
-await job.save();
+    job.certificateId = certificate.certificateId;
+    await job.save();
 
     console.log("PDF GENERATED");
 
-    // ==================================
-    // COMPLETE
-    // ==================================
-
+    // ==============================
+    // COMPLETION
+    // ==============================
     job.progress = 100;
-
     job.status = "completed";
-
     job.completedAt = new Date();
 
     job.duration = Math.floor(
       (job.completedAt - job.startedAt) / 1000
     );
 
-    job.events.push({
-      message: "Certificate generated",
-    });
+    job.events.push({ message: "Certificate generated" });
 
     await job.save();
 
-    await Device.findByIdAndUpdate(
-      deviceId,
-      {
-        status: "Completed",
-      }
-    );
+    await Device.findByIdAndUpdate(deviceId, {
+      status: "Completed",
+    });
 
-    io.emit(
-      "wipe-progress",
-      job.toObject()
-    );
-
-    io.emit("device-updated");
+    emitEvent("wipe-progress", job.toObject());
+    emitEvent("device-updated");
 
     console.log("WIPE COMPLETED");
 
     return job;
-
   } catch (err) {
-    console.error(
-      "WIPE ENGINE ERROR:",
-      err
-    );
+    console.error("WIPE ENGINE ERROR:", err.message);
 
     job.status = "failed";
     job.failureReason = err.message;
 
     await job.save();
 
-    await Device.findByIdAndUpdate(
-      deviceId,
-      {
-        status: "Failed",
-      }
-    );
+    await Device.findByIdAndUpdate(deviceId, {
+      status: "Failed",
+    });
 
-    io.emit(
-      "wipe-progress",
-      job.toObject()
-    );
-
-    io.emit("device-updated");
+    emitEvent("wipe-progress", job.toObject());
+    emitEvent("device-updated");
 
     throw err;
   }

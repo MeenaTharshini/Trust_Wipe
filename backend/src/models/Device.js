@@ -25,13 +25,42 @@ const deviceSchema = new mongoose.Schema(
 
     location: {
       type: String,
-      default: "N/A",
+      default: "",
+    },
+
+    owner: {
+      type: String,
+      default: "",
+    },
+
+    manufacturer: {
+      type: String,
+      default: "",
+    },
+
+    modelNumber: {
+      type: String,
+      default: "",
+    },
+
+    deviceType: {
+      type: String,
+      default: "",
+    },
+
+    // IMPORTANT
+    storagePath: {
+      type: String,
+      default: "",
     },
 
     files: [
       {
         fileName: String,
         fileSize: String,
+
+        path: String,
+
         status: {
           type: String,
           default: "Pending",
@@ -41,7 +70,12 @@ const deviceSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "Wiping", "Completed", "Failed"],
+      enum: [
+        "Pending",
+        "Wiping",
+        "Completed",
+        "Failed",
+      ],
       default: "Pending",
     },
 
@@ -56,4 +90,7 @@ const deviceSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Device", deviceSchema);
+export default mongoose.model(
+  "Device",
+  deviceSchema
+);

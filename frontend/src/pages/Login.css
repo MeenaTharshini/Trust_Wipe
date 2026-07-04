@@ -1,0 +1,384 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Inter",sans-serif;
+}
+
+body{
+  background:#020617;
+}
+
+.login-page{
+  min-height:100vh;
+  display:flex;
+
+  background:
+  radial-gradient(
+    circle at top left,
+    rgba(56,189,248,.15),
+    transparent 30%
+  ),
+  linear-gradient(
+    135deg,
+    #020617,
+    #0f172a
+  );
+}
+
+/* LEFT SIDE */
+
+.left-panel{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:80px;
+}
+
+.brand-content{
+  max-width:650px;
+}
+
+.brand-logo{
+  width:90px;
+  height:90px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:42px;
+
+  border-radius:24px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #38bdf8,
+    #0ea5e9
+  );
+
+  margin-bottom:25px;
+}
+
+.brand-content h1{
+  font-size:5rem;
+  font-weight:900;
+
+  color:#38bdf8;
+
+  margin-bottom:20px;
+}
+
+.brand-content p{
+  color:#94a3b8;
+
+  font-size:1.2rem;
+
+  line-height:1.9;
+
+  margin-bottom:40px;
+}
+.options label{
+    color:#94a3b8;
+}
+.feature-list{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.feature{
+  color:#e2e8f0;
+
+  padding-bottom:14px;
+
+  border-bottom:
+  1px solid rgba(
+    255,
+    255,
+    255,
+    .05
+  );
+}
+
+/* RIGHT SIDE */
+
+.right-panel{
+  width:650px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:40px;
+}
+
+/* LOGIN CARD */
+
+.login-card{
+  width:100%;
+  max-width:550px;
+
+  background:
+  rgba(15,23,42,.8);
+
+  backdrop-filter:
+  blur(18px);
+
+  border:
+  1px solid rgba(
+    255,
+    255,
+    255,
+    .08
+  );
+
+  border-radius:30px;
+
+  padding:45px;
+
+  animation:
+  fadeIn .5s ease;
+
+  box-shadow:
+  0 25px 60px
+  rgba(0,0,0,.45);
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:
+    translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:
+    translateY(0);
+  }
+}
+
+.card-header{
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.small-logo{
+  width:80px;
+  height:80px;
+
+  margin:auto;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  border-radius:20px;
+
+  font-size:38px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #38bdf8,
+    #0ea5e9
+  );
+
+  margin-bottom:15px;
+}
+
+.card-header h2{
+  font-size:2rem;
+  margin-bottom:10px;
+  color:#94a3b8;
+}
+
+.card-header p{
+  color:#94a3b8;
+}
+
+/* INPUTS */
+
+.input-group{
+  margin-bottom:20px;
+}
+
+.input-group label{
+  display:block;
+  margin-bottom:8px;
+  color:#cbd5e1;
+}
+
+.input-group input{
+  width:100%;
+
+  padding:15px;
+
+  border-radius:14px;
+
+  border:
+  1px solid #334155;
+
+  background:#081121;
+
+  color:white;
+
+  transition:.3s;
+}
+
+.input-group input:focus{
+  outline:none;
+
+  border-color:#38bdf8;
+
+  box-shadow:
+  0 0 0 4px
+  rgba(
+    56,
+    189,
+    248,
+    .15
+  );
+}
+
+/* PASSWORD */
+
+.password-wrapper{
+  position:relative;
+}
+
+.eye-btn{
+  position:absolute;
+
+  right:12px;
+  top:50%;
+
+  transform:
+  translateY(-50%);
+
+  border:none;
+
+  background:none;
+
+  cursor:pointer;
+
+  font-size:18px;
+}
+
+/* OPTIONS */
+
+.options{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-bottom:25px;
+}
+
+.options a{
+  color:#38bdf8;
+  text-decoration:none;
+}
+
+/* BUTTON */
+
+.login-btn{
+  width:100%;
+
+  height:60px;
+
+  border:none;
+
+  border-radius:16px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #38bdf8,
+    #0ea5e9
+  );
+
+  color:white;
+
+  font-size:17px;
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.3s;
+}
+
+.login-btn:hover{
+  transform:
+  translateY(-2px);
+
+  box-shadow:
+  0 10px 25px
+  rgba(
+    56,
+    189,
+    248,
+    .35
+  );
+}
+
+/* MESSAGES */
+
+.error-box{
+  background:
+  rgba(
+    239,
+    68,
+    68,
+    .15
+  );
+
+  color:#fca5a5;
+
+  padding:14px;
+
+  border-radius:12px;
+
+  margin-bottom:20px;
+}
+
+.trust-section{
+  margin-top:18px;
+
+  text-align:center;
+
+  color:#94a3b8;
+
+  font-size:13px;
+}
+
+.register-link{
+  text-align:center;
+
+  margin-top:25px;
+
+  color:#94a3b8;
+}
+
+.register-link a{
+  color:#38bdf8;
+  margin-left:5px;
+  text-decoration:none;
+}
+
+/* MOBILE */
+
+@media(max-width:1000px){
+
+  .left-panel{
+    display:none;
+  }
+
+  .right-panel{
+    width:100%;
+  }
+}

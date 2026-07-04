@@ -1,35 +1,24 @@
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
+import QRCode from "qrcode";
 
-function infoBox(
-  doc,
-  x,
-  y,
-  w,
-  h,
-  label,
-  value
-) {
+function box(doc, x, y, w, h, title, value) {
   doc
-    .roundedRect(x, y, w, h, 5)
+    .roundedRect(x, y, w, h, 6)
     .lineWidth(1)
     .stroke("#d1d5db");
 
   doc
     .fontSize(8)
     .fillColor("#64748b")
-    .text(label, x + 8, y + 8);
+    .text(title, x + 8, y + 8);
 
   doc
     .fontSize(11)
     .fillColor("#111827")
     .text(
-      value !== undefined &&
-        value !== null &&
-        value !== ""
-        ? String(value)
-        : "N/A",
+      value || "N/A",
       x + 8,
       y + 24,
       {
@@ -42,15 +31,10 @@ export const generateCertificate = async (
   certificate,
   device
 ) => {
-  if (
-    !fs.existsSync("certificates")
-  ) {
-    fs.mkdirSync(
-      "certificates",
-      {
-        recursive: true,
-      }
-    );
+  if (!fs.existsSync("certificates")) {
+    fs.mkdirSync("certificates", {
+      recursive: true,
+    });
   }
 
   const pdfPath = path.join(
@@ -63,13 +47,11 @@ export const generateCertificate = async (
     margin: 30,
   });
 
-  doc.pipe(
-    fs.createWriteStream(pdfPath)
-  );
+  doc.pipe(fs.createWriteStream(pdfPath));
 
-  // ==================================================
+  //------------------------------------------------
   // HEADER
-  // ==================================================
+  //------------------------------------------------
 
   doc
     .fontSize(22)
@@ -81,7 +63,7 @@ export const generateCertificate = async (
       }
     );
 
-  doc.moveDown(0.3);
+  doc.moveDown(0.4);
 
   doc
     .fontSize(16)
@@ -93,27 +75,27 @@ export const generateCertificate = async (
       }
     );
 
-  doc.moveDown(0.5);
+  doc.moveDown(0.4);
 
   doc
     .fontSize(9)
     .fillColor("#4b5563")
     .text(
-      "This certificate confirms the secure, irreversible and cryptographically verified destruction of digital data in compliance with international security standards.",
+      "Secure and cryptographically verified destruction of digital information.",
       {
         align: "center",
       }
     );
 
-  // ==================================================
+  //------------------------------------------------
   // VERIFIED BADGE
-  // ==================================================
+  //------------------------------------------------
 
   doc
     .roundedRect(
-      240,
-      100,
-      120,
+      230,
+      105,
+      140,
       35,
       8
     )
@@ -123,304 +105,244 @@ export const generateCertificate = async (
     );
 
   doc
-    .fillColor("#15803d")
     .fontSize(14)
+    .fillColor("#15803d")
     .text(
-      certificate.verificationStatus ||
-        "VERIFIED",
-      270,
-      112
+      certificate.verificationStatus,
+      255,
+      117
     );
 
-  doc.moveTo(30, 155);
-  doc.lineTo(565, 155);
-  doc.stroke("#d1d5db");
-
-  // ==================================================
-  // CERTIFICATION STATEMENT
-  // ==================================================
-
-  doc
-    .fontSize(13)
-    .fillColor("#111827")
-    .text(
-      "1. Certification Statement",
-      30,
-      175
-    );
-
-  doc
-    .fontSize(10)
-    .fillColor("#374151")
-    .text(
-      "The referenced digital asset has undergone secure sanitization using TrustWipe verified destruction protocols ensuring irreversible data erasure.",
-      30,
-      195,
-      {
-        width: 520,
-      }
-    );
-
-  // ==================================================
+  //------------------------------------------------
   // CERTIFICATE DETAILS
-  // ==================================================
+  //------------------------------------------------
 
   doc
-    .fontSize(13)
+    .fontSize(14)
     .fillColor("#111827")
     .text(
-      "2. Certificate Details",
+      "Certificate Details",
       30,
-      240
+      170
     );
 
-  infoBox(
+  box(
     doc,
     30,
-    265,
+    200,
     250,
-    50,
+    55,
     "Certificate ID",
     certificate.certificateId
   );
 
-  infoBox(
+  box(
     doc,
     300,
-    265,
+    200,
     250,
-    50,
-    "Job Reference",
+    55,
+    "Job ID",
     certificate.jobId?.toString()
   );
 
-  infoBox(
+  box(
     doc,
     30,
-    325,
+    270,
     250,
-    50,
-    "Status",
-    certificate.verificationStatus
-  );
-
-  infoBox(
-    doc,
-    300,
-    325,
-    250,
-    50,
+    55,
     "Algorithm",
     certificate.algorithm
   );
 
-  infoBox(
+  box(
+    doc,
+    300,
+    270,
+    250,
+    55,
+    "Standard",
+    certificate.sanitizationStandard
+  );
+
+  box(
     doc,
     30,
-    385,
+    340,
     250,
-    50,
+    55,
     "Issue Date",
     new Date(
-      certificate.issuedAt
+      certificate.createdAt
     ).toLocaleString()
   );
 
-  infoBox(
+  box(
     doc,
     300,
-    385,
+    340,
     250,
-    50,
+    55,
     "Authority",
     "TrustWipe Security Authority"
   );
 
-  // ==================================================
-  // DEVICE INFORMATION
-  // ==================================================
+  //------------------------------------------------
+  // DEVICE DETAILS
+  //------------------------------------------------
 
   doc
-    .fontSize(13)
-    .fillColor("#111827")
+    .fontSize(14)
     .text(
-      "3. Device Information",
+      "Device Information",
       30,
-      455
+      430
     );
 
-  infoBox(
+  box(
     doc,
     30,
-    480,
+    460,
     250,
-    50,
-    "Device Model",
-    device?.deviceName
+    55,
+    "Device Name",
+    device.deviceName
   );
 
-  infoBox(
+  box(
     doc,
     300,
-    480,
+    460,
     250,
-    50,
+    55,
     "Serial Number",
-    device?.serialNumber
+    device.serialNumber
   );
 
-  infoBox(
+  box(
     doc,
     30,
-    540,
+    530,
     250,
-    50,
-    "Storage Type",
-    device?.storageType
-  );
-
-  infoBox(
-    doc,
-    300,
-    540,
-    250,
-    50,
-    "Capacity",
-    `${device?.capacity || "N/A"} GB`
-  );
-
-  infoBox(
-    doc,
-    30,
-    600,
-    250,
-    50,
+    55,
     "Manufacturer",
-    device?.manufacturer
+    device.manufacturer
   );
 
-  infoBox(
+  box(
+    doc,
+    300,
+    530,
+    250,
+    55,
+    "Model Number",
+    device.modelNumber
+  );
+
+  box(
+    doc,
+    30,
+    600,
+    250,
+    55,
+    "Storage Type",
+    device.storageType
+  );
+
+  box(
     doc,
     300,
     600,
     250,
-    50,
-    "Sanitization Standard",
-    certificate.sanitizationStandard
+    55,
+    "Capacity",
+    device.capacity
   );
 
-  // ==================================================
-  // NEW PAGE
-  // ==================================================
+  //------------------------------------------------
+  // PAGE 2
+  //------------------------------------------------
 
   doc.addPage();
-
-  // ==================================================
-  // VERIFICATION SUMMARY
-  // ==================================================
 
   doc
     .fontSize(18)
     .fillColor("#111827")
     .text(
-      "4. Verification Summary",
+      "Verification Summary",
       30,
       40
     );
 
-  infoBox(
+  box(
     doc,
     30,
     80,
     160,
     60,
     "Files Wiped",
-    certificate.wipedFiles || 0
+    certificate.wipedFiles
   );
 
-  infoBox(
+  box(
     doc,
     210,
     80,
     160,
     60,
     "Files Verified",
-    certificate.verifiedFiles || 0
+    certificate.verifiedFiles
   );
 
-  infoBox(
+  box(
     doc,
     390,
     80,
     160,
     60,
     "Verification Failures",
-    certificate.verificationFailures ||
-      0
+    certificate.verificationFailures
   );
 
-  infoBox(
+  box(
     doc,
     30,
-    160,
+    170,
     520,
     60,
     "Verification Method",
     certificate.verificationMethod
   );
 
-  // ==================================================
-  // COMPLIANCE
-  // ==================================================
-
-  doc
-    .fontSize(18)
-    .text(
-      "5. Compliance Standards",
-      30,
-      250
-    );
-
-  doc
-    .fontSize(11)
-    .text(
-      "• NIST SP 800-88 Rev.1"
-    );
-
-  doc.text("• ISO 27001");
-  doc.text("• GDPR");
-  doc.text("• HIPAA");
-  doc.text("• DoD 5220.22-M");
-
-  // ==================================================
+  //------------------------------------------------
   // HASHES
-  // ==================================================
+  //------------------------------------------------
 
   doc
-    .fontSize(18)
+    .fontSize(16)
     .text(
-      "6. Cryptographic Evidence",
+      "Cryptographic Evidence",
       30,
-      360
+      270
     );
 
   doc
     .fontSize(10)
     .fillColor("#111827")
     .text(
-      "Verification Hash:",
+      "Verification Hash",
       30,
-      395
+      305
     );
 
   doc
     .fontSize(8)
     .fillColor("#16a34a")
     .text(
-      certificate.verificationHash ||
-        "Not Available",
+      certificate.verificationHash,
       30,
-      415,
+      325,
       {
         width: 520,
       }
@@ -430,108 +352,91 @@ export const generateCertificate = async (
     .fontSize(10)
     .fillColor("#111827")
     .text(
-      "Evidence Hash:",
+      "Evidence Hash",
       30,
-      470
+      400
     );
 
   doc
     .fontSize(8)
     .fillColor("#16a34a")
     .text(
-      certificate.verificationEvidenceHash ||
-        "Not Available",
+      certificate.verificationEvidenceHash,
       30,
-      490,
+      420,
       {
         width: 520,
       }
     );
 
-  // ==================================================
-  // DIGITAL SIGNATURE
-  // ==================================================
+  //------------------------------------------------
+  // SIGNATURE
+  //------------------------------------------------
 
   doc
-    .fontSize(18)
+    .fontSize(16)
     .fillColor("#111827")
     .text(
-      "7. Digital Signature",
+      "Digital Signature",
       30,
-      560
+      510
     );
 
   doc
     .fontSize(7)
-    .fillColor("#111827")
     .text(
-      certificate.signature ||
-        "No Signature",
+      certificate.signature,
       30,
-      590,
+      540,
       {
         width: 520,
       }
     );
 
-  doc
-    .fontSize(9)
-    .fillColor("#4b5563")
-    .text(
-      "RSA-SHA256 digital signature used for tamper-proof validation and certificate authenticity.",
-      30,
-      660
+  //------------------------------------------------
+  // QR CODE
+  //------------------------------------------------
+
+  try {
+    const qr = await QRCode.toDataURL(
+      `http://localhost:5173/verify/${certificate.certificateId}`
     );
 
-  // ==================================================
-  // FOOTER
-  // ==================================================
+    doc.image(qr, 420, 610, {
+      width: 100,
+    });
 
-  doc.moveTo(30, 730);
-  doc.lineTo(565, 730);
-  doc.stroke("#d1d5db");
+    doc
+      .fontSize(9)
+      .text(
+        "Scan to Verify",
+        430,
+        720
+      );
+  } catch (err) {
+    console.log(
+      "QR generation failed"
+    );
+  }
+
+  //------------------------------------------------
+  // FOOTER
+  //------------------------------------------------
 
   doc
-    .fontSize(11)
+    .fontSize(10)
     .fillColor("#111827")
     .text(
       "Chief Verification Officer",
       30,
-      745
+      730
     );
 
-  doc
-    .fontSize(9)
-    .text(
-      "TrustWipe Security Authority",
-      30,
-      760
-    );
-
-  doc
-    .fontSize(11)
-    .fillColor("#16a34a")
-    .text(
-      "✓ Cryptographically Verified",
-      350,
-      745
-    );
-
-  doc
-    .fontSize(9)
-    .fillColor("#111827")
-    .text(
-      `Certificate ID: ${certificate.certificateId}`,
-      350,
-      760
-    );
-
-  doc
-    .text(
-      "Generated by TrustWipe System",
-      350,
-      775
-    );
+  doc.text(
+    "TrustWipe Security Authority",
+    30,
+    745
+  );
 
   doc.end();
 

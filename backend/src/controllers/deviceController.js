@@ -1,6 +1,45 @@
 import Device from "../models/Device.js";
+import { discoverDrives } from "../services/driveDiscovery.js";
 
+// =====================================
+// AUTO DISCOVER DRIVES
+// =====================================
+
+export const autoDiscoverDevices = async (req, res) => {
+  try {
+    const drives = await discoverDrives();
+
+    const formattedDrives = drives.map((drive, index) => ({
+      deviceName: drive.deviceName || `Drive ${index}`,
+      serialNumber:
+        drive.mount ||
+        drive.serialNumber ||
+        `AUTO-${Date.now()}-${index}`,
+      storageType: drive.storageType || "Unknown",
+      capacity: drive.capacity || "Unknown",
+      location: "",
+      status: "Pending",
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "Drives discovered successfully",
+      devices: formattedDrives,
+    });
+  } catch (err) {
+    console.error("DISCOVERY ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// =====================================
 // CREATE DEVICE
+// =====================================
+
 export const createDevice = async (req, res) => {
   try {
     const {
@@ -9,7 +48,23 @@ export const createDevice = async (req, res) => {
       storageType,
       capacity,
       location,
+      manufacturer,
+      modelNumber,
+      owner,
+      deviceType,
+      storagePath,
     } = req.body;
+
+    const existing = await Device.findOne({
+      serialNumber,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Device already exists",
+      });
+    }
 
     const device = await Device.create({
       deviceName,
@@ -17,71 +72,143 @@ export const createDevice = async (req, res) => {
       storageType,
       capacity,
       location,
+      manufacturer,
+      modelNumber,
+      owner,
+      deviceType,
+      storagePath,
 
       files: [
         {
-          fileName: "employee_records.db",
-          fileSize: "2.4 GB",
-        },
-        {
-          fileName: "finance_backup.zip",
-          fileSize: "5.7 GB",
-        },
-        {
-          fileName: "customer_data.xlsx",
-          fileSize: "350 MB",
-        },
-        {
-          fileName: "archive_2025.tar",
-          fileSize: "1.1 GB",
+          fileName: storagePath
+            ? storagePath.split("\\").pop()
+            : "Unknown",
+
+          fileSize: "Unknown",
+
+          path: storagePath,
+
+          status: "Pending",
         },
       ],
 
       status: "Pending",
     });
 
-    res.status(201).json(device);
+    res.status(201).json({
+      success: true,
+      device,
+    });
   } catch (err) {
+    console.error(err);
+
     res.status(500).json({
+      success: false,
       message: err.message,
     });
   }
 };
 
-// GET DEVICES
+// =====================================
+// GET ALL DEVICES
+// =====================================
+
 export const getDevices = async (req, res) => {
   try {
     const devices = await Device.find().sort({
       createdAt: -1,
     });
 
-    res.json(devices);
+    res.status(200).json(devices);
   } catch (err) {
     res.status(500).json({
+      success: false,
       message: err.message,
     });
   }
 };
 
-// DELETE DEVICE
-export const deleteDevice = async (req, res) => {
+// =====================================
+// GET DEVICE BY ID
+// =====================================
+
+export const getDeviceById = async (req, res) => {
   try {
-    const device =
-      await Device.findByIdAndDelete(
-        req.params.id
-      );
+    const device = await Device.findById(req.params.id);
 
     if (!device) {
       return res.status(404).json({
+        success: false,
         message: "Device not found",
       });
     }
 
-    res.json({
+    res.status(200).json(device);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// =====================================
+// UPDATE DEVICE
+// =====================================
+
+export const updateDevice = async (req, res) => {
+  try {
+    const device = await Device.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
+    if (!device) {
+      return res.status(404).json({
+        success: false,
+        message: "Device not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      device,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// =====================================
+// DELETE DEVICE
+// =====================================
+
+export const deleteDevice = async (req, res) => {
+  try {
+    const device = await Device.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!device) {
+      return res.status(404).json({
+        success: false,
+        message: "Device not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
       message: "Device deleted successfully",
     });
   } catch (err) {
     res.status(500).json({
+      success: false,
       message: err.message,
     });
   }

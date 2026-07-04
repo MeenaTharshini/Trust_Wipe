@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-
+const userSchema = new mongoose.Schema(
+{
     name:{
         type:String,
         required:true
@@ -9,8 +9,9 @@ const userSchema = new mongoose.Schema({
 
     email:{
         type:String,
+        required:true,
         unique:true,
-        required:true
+        lowercase:true
     },
 
     password:{
@@ -26,15 +27,34 @@ const userSchema = new mongoose.Schema({
 
     department:String,
 
-    lastLogin:Date,
-
     active:{
         type:Boolean,
         default:true
-    }
+    },
 
-},{
+    emailVerified:{
+        type:Boolean,
+        default:false
+    },
+
+    failedLoginAttempts:{
+        type:Number,
+        default:0
+    },
+
+    lockUntil:{
+        type:Date
+    },
+
+    refreshToken:{
+        type:String
+    },
+
+    lastLogin:Date
+},
+{
     timestamps:true
-})
+}
+);
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model("User",userSchema);

@@ -5,139 +5,77 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./Certificates.css";
 import { QRCodeCanvas } from "qrcode.react";
+import trustwipeLogo from "../assets/trustwipe-logo.png";
 
 function Certificates() {
   const location = useLocation();
   const navigate = useNavigate();
-const [certificate, setCertificate] = useState(null);
-const [device, setDevice] = useState(null); 
-const certificateRef = useRef(null);
 
-  // ---------------- LOAD CERTIFICATE ----------------
+  const [certificate, setCertificate] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const certificateRef = useRef(null);
+
   useEffect(() => {
-  const loadCertificate = async () => {
-    try {
-      let certificateId = null;
+    const load = async () => {
+      try {
+        const id =
+          location.state?.certificate?.certificateId ||
+          new URLSearchParams(location.search).get("certificateId");
 
-      // If coming from navigation state
-      if (location.state?.certificate?.certificateId) {
-        certificateId =
-          location.state.certificate.certificateId;
-      }
+        if (!id) return;
 
-      // If coming from URL query
-      const params = new URLSearchParams(
-        location.search
-      );
-
-      if (!certificateId) {
-        certificateId =
-          params.get("certificateId");
-      }
-
-      if (!certificateId) {
-        console.error(
-          "No certificateId found"
+        const res = await axios.get(
+          `http://localhost:5000/api/certificate/verify/${id}`
         );
-        return;
+
+        setCertificate(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
       }
+    };
 
-      const res = await axios.get(
-        `http://localhost:5000/api/certificate/verify/${certificateId}`
-      );
+    load();
+  }, [location]);
 
-      console.log(
-        "CERTIFICATE RESPONSE:",
-        res.data
-      );
-
-      setCertificate(res.data);
-setDevice(null);
-
-    } catch (err) {
-      console.error(
-        "Certificate load error:",
-        err
-      );
-    }
-  };
-
-  loadCertificate();
-}, [location]);
-
-  // ---------------- PDF DOWNLOAD (FIXED STABLE RENDER) ----------------
   const downloadPDF = async () => {
   const element = certificateRef.current;
-
   if (!element) return;
 
-  try {
-    // Apply fixed A4 layout
-    element.classList.add("pdf-mode");
+  const canvas = await html2canvas(element, {
+    scale: 4,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+  });
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 500)
-    );
+  const imgData = canvas.toDataURL("image/png");
 
-    const canvas = await html2canvas(element, {
-  scale: 3,
-  useCORS: true,
-  backgroundColor: "#ffffff",
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
-  // 🔥 THIS IS THE KEY FIX
-  windowWidth: element.scrollWidth,
-  windowHeight: element.scrollHeight,
+  pdf.addImage(
+    imgData,
+    "PNG",
+    0,
+    0,
+    210,
+    297,
+    undefined,
+    "FAST"
+  );
 
-  scrollX: 0,
-  scrollY: 0,
-});
-
-    const imgData =
-      canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    pdf.addImage(
-      imgData,
-      "PNG",
-      0,
-      0,
-      210,
-      297
-    );
-
-    pdf.save(
-      `TrustWipe_Certificate_${
-        certificate?.certificateId ||
-        "certificate"
-      }.pdf`
-    );
-
-    element.classList.remove("pdf-mode");
-
-  } catch (err) {
-
-    console.error(err);
-
-    element.classList.remove("pdf-mode");
-
-  }
+  pdf.save(
+    `TrustWipe_${certificate.certificateId}.pdf`
+  );
 };
 
-  // ---------------- LOADING ----------------
-  if (!certificate) {
-    return (
-      <div className="certificate-page">
-        <div className="empty-box">
-          <h2>Loading Certificate...</h2>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="certificate-page">Loading...</div>;
+  if (!certificate) return <div className="certificate-page">Not Found</div>;
 
   const jobId =
     certificate.jobId ||
@@ -145,244 +83,224 @@ setDevice(null);
     certificate.jobReference ||
     "N/A";
 
-  // ---------------- UI ----------------
   return (
     <div className="certificate-page">
-
-      {/* TOP BAR */}
-      <div className="top-actions">
+      <div className="top-actions no-print">
         <button className="primary-btn" onClick={downloadPDF}>
-          Download Certificate (PDF)
+          Download Certificate
         </button>
-
-        <button
-          className="secondary-btn"
-          onClick={() => navigate("/verification")}
-        >
+        <button className="secondary-btn" onClick={() => navigate("/verification")}>
           Back
         </button>
       </div>
 
-      {/* ================= CERTIFICATE ================= */}
       <div ref={certificateRef} className="certificate">
 
-  <div className="certificate-header">
-    <h1>TRUSTWIPE SECURITY AUTHORITY</h1>
+  {/* OUTER FRAME */}
+  <div className="outer-border">
 
-    <h2>DATA SANITIZATION CERTIFICATE</h2>
+    {/* INNER FRAME */}
+    <div className="inner-border">
 
-    <p>
-      This certificate confirms the secure, irreversible and
-      cryptographically verified destruction of digital data
-      in compliance with international security standards.
-    </p>
+      {/* HEADER */}
+      <div className="certificate-header">
 
-    <div className="verified-badge">
-      VERIFIED
-    </div>
-  </div>
-
-  <div className="section">
-    <h3>1. Certification Statement</h3>
-
-    <p>
-      The referenced digital asset has undergone secure
-      sanitization using TrustWipe verified destruction
-      protocols ensuring irreversible data erasure.
-    </p>
-  </div>
-
-  <div className="two-column">
-
-    <div className="section compact">
-      <h3>2. Certificate Details</h3>
-
-      <table>
-        <tbody>
-          <tr>
-            <td>Certificate ID</td>
-            <td>{certificate.certificateId}</td>
-          </tr>
-
-          <tr>
-            <td>Job Reference</td>
-            <td>{jobId}</td>
-          </tr>
-
-          <tr>
-            <td>Status</td>
-            <td>{certificate.status}</td>
-          </tr>
-
-          <tr>
-            <td>Algorithm</td>
-            <td>{certificate.algorithm}</td>
-          </tr>
-
-          <tr>
-            <td>Issue Date</td>
-            <td>
-              {new Date(
-                certificate.createdAt
-              ).toLocaleString()}
-            </td>
-          </tr>
-
-          <tr>
-            <td>Authority</td>
-            <td>
-              TrustWipe Security Authority
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div className="section compact">
-      <h3>3. Device Information</h3>
-
-      <table>
-        <tbody>
-          <tr>
-            <td>Model</td>
-            <td>{certificate.deviceModel}</td>
-          </tr>
-
-          <tr>
-            <td>Manufacturer</td>
-            <td>
-              {certificate.manufacturer ||
-                "Dell"}
-            </td>
-          </tr>
-
-          <tr>
-            <td>Serial Number</td>
-            <td>
-              {certificate.serialNumber}
-            </td>
-          </tr>
-
-          <tr>
-            <td>Storage Type</td>
-            <td>
-              {certificate.storageType}
-            </td>
-          </tr>
-
-          <tr>
-            <td>Capacity</td>
-            <td>
-              {certificate.capacity} GB
-            </td>
-          </tr>
-
-          <tr>
-            <td>Status</td>
-            <td>Sanitized</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-  </div>
-
-  <div className="two-column">
-
-    <div className="section compact">
-      <h3>4. Verification Summary</h3>
-
-      <table>
-        <tbody>
-          
-
-          <tr>
-            <td>Method</td>
-            <td>
-              {
-                certificate.verificationMethod
-              }
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div className="section compact">
-      <h3>5. Compliance Standards</h3>
-
-      <div className="tags">
-        <span>NIST SP 800-88 Rev.1</span>
-        <span>ISO 27001</span>
-        <span>GDPR</span>
-        <span>HIPAA</span>
-        <span>DoD 5220.22-M</span>
-      </div>
-    </div>
-
-  </div>
-
-  <div className="section compact">
-    <h3>6. Cryptographic Evidence</h3>
-
-    <label>Verification Hash</label>
-
-    <div className="hash">
-      {certificate.verificationHash}
-    </div>
-  </div>
-  
-  <div className="section compact">
-    <h3>7. Digital Signature</h3>
-
-    <div className="signature-box">
-      {certificate.signature}
-    </div>
-
-    <p className="note">
-      RSA-SHA256 digital signature used
-      for tamper-proof validation and
-      certificate authenticity.
-    </p>
-  </div>
-  <div className="qr-section">
-  <h3>Scan to Verify</h3>
-
-  <QRCodeCanvas
-    value={`http://localhost:5173/verify/${certificate.certificateId}`}
-    size={90}
-    level="H"
+        <div className="logo-section">
+  <img
+    src={trustwipeLogo}
+    alt="TrustWipe Logo"
+    className="trustwipe-logo"
   />
-
-  <p className="qr-text">
-    Verify authenticity using TrustWipe secure verification system
-  </p>
 </div>
-  <div className="certificate-footer">
 
-    <div>
-      <strong>
-        Chief Verification Officer
-      </strong>
-      
-      <br />
-      TrustWipe Security Authority
+        <div className="title-section">
+          <h1>TRUSTWIPE SECURITY AUTHORITY</h1>
+          <h2>DATA SANITIZATION CERTIFICATE</h2>
+
+          <p className="cert-number">
+            Certificate No. {certificate.certificateId}
+          </p>
+        </div>
+
+        <div className="verified-stamp">
+          VERIFIED
+        </div>
+
+      </div>
+
+      <div className="gold-line"></div>
+
+      {/* CERTIFICATE TEXT */}
+      <div className="certificate-body">
+
+        <h3>CERTIFICATE OF SECURE DATA DESTRUCTION</h3>
+
+        <p className="statement">
+          This certificate officially confirms that the digital storage media
+          described below has undergone secure irreversible sanitization using
+          approved TrustWipe destruction protocols and has been successfully
+          verified under NIST SP 800-88 Rev.1 standards.
+        </p>
+
+      </div>
+
+      {/* DETAILS */}
+      <div className="details-grid">
+
+        <div className="info-card">
+          <h4>Certificate Details</h4>
+
+          <table>
+            <tbody>
+              <tr>
+                <td>Job ID</td>
+                <td>{jobId}</td>
+              </tr>
+
+              <tr>
+                <td>Status</td>
+                <td>{certificate.verificationStatus}</td>
+              </tr>
+
+              <tr>
+                <td>Algorithm</td>
+                <td>{certificate.algorithm}</td>
+              </tr>
+
+              <tr>
+                <td>Standard</td>
+                <td>{certificate.sanitizationStandard}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="info-card">
+          <h4>Device Information</h4>
+
+          <table>
+            <tbody>
+              <tr>
+                <td>Model</td>
+                <td>{certificate.deviceModel}</td>
+              </tr>
+
+              <tr>
+                <td>Serial</td>
+                <td>{certificate.serialNumber}</td>
+              </tr>
+
+              <tr>
+                <td>Storage</td>
+                <td>{certificate.storageType}</td>
+              </tr>
+
+              <tr>
+                <td>Capacity</td>
+                <td>{certificate.capacity}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      {/* METRICS */}
+      <div className="metrics-row">
+
+        <div className="metric-box">
+          <span>Files Wiped</span>
+          <strong>{certificate.wipedFiles}</strong>
+        </div>
+
+        <div className="metric-box">
+          <span>Verified</span>
+          <strong>{certificate.verifiedFiles}</strong>
+        </div>
+
+        <div className="metric-box">
+          <span>Failures</span>
+          <strong>{certificate.verificationFailures}</strong>
+        </div>
+
+      </div>
+
+      {/* HASH */}
+      <div className="hash-section">
+
+        <h4>Verification Hash</h4>
+
+        <div className="hash-box">
+          {certificate.verificationHash}
+        </div>
+
+      </div>
+
+      {/* BOTTOM */}
+      <div className="bottom-section">
+
+        <div className="seal-area">
+          <div className="official-seal">
+            TRUSTWIPE
+            <br />
+            AUTHORIZED
+          </div>
+        </div>
+
+        <div className="signature-area">
+
+          <h4>Digital Signature</h4>
+
+          <div className="signature-status">
+            ✓ Signature Verified
+          </div>
+
+          <div className="crypto-info">
+            RSA-4096 | SHA-256
+          </div>
+
+          <div className="signature-preview">
+            {certificate.signature?.substring(0, 80)}...
+          </div>
+
+        </div>
+
+        <div className="qr-area">
+
+          <QRCodeCanvas
+            value={`http://localhost:5173/verify/${certificate.certificateId}`}
+            size={90}
+            level="H"
+          />
+
+          <p>Scan to Verify</p>
+
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+      <div className="footer">
+
+        <div>
+          <strong>Chief Verification Officer</strong>
+        </div>
+
+        <div>
+          {certificate.certificateId}
+        </div>
+
+      </div>
+
+      <div className="legal-note">
+        This document is digitally generated by TrustWipe Security Authority.
+        Any modification invalidates authenticity.
+      </div>
+
     </div>
-
-    <div>
-      <strong>
-        Cryptographically Verified
-      </strong>
-      <br />
-      Certificate ID:
-      {" "}
-      {certificate.certificateId}
-    </div>
-
   </div>
-
 </div>
-</div>
+    </div>
   );
 }
 
