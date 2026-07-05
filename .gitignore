@@ -1,28 +1,30 @@
-# Node modules
+# Dependencies
 backend/node_modules/
 frontend/node_modules/
 
 # Environment variables
 backend/.env
+frontend/.env
+
+# RSA Keys
+backend/private.pem
+backend/public.pem
 
 # Logs
 *.log
 
-# Build
+# Build files
 frontend/dist/
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE files
 .vscode/
 
-# Certificates generated at runtime
+# Generated certificates
 backend/certificates/*.pdf
 
 # Temporary files
 *.tmp
-# RSA Keys
-backend/private.pem
-backend/public.pem
