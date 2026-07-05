@@ -20,15 +20,18 @@ export const startWipeController = async (req, res) => {
       });
     }
 
-    const job = await startWipe(deviceId);
+    const job = await startWipe(deviceId, req.user.id);
 
     return res.status(201).json(job);
 
   } catch (err) {
-    return res.status(500).json({
-      message: err.message,
-    });
-  }
+  console.error("START WIPE ERROR");
+  console.error(err);
+
+  return res.status(500).json({
+    message: err.message,
+  });
+}
 };
 
 export const getAllJobs = async (req, res) => {

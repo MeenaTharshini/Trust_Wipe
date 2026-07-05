@@ -24,7 +24,7 @@ const emitEvent = (event, data) => {
 /**
  * MAIN WIPE ENGINE
  */
-export const runWipeEngine = async (deviceId) => {
+export const runWipeEngine = async (deviceId,userId) => {
   const device = await Device.findById(deviceId);
 
   if (!device) {
@@ -389,7 +389,8 @@ device: {
 
   deviceId: device._id,
   jobId: job._id,
-
+  owner: userId,
+  
   sanitizationStandard: "NIST SP 800-88 Rev.1",
   algorithm: job.algorithm,
 

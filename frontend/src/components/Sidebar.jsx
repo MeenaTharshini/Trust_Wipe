@@ -1,27 +1,46 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import {
   LayoutDashboard,
   Database,
   ShieldCheck,
   FileText,
-  BarChart3,Radar,
-  Menu,
+  BarChart3,
+  Radar,
   X,
   Shield,
+  LogOut,
+  User,
 } from "lucide-react";
 
 import "./Sidebar.css";
 
 function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const [open, setOpen] = useState(false);
+
+  const user = JSON.parse(
+    localStorage.getItem("user") || "{}"
+  );
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login");
+  };
 
   const menus = [
     {
       name: "Dashboard",
-      path: "/",
+      path: "/dashboard",
       icon: LayoutDashboard,
     },
     {
@@ -33,11 +52,6 @@ function Sidebar() {
       name: "Verification",
       path: "/verification",
       icon: ShieldCheck,
-    },
-    {
-      name: "Verify Certificate",
-      path: "/verify-certificate",
-      icon: FileText,
     },
     {
       name: "Reports",
@@ -53,7 +67,11 @@ function Sidebar() {
         className={`sidebar-toggle ${open ? "active" : ""}`}
         onClick={() => setOpen(!open)}
       >
-        {open ? <X size={22} /> : <Radar size={22} />}
+        {open ? (
+          <X size={22} />
+        ) : (
+          <Radar size={22} />
+        )}
       </button>
 
       {/* OVERLAY */}
@@ -65,11 +83,13 @@ function Sidebar() {
       )}
 
       {/* SIDEBAR */}
-      <aside className={`sidebar ${open ? "show" : ""}`}>
-
+      <aside
+        className={`sidebar ${
+          open ? "show" : ""
+        }`}
+      >
         {/* LOGO */}
         <div className="sidebar-brand">
-
           <div className="brand-icon">
             <Shield size={24} />
           </div>
@@ -78,7 +98,6 @@ function Sidebar() {
             <h2>TrustWipe</h2>
             <span>SOC Console</span>
           </div>
-
         </div>
 
         {/* NAVIGATION */}
@@ -92,7 +111,8 @@ function Sidebar() {
                 to={item.path}
                 onClick={() => setOpen(false)}
                 className={`nav-link ${
-                  location.pathname === item.path
+                  location.pathname ===
+                  item.path
                     ? "active"
                     : ""
                 }`}
@@ -107,8 +127,8 @@ function Sidebar() {
         {/* FOOTER */}
         <div className="sidebar-footer">
 
+          {/* COMPLIANCE CARD */}
           <div className="footer-card">
-
             <div className="footer-top">
               <span>Compliance</span>
               <div className="status-dot" />
@@ -120,18 +140,39 @@ function Sidebar() {
               <div className="progress-fill" />
             </div>
 
-            <small>Certified Security Standard</small>
-
+            <small>
+              Certified Security Standard
+            </small>
           </div>
 
-          <div className="footer-card">
+          {/* USER CARD */}
+          <div className="user-panel">
+            <div className="user-info">
+              <div className="user-avatar">
+                <User size={18} />
+              </div>
 
-            <span className="score-label">
-              Security Score
-            </span>
+              <div className="user-details">
+                <h4>
+                  {user.name ||
+                    user.username ||
+                    "User"}
+                </h4>
 
-            <h1>99.8%</h1>
+                <small>
+                  {user.email ||
+                    "No Email"}
+                </small>
+              </div>
+            </div>
 
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
           </div>
 
         </div>

@@ -50,23 +50,15 @@ export const createDevice = async (req, res) => {
       location,
       manufacturer,
       modelNumber,
-      owner,
       deviceType,
       storagePath,
     } = req.body;
 
-    const existing = await Device.findOne({
-      serialNumber,
-    });
-
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "Device already exists",
-      });
-    }
+    
 
     const device = await Device.create({
+      owner: req.user.id,
+
       deviceName,
       serialNumber,
       storageType,
@@ -74,7 +66,6 @@ export const createDevice = async (req, res) => {
       location,
       manufacturer,
       modelNumber,
-      owner,
       deviceType,
       storagePath,
 
@@ -91,7 +82,6 @@ export const createDevice = async (req, res) => {
           status: "Pending",
         },
       ],
-
       status: "Pending",
     });
 
@@ -115,9 +105,13 @@ export const createDevice = async (req, res) => {
 
 export const getDevices = async (req, res) => {
   try {
-    const devices = await Device.find().sort({
-      createdAt: -1,
-    });
+    const ownerId = req.user.id;
+
+if (!ownerId) {
+  return res.status(401).json({ message: "Unauthorized" });
+}
+
+const devices = await Device.find({ owner: ownerId }).sort({ createdAt: -1 });
 
     res.status(200).json(devices);
   } catch (err) {
@@ -134,8 +128,10 @@ export const getDevices = async (req, res) => {
 
 export const getDeviceById = async (req, res) => {
   try {
-    const device = await Device.findById(req.params.id);
-
+    const device = await Device.findOne({
+  _id: req.params.id,
+  owner: req.user.id,
+});
     if (!device) {
       return res.status(404).json({
         success: false,
@@ -158,13 +154,17 @@ export const getDeviceById = async (req, res) => {
 
 export const updateDevice = async (req, res) => {
   try {
-    const device = await Device.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-      }
-    );
+    const device =
+ await Device.findOneAndUpdate(
+   {
+     _id: req.params.id,
+     owner: req.user.id,
+   },
+   req.body,
+   {
+     new: true,
+   }
+ );
 
     if (!device) {
       return res.status(404).json({
@@ -191,16 +191,17 @@ export const updateDevice = async (req, res) => {
 
 export const deleteDevice = async (req, res) => {
   try {
-    const device = await Device.findByIdAndDelete(
-      req.params.id
-    );
+    const device = await Device.findOneAndDelete({
+  _id: req.params.id,
+  owner: req.user.id,
+});
 
-    if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: "Device not found",
-      });
-    }
+if (!device) {
+  return res.status(404).json({
+    success: false,
+    message: "Device not found",
+  });
+}
 
     res.status(200).json({
       success: true,

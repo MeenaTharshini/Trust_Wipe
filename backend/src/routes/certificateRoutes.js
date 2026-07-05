@@ -4,12 +4,14 @@ import {
   generateCertificate,
   verifyCertificate
 } from "../controllers/certificateController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router =
   express.Router();
 
 router.get(
   "/generate/:certificateId",
+  authMiddleware,
   generateCertificate
 );
 

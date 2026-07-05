@@ -22,7 +22,6 @@ function Devices() {
     deviceType: "",
     storageType: "",
     capacity: "",
-    owner: "",
     location: "",
     storagePath: "",
   });
@@ -33,16 +32,24 @@ function Devices() {
   // LOAD DEVICES
   // =========================
   const loadDevices = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/devices");
-      setDevices(res.data || []);
-    } catch (err) {
-      console.log("LOAD ERROR:", err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get("http://localhost:5000/api/devices", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setDevices(res.data || []);
+  } catch (err) {
+    console.log("LOAD ERROR:", err.response?.data || err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadDevices();
@@ -53,9 +60,16 @@ function Devices() {
   // =========================
   const registerDevice = async () => {
   try {
+    const token = localStorage.getItem("token");
+
     await axios.post(
       "http://localhost:5000/api/devices",
-      form
+      form,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     setForm({
@@ -66,7 +80,6 @@ function Devices() {
       deviceType: "",
       storageType: "",
       capacity: "",
-      owner: "",
       location: "",
       storagePath: "",
     });
@@ -75,25 +88,49 @@ function Devices() {
 
     alert("Device registered successfully");
   } catch (err) {
-    console.log(
-      "REGISTER ERROR:",
-      err.response?.data || err.message
-    );
+    console.log("STATUS:", err.response?.status);
+console.log("DATA:", err.response?.data);
+console.log("ERROR:", err);
   }
 };
 
   // =========================
   // DELETE DEVICE
   // =========================
+  
   const deleteDevice = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/devices/${id}`);
-      loadDevices();
-    } catch (err) {
-      console.log("DELETE ERROR:", err.message);
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
 
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this device?"
+    );
+
+    if (!confirmed) return;
+
+    await axios.delete(
+      `http://localhost:5000/api/devices/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setDevices((prev) =>
+      prev.filter((device) => device._id !== id)
+    );
+
+    alert("Device deleted successfully");
+  } catch (err) {
+    console.log(
+      "DELETE ERROR:",
+      err.response?.data || err.message
+    );
+
+    alert("Failed to delete device");
+  }
+};
   // =========================
   // 🔥 REAL DRIVE DISCOVERY
   // =========================
@@ -101,8 +138,15 @@ function Devices() {
   try {
     setDiscovering(true);
 
+    const token = localStorage.getItem("token");
+    console.log("TOKEN =", token);
     const res = await axios.get(
-      "http://localhost:5000/api/devices/discover"
+      "http://localhost:5000/api/devices/discover",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     console.log("DISCOVERY RESULT:", res.data);
@@ -116,19 +160,10 @@ function Devices() {
 
       setForm((prev) => ({
         ...prev,
-
-        deviceName:
-          drive.deviceName || "",
-
-        serialNumber:
-          drive.serialNumber || "",
-
-        storageType:
-          drive.storageType || "",
-
-        capacity:
-          drive.capacity || "",
-
+        deviceName: drive.deviceName || "",
+        serialNumber: drive.serialNumber || "",
+        storageType: drive.storageType || "",
+        capacity: drive.capacity || "",
         location: "",
       }));
 
@@ -282,10 +317,6 @@ function Devices() {
             onChange={(e) => setForm({ ...form, capacity: e.target.value })}
           />
 
-          <input placeholder="Owner"
-            value={form.owner}
-            onChange={(e) => setForm({ ...form, owner: e.target.value })}
-          />
 
           <input placeholder="Location"
             value={form.location}
@@ -344,7 +375,7 @@ function Devices() {
 
               <div className="mini-stat">
                 <span>Capacity</span>
-                <h4>{d.capacity} GB</h4>
+                <h4>{d.capacity} </h4>
               </div>
 
               <div className="mini-stat">

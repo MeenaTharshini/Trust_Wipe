@@ -69,10 +69,7 @@ app.post("/test", (req, res) => {
   console.log("TEST HIT", req.body);
   res.json({ ok: true });
 });
-app.use("/api/verification", (req, res, next) => {
-  console.log("🔥 verification middleware reached");
-  next();
-}, verificationRoutes);
+
 // ================= DB =================
 mongoose
   .connect(process.env.MONGO_URI)

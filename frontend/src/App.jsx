@@ -7,33 +7,40 @@ import {
 } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
+import PrivateRoute from "./components/PrivateRoute";
 
 import Dashboard from "./pages/Dashboard";
 import Devices from "./pages/Devices";
 import Verification from "./pages/Verification";
 import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
+
 import VerifyCertificate from "./pages/VerifyCertificate";
+import Services from "./pages/Services";
+import About from "./pages/About";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
-import PrivateRoute from "./components/PrivateRoute";
 
 import "./App.css";
 
 function Layout() {
   const location = useLocation();
 
-  const authPages = [
+  // Pages that should NOT display the sidebar
+  const publicRoutes = [
+    "/",
     "/login",
     "/register",
+    "/services",
+    "/about",
+    "/verify",
+    "/verify-certificate",
   ];
 
   const hideSidebar =
-    authPages.includes(
-      location.pathname
-    );
+    publicRoutes.includes(location.pathname) ||
+    location.pathname.startsWith("/verify/");
 
   return (
     <div className="app-layout">
@@ -50,7 +57,45 @@ function Layout() {
 
         <Routes>
 
-          {/* Public Routes */}
+          {/* ==========================================
+                    DEFAULT ROUTE
+          ========================================== */}
+
+          <Route
+            path="/"
+            element={<Navigate to="/verify" replace />}
+          />
+
+          {/* ==========================================
+                    PUBLIC ROUTES
+          ========================================== */}
+
+          <Route
+            path="/services"
+            element={<Services />}
+          />
+
+          <Route
+            path="/about"
+            element={<About />}
+          />
+
+          <Route
+            path="/verify"
+            element={<VerifyCertificate />}
+          />
+
+          <Route
+            path="/verify/:id"
+            element={<VerifyCertificate />}
+          />
+
+          {/* Backward compatibility */}
+
+          <Route
+            path="/verify-certificate"
+            element={<Navigate to="/verify" replace />}
+          />
 
           <Route
             path="/login"
@@ -62,10 +107,12 @@ function Layout() {
             element={<Register />}
           />
 
-          {/* Protected Routes */}
+          {/* ==========================================
+                    PROTECTED ROUTES
+          ========================================== */}
 
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <Dashboard />
@@ -109,38 +156,23 @@ function Layout() {
             }
           />
 
-          <Route
-            path="/verify-certificate"
-            element={
-              <VerifyCertificate />
-            }
-          />
-
-          <Route
-            path="/verify/:id"
-            element={
-              <VerifyCertificate />
-            }
-          />
+          {/* Legacy Route */}
 
           <Route
             path="/wipe-jobs"
-            element={
-              <Navigate
-                to="/"
-                replace
-              />
-            }
+            element={<Navigate to="/dashboard" replace />}
           />
+
+          {/* ==========================================
+                    404
+          ========================================== */}
 
           <Route
             path="*"
             element={
               <div className="not-found">
                 <h1>404</h1>
-                <p>
-                  Page Not Found
-                </p>
+                <p>Page Not Found</p>
               </div>
             }
           />
@@ -148,6 +180,7 @@ function Layout() {
         </Routes>
 
       </main>
+
     </div>
   );
 }

@@ -25,9 +25,16 @@ function Certificates() {
 
         if (!id) return;
 
-        const res = await axios.get(
-          `http://localhost:5000/api/certificate/verify/${id}`
-        );
+        const token = localStorage.getItem("token");
+
+const res = await axios.get(
+  `http://localhost:5000/api/certificate/verify/${id}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
         setCertificate(res.data);
         setLoading(false);
@@ -260,7 +267,7 @@ function Certificates() {
           </div>
 
           <div className="signature-preview">
-            {certificate.signature?.substring(0, 80)}...
+            {certificate.signature?.substring(0, 40)}...
           </div>
 
         </div>

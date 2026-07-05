@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-
+import PublicNavbar from "../components/PublicNavbar/PublicNavbar";
 import {
   FiShield,
   FiCheckCircle,
@@ -16,20 +16,23 @@ import {
 import "./VerifyCertificate.css";
 
 function VerifyCertificate() {
-  const { id } = useParams(); // QR mode
+  const { id } = useParams();
+
   const [certificateId, setCertificateId] = useState("");
-  const [state, setState] = useState("idle"); // idle | loading | valid | invalid
+  const [state, setState] = useState("idle");
+
   const [cert, setCert] = useState(null);
 
-  // auto verify if QR opens /verify/:id
   useEffect(() => {
-    if (id) runVerification(id);
+    if (id) {
+      runVerification(id);
+    }
   }, [id]);
 
-  // MAIN VERIFY FUNCTION
   const runVerification = async (inputId) => {
     const finalId = inputId || certificateId;
-    if (!finalId?.trim()) {
+
+    if (!finalId.trim()) {
       alert("Enter Certificate ID");
       return;
     }
@@ -43,13 +46,14 @@ function VerifyCertificate() {
       );
 
       const data = res.data;
-      const isValid =
+
+      const valid =
         data &&
         data.certificateId &&
         data.verificationHash &&
         data.verificationStatus === "VERIFIED";
 
-      if (!isValid) {
+      if (!valid) {
         setState("invalid");
         return;
       }
@@ -68,123 +72,216 @@ function VerifyCertificate() {
     setState("idle");
   };
 
-  // ================= LOADING =================
-  if (state === "loading") {
-    return (
-      <div className="vp-container">
-        <div className="vp-card loading">
-          <FiLoader className="spin" size={40} />
-          <h2>Verifying Certificate</h2>
-          <p>Checking TrustWipe secure network...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ================= INVALID =================
-  if (state === "invalid") {
-    return (
-      <div className="vp-container">
-        <div className="vp-card danger">
-          <FiXCircle size={50} />
-          <h1>Verification Failed</h1>
-          <p>Certificate not found or integrity check failed.</p>
-          <button onClick={reset}>Try Again</button>
-        </div>
-      </div>
-    );
-  }
-
-  // ================= VALID =================
-  if (state === "valid" && cert) {
-    return (
-      <div className="vp-container">
-        <div className="vp-card success">
-          <FiCheckCircle size={45} />
-          <h1>Certificate Verified</h1>
-          <p>Authenticity confirmed by TrustWipe Network</p>
-        </div>
-
-        <div className="vp-grid">
-          <div className="vp-box">
-            <h3><FiShield /> Security Status</h3>
-            <p>VERIFIED ✓</p>
-            <span className="tag green">Tamper Proof</span>
-          </div>
-
-          <div className="vp-box">
-            <h3><FiCpu /> Certificate Info</h3>
-            <p><b>ID:</b> {cert.certificateId}</p>
-            <p><b>Status:</b> {cert.verificationStatus}</p>
-            <p><b>Algorithm:</b> {cert.algorithm}</p>
-            <p><b>Generated On:</b> {new Date(cert.createdAt).toLocaleString()}</p>
-          </div>
-
-          <div className="vp-box">
-            <h3><FiDatabase /> Device Info</h3>
-            <p><b>Model:</b> {cert.deviceModel}</p>
-            <p><b>Serial:</b> {cert.serialNumber}</p>
-            <p><b>Storage:</b> {cert.storageType}</p>
-            <p><b>Capacity:</b> {cert.capacity} GB</p>
-          </div>
-
-          <div className="vp-box full">
-            <h3><FiHash /> Verification Hash</h3>
-            <code>{cert.verificationHash}</code>
-          </div>
-        </div>
-
-        <div className="action-row">
-          <a
-            className="download-btn"
-            href={`/certificates?certificateId=${cert.certificateId}`}
-          >
-            Download Certificate
-          </a>
-          <button className="secondary-btn" onClick={reset}>
-            Verify Another
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ================= DEFAULT (MANUAL INPUT UI) =================
   return (
-    <div className="verify-page">
+    <div className="verify-certificate-page">
+       <PublicNavbar />
       {/* HERO */}
       <section className="verify-hero">
-        <div className="hero-content">
-          <p className="hero-label">CERTIFICATE AUTHENTICATION</p>
-          <h1>TrustWipe Verification Portal</h1>
-          <p>
-            Validate digital destruction certificates,
-            cryptographic signatures and compliance records.
+
+        <div>
+          <p className="hero-label">
+            CERTIFICATE AUTHENTICATION
+          </p>
+
+          <h1>
+            TrustWipe Verification Portal
+          </h1>
+
+          <p className="hero-subtitle">
+            Validate destruction certificates,
+            cryptographic signatures and
+            compliance records.
           </p>
         </div>
 
-        <div className="trust-card">
-          <FiShield size={50} />
+        <div className="verify-status-card">
+          <FiShield />
           <h2>SECURE</h2>
-          <span>Verification Network</span>
+          <span>TrustWipe Network</span>
         </div>
+
       </section>
 
       {/* SEARCH PANEL */}
-      <section className="panel">
-        <h2>Verify Certificate</h2>
-        <div className="search-box">
-          <FiSearch />
-          <input
-            value={certificateId}
-            onChange={(e) => setCertificateId(e.target.value)}
-            placeholder="Enter Certificate ID..."
-          />
-        </div>
-        <button className="verify-btn" onClick={() => runVerification()}>
-          Verify Certificate
-        </button>
-      </section>
+
+      {state === "idle" && (
+        <section className="verify-panel">
+
+          <h2>
+            Verify Certificate
+          </h2>
+
+          <div className="verify-search">
+
+            <FiSearch />
+
+            <input
+              value={certificateId}
+              onChange={(e) =>
+                setCertificateId(e.target.value)
+              }
+              placeholder="Enter Certificate ID..."
+            />
+
+          </div>
+
+          <button
+            className="verify-action-btn"
+            onClick={() => runVerification()}
+          >
+            Verify Certificate
+          </button>
+
+        </section>
+      )}
+
+      {/* LOADING */}
+
+      {state === "loading" && (
+        <section className="result-panel">
+
+          <div className="result-header">
+            <FiLoader className="spin" />
+            <h2>
+              Verifying Certificate...
+            </h2>
+          </div>
+
+        </section>
+      )}
+
+      {/* INVALID */}
+
+      {state === "invalid" && (
+        <section className="result-panel">
+
+          <div className="result-header invalid">
+            <FiXCircle />
+            <h2>
+              Verification Failed
+            </h2>
+          </div>
+
+          <p>
+            Certificate not found or integrity
+            validation failed.
+          </p>
+
+          <button
+            className="verify-action-btn"
+            onClick={reset}
+          >
+            Try Again
+          </button>
+
+        </section>
+      )}
+
+      {/* VALID */}
+
+      {state === "valid" && cert && (
+        <section className="result-panel">
+
+          <div className="result-header success">
+            <FiCheckCircle />
+            <h2>
+              Certificate Verified
+            </h2>
+          </div>
+
+          <div className="result-grid">
+
+            <div className="result-card">
+              <span>Certificate ID</span>
+              <strong>
+                {cert.certificateId}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Status</span>
+              <strong className="verified">
+                {cert.verificationStatus}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Algorithm</span>
+              <strong>
+                {cert.algorithm}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Generated</span>
+              <strong>
+                {new Date(
+                  cert.createdAt
+                ).toLocaleString()}
+              </strong>
+            </div>
+
+          </div>
+
+          <div className="result-grid">
+
+            <div className="result-card">
+              <span>Device Model</span>
+              <strong>
+                {cert.deviceModel}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Serial Number</span>
+              <strong>
+                {cert.serialNumber}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Storage Type</span>
+              <strong>
+                {cert.storageType}
+              </strong>
+            </div>
+
+            <div className="result-card">
+              <span>Capacity</span>
+              <strong>
+                {cert.capacity} GB
+              </strong>
+            </div>
+
+          </div>
+
+          <div className="hash-panel">
+
+            <div className="hash-title">
+              <FiHash />
+              Verification Hash
+            </div>
+
+            <code>
+              {cert.verificationHash}
+            </code>
+
+          </div>
+
+          <div className="certificate-action">
+
+            <button
+              className="certificate-btn"
+              onClick={reset}
+            >
+              Verify Another
+            </button>
+
+          </div>
+
+        </section>
+      )}
+
     </div>
   );
 }

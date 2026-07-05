@@ -1,15 +1,11 @@
 import express from "express";
+import { verifyWipe } from "../controllers/verificationController.js";
 
-import {
-  verifyWipe
-} from "../controllers/verificationController.js";
+const router = express.Router();
 
-const router =
-  express.Router();
-
-router.post(
-  "/verify",
-  verifyWipe
-);
+router.post("/verify", (req, res, next) => {
+    console.log("VERIFY ROUTE HIT");
+    next();
+}, verifyWipe);
 
 export default router;

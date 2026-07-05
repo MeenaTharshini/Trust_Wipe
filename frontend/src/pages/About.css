@@ -1,0 +1,374 @@
+:root{
+  --bg:#070b14;
+  --panel:rgba(15,23,42,.82);
+  --border:rgba(255,255,255,.08);
+
+  --primary:#00e5ff;
+  --success:#00e676;
+
+  --text:#f8fafc;
+  --muted:#94a3b8;
+
+  --shadow:0 15px 45px rgba(0,0,0,.35);
+  --radius:24px;
+}
+
+/* ===========================
+PAGE
+=========================== */
+
+.about-page{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,#12203d 0%,#0a1120 30%,#070b14 100%);
+    color:var(--text);
+
+    padding:110px 20px 80px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:70px;
+}
+
+/* ===========================
+HERO
+=========================== */
+
+.about-hero{
+    width:min(1400px,95vw);
+
+    text-align:center;
+
+    padding:70px 60px;
+
+    border-radius:30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,229,255,.08),
+            rgba(255,255,255,.03)
+        );
+
+    border:1px solid rgba(0,229,255,.15);
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:var(--shadow);
+}
+
+.about-tag{
+    color:var(--primary);
+
+    letter-spacing:3px;
+
+    font-size:13px;
+
+    font-weight:700;
+}
+
+.about-hero h1{
+    font-size:3.5rem;
+
+    margin:20px 0;
+
+    line-height:1.15;
+}
+
+.about-hero p{
+    max-width:850px;
+
+    margin:auto;
+
+    color:var(--muted);
+
+    line-height:1.8;
+
+    font-size:17px;
+}
+
+/* ===========================
+SECTION
+=========================== */
+
+.about-section{
+    width:min(1400px,95vw);
+}
+
+.about-section h2{
+    font-size:2.4rem;
+
+    margin-bottom:20px;
+}
+
+.about-section p{
+    color:var(--muted);
+
+    line-height:1.8;
+
+    font-size:17px;
+}
+
+/* ===========================
+FEATURES
+=========================== */
+
+.feature-grid{
+    width:min(1400px,95vw);
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(280px,1fr));
+
+    gap:25px;
+}
+
+.feature-card{
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    backdrop-filter:blur(12px);
+
+    border-radius:22px;
+
+    padding:35px;
+
+    transition:.35s;
+
+    box-shadow:var(--shadow);
+
+    cursor:pointer;
+}
+
+.feature-card:hover{
+    transform:translateY(-10px);
+
+    border-color:rgba(0,229,255,.3);
+
+    box-shadow:
+        0 20px 45px rgba(0,229,255,.12);
+}
+
+.feature-card svg{
+    font-size:50px;
+
+    color:var(--primary);
+
+    margin-bottom:20px;
+
+    transition:.35s;
+}
+
+.feature-card:hover svg{
+    transform:scale(1.1);
+}
+
+.feature-card h3{
+    margin-bottom:15px;
+
+    font-size:23px;
+}
+
+.feature-card p{
+    color:var(--muted);
+
+    line-height:1.8;
+}
+
+/* ===========================
+WHY TRUSTWIPE
+=========================== */
+
+.why-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(300px,1fr));
+
+    gap:20px;
+
+    margin-top:35px;
+}
+
+.why-item{
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    padding:22px;
+
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    backdrop-filter:blur(12px);
+
+    transition:.35s;
+}
+
+.why-item:hover{
+    transform:translateY(-6px);
+
+    border-color:rgba(0,229,255,.25);
+}
+
+.why-item svg{
+    color:var(--success);
+
+    font-size:24px;
+}
+
+.why-item span{
+    font-size:16px;
+}
+
+/* ===========================
+COMPLIANCE
+=========================== */
+
+.compliance{
+    width:min(1400px,95vw);
+
+    text-align:center;
+
+    padding:70px 50px;
+
+    border-radius:30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,229,255,.10),
+            rgba(255,255,255,.03)
+        );
+
+    border:1px solid rgba(0,229,255,.15);
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:var(--shadow);
+}
+
+.award-icon{
+    font-size:70px;
+
+    color:var(--primary);
+}
+
+.compliance h2{
+    margin:20px 0;
+
+    font-size:2.5rem;
+}
+
+.compliance p{
+    max-width:850px;
+
+    margin:auto;
+
+    color:var(--muted);
+
+    line-height:1.9;
+
+    font-size:17px;
+}
+
+/* ===========================
+FOOTER
+=========================== */
+
+.about-footer{
+    width:min(1400px,95vw);
+
+    text-align:center;
+
+    padding:40px;
+
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.about-footer h3{
+    color:var(--primary);
+
+    font-size:2rem;
+
+    margin-bottom:10px;
+}
+
+.about-footer p{
+    color:var(--muted);
+}
+
+.about-footer span{
+    display:block;
+
+    margin-top:15px;
+
+    color:#748396;
+}
+
+/* ===========================
+RESPONSIVE
+=========================== */
+
+@media(max-width:1100px){
+
+.about-page{
+    padding:95px 20px 60px;
+}
+
+.about-hero{
+    padding:50px 35px;
+}
+
+.about-hero h1{
+    font-size:2.8rem;
+}
+
+}
+
+@media(max-width:768px){
+
+.about-page{
+    padding:85px 15px 50px;
+
+    gap:50px;
+}
+
+.about-hero{
+    padding:35px 25px;
+}
+
+.about-hero h1{
+    font-size:2rem;
+}
+
+.about-section h2{
+    font-size:2rem;
+}
+
+.feature-grid,
+.why-grid{
+    grid-template-columns:1fr;
+}
+
+.compliance{
+    padding:45px 25px;
+}
+
+.compliance h2{
+    font-size:2rem;
+}
+
+.about-footer h3{
+    font-size:1.6rem;
+}
+
+}

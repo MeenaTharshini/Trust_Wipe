@@ -1,282 +1,577 @@
-/* ================================
-   GLOBAL PAGE
-================================ */
-.verify-page {
-  min-height: 100vh;
-  background: #0b1220; /* deep navy */
-  padding: 40px 20px;
-  font-family: "Inter", "Segoe UI", sans-serif;
-  color: #e5e7eb;
+:root{
+  --bg:#070b14;
+  --panel:rgba(15,23,42,.82);
+  --panel2:rgba(20,30,50,.72);
+  --border:rgba(255,255,255,.08);
+
+  --text:#f8fafc;
+  --muted:#94a3b8;
+
+  --primary:#00e5ff;
+  --primary2:#29b6ff;
+
+  --success:#00e676;
+  --danger:#ff4d4f;
+
+  --shadow:
+      0 15px 40px rgba(0,0,0,.35);
+
+  --radius:24px;
 }
 
-/* ================================
-   HERO SECTION
-================================ */
-.verify-hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #111827;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
+/* ================================================= */
+/* PAGE */
+/* ================================================= */
+
+.verify-certificate-page{
+
+    min-height:100vh;
+
+    background:
+        radial-gradient(circle at top left,#13284c 0%,#091424 35%,#050b15 100%);
+
+    color:var(--text);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    gap:45px;
+
+    padding:0 20px 80px;
+
 }
 
-.hero-content h1 {
-  font-size: 26px;
-  font-weight: 700;
-  color: #00e5ff;
-  margin-bottom: 10px;
+/* ================================================= */
+/* HERO */
+/* ================================================= */
+
+.verify-hero{
+
+    width:min(1400px,95vw);
+
+    display:grid;
+
+    grid-template-columns:1.3fr .7fr;
+
+    gap:40px;
+
+    align-items:center;
+
+    padding:55px;
+
+    border-radius:30px;
+
+    background:
+    linear-gradient(
+    135deg,
+    rgba(0,229,255,.08),
+    rgba(255,255,255,.03));
+
+    border:1px solid rgba(0,229,255,.15);
+
+    backdrop-filter:blur(16px);
+
+    box-shadow:var(--shadow);
+
 }
 
-.hero-content p {
-  font-size: 14px;
-  color: #9ca3af;
-  max-width: 500px;
+.hero-label{
+
+    color:var(--primary);
+
+    font-size:13px;
+
+    letter-spacing:3px;
+
+    font-weight:700;
+
 }
 
-.hero-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #6ee7b7;
-  margin-bottom: 8px;
+.verify-hero h1{
+
+    margin:18px 0;
+
+    font-size:3.5rem;
+
+    line-height:1.15;
+
 }
 
-.trust-card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  color: #e5e7eb;
+.hero-subtitle{
+
+    color:var(--muted);
+
+    line-height:1.8;
+
+    font-size:17px;
+
+    max-width:650px;
+
 }
 
-.trust-card h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 10px;
-  color: #00e5ff;
+/* ================================================= */
+/* SECURITY CARD */
+/* ================================================= */
+
+.verify-status-card{
+
+    padding:40px;
+
+    border-radius:24px;
+
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    text-align:center;
+
+    transition:.35s;
+
+    box-shadow:var(--shadow);
+
 }
 
-/* ================================
-   PANELS
-================================ */
-.panel {
-  background: #1e293b;
-  padding: 25px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+.verify-status-card:hover{
+
+    transform:translateY(-8px);
+
 }
 
-.panel h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #00e5ff;
-  margin-bottom: 15px;
+.verify-status-card svg{
+
+    font-size:65px;
+
+    color:var(--primary);
+
 }
 
-.center-panel {
-  text-align: center;
+.verify-status-card h2{
+
+    margin:20px 0 8px;
+
+    font-size:28px;
+
+    color:var(--primary);
+
 }
 
-/* ================================
-   SEARCH BOX
-================================ */
-.search-box {
-  display: flex;
-  align-items: center;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 15px;
+.verify-status-card span{
+
+    color:var(--muted);
+
 }
 
-.search-box input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #e5e7eb;
-  font-size: 14px;
-  margin-left: 10px;
+/* ================================================= */
+/* PANEL */
+/* ================================================= */
+
+.verify-panel,
+.result-panel{
+
+    width:min(1400px,95vw);
+
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    border-radius:26px;
+
+    padding:40px;
+
+    box-shadow:var(--shadow);
+
+    backdrop-filter:blur(12px);
+
 }
 
-.search-box svg {
-  color: #00e5ff;
+.verify-panel h2{
+
+    font-size:2rem;
+
+    margin-bottom:25px;
+
 }
 
-/* ================================
-   BUTTONS
-================================ */
-.verify-btn,
-.download-btn,
-.secondary-btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ================================================= */
+/* SEARCH */
+/* ================================================= */
+
+.verify-search{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    padding:18px 22px;
+
+    border-radius:16px;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    transition:.3s;
+
 }
 
-.verify-btn {
-  background: #00e5ff;
-  color: #000;
-  border: none;
+.verify-search:focus-within{
+
+    border-color:var(--primary);
+
+    box-shadow:
+    0 0 0 4px rgba(0,229,255,.08);
+
 }
 
-.verify-btn:hover {
-  background: #06b6d4;
+.verify-search svg{
+
+    color:var(--primary);
+
+    font-size:24px;
+
 }
 
-.download-btn {
-  background: #22c55e;
-  color: #fff;
-  text-decoration: none;
-  border: none;
+.verify-search input{
+
+    flex:1;
+
+    border:none;
+
+    outline:none;
+
+    background:none;
+
+    color:white;
+
+    font-size:17px;
+
 }
 
-.download-btn:hover {
-  background: #16a34a;
+.verify-search input::placeholder{
+
+    color:#8da2b7;
+
 }
 
-.secondary-btn {
-  background: transparent;
-  border: 1px solid #334155;
-  color: #e2e8f0;
+/* ================================================= */
+/* BUTTON */
+/* ================================================= */
+
+.verify-action-btn,
+.certificate-btn{
+
+    margin-top:25px;
+
+    border:none;
+
+    padding:15px 30px;
+
+    border-radius:14px;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
 }
 
-.secondary-btn:hover {
-  background: #1e293b;
+.verify-action-btn{
+
+    background:linear-gradient(
+        90deg,
+        #00e5ff,
+        #29b6ff
+    );
+
+    color:#051019;
+
 }
 
-/* ================================
-   STATUS CARDS
-================================ */
-.vp-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30px;
+.verify-action-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 15px 30px rgba(0,229,255,.35);
+
 }
 
-.vp-card {
-  background: #1e293b;
-  padding: 25px;
-  border-radius: 12px;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #e5e7eb;
+.certificate-btn{
+
+    background:linear-gradient(
+    90deg,
+    #00e676,
+    #46ffb4);
+
+    color:#051019;
+
 }
 
-.vp-card.success {
-  border: 2px solid #22c55e;
+.certificate-btn:hover{
+
+    transform:translateY(-3px);
+
 }
 
-.vp-card.danger {
-  border: 2px solid #ef4444;
+/* ================================================= */
+/* RESULT */
+/* ================================================= */
+
+.result-header{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:28px;
+
 }
 
-.vp-card.loading {
-  border: 2px solid #00e5ff;
+.result-header svg{
+
+    font-size:34px;
+
 }
 
-.vp-card h1, .vp-card h2 {
-  margin-top: 10px;
-  color: #00e5ff;
+.result-header.success svg{
+
+    color:var(--success);
+
 }
 
-.spin {
-  animation: spin 1s linear infinite;
+.result-header.invalid svg{
+
+    color:var(--danger);
+
 }
 
-@keyframes spin {
-  100% { transform: rotate(360deg); }
+.result-header h2{
+
+    font-size:2rem;
+
 }
 
-/* ================================
-   GRID LAYOUT
-================================ */
-.vp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
+/* ================================================= */
+/* GRID */
+/* ================================================= */
+
+.result-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(260px,1fr));
+
+    gap:24px;
+
+    margin-bottom:25px;
+
 }
 
-.vp-box {
-  background: #111827;
-  padding: 15px;
-  border-radius: 8px;
+.result-card{
+
+    padding:24px;
+
+    border-radius:20px;
+
+    background:var(--panel2);
+
+    border:1px solid var(--border);
+
+    transition:.35s;
+
 }
 
-.vp-box h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #00e5ff;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.result-card:hover{
+
+    transform:translateY(-6px);
+
+    border-color:rgba(0,229,255,.2);
+
 }
 
-.vp-box p {
-  font-size: 13px;
-  color: #e5e7eb;
+.result-card span{
+
+    display:block;
+
+    color:var(--muted);
+
+    margin-bottom:10px;
+
+    font-size:14px;
+
 }
 
-.vp-box.full {
-  grid-column: span 2;
+.result-card strong{
+
+    font-size:18px;
+
+    word-break:break-word;
+
 }
 
-.tag.green {
-  display: inline-block;
-  background: #22c55e;
-  color: #fff;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-top: 6px;
+.verified{
+
+    color:var(--success);
+
 }
 
-/* ================================
-   HASH BOX
-================================ */
-.hash-box {
-  font-family: monospace;
-  font-size: 11px;
-  background: #0f172a;
-  color: #00ffcc;
-  padding: 12px;
-  border-radius: 6px;
-  word-break: break-all;
+/* ================================================= */
+/* HASH */
+/* ================================================= */
+
+.hash-panel{
+
+    margin-top:15px;
+
+    padding:28px;
+
+    border-radius:20px;
+
+    background:var(--panel2);
+
+    border:1px solid var(--border);
+
 }
 
-/* ================================
-   ACTION ROW
-================================ */
-.action-row {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
+.hash-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:var(--primary);
+
+    margin-bottom:18px;
+
+    font-weight:700;
+
 }
-/* ================================
-   HASH BOX
-================================ */
-.hash-box,
-.vp-box code {
-  display: block;
-  font-family: monospace;
-  font-size: 12px;
-  line-height: 1.4;
-  background: #0f172a;        /* dark background */
-  color: #00ffcc;             /* bright cyan text */
-  padding: 12px;
-  border-radius: 6px;
-  word-break: break-all;
-  border: 1px solid #00e5ff;  /* cyan border for visibility */
-  margin-top: 8px;
-  overflow-x: auto;           /* allow scrolling if too long */
-  white-space: pre-wrap;      /* wrap long hashes */
+
+.hash-panel code{
+
+    display:block;
+
+    padding:20px;
+
+    border-radius:14px;
+
+    background:#08111d;
+
+    color:#79ffe4;
+
+    border:1px solid rgba(0,229,255,.15);
+
+    word-break:break-all;
+
+    line-height:1.7;
+
+}
+
+/* ================================================= */
+/* SPINNER */
+/* ================================================= */
+
+.spin{
+
+    animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+from{
+transform:rotate(0deg);
+}
+
+to{
+transform:rotate(360deg);
+}
+
+}
+
+/* ================================================= */
+/* MOBILE */
+/* ================================================= */
+
+@media(max-width:992px){
+
+.verify-certificate-page{
+
+padding:95px 20px 60px;
+
+}
+
+.verify-hero{
+
+grid-template-columns:1fr;
+
+padding:35px;
+
+}
+
+.verify-hero h1{
+
+font-size:2.5rem;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.verify-certificate-page{
+
+padding:90px 15px 50px;
+
+}
+
+.verify-hero{
+
+padding:30px 22px;
+
+}
+
+.verify-hero h1{
+
+font-size:2rem;
+
+}
+
+.hero-subtitle{
+
+font-size:15px;
+
+}
+
+.verify-panel,
+.result-panel{
+
+padding:25px;
+
+}
+
+.result-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.verify-action-btn,
+.certificate-btn{
+
+width:100%;
+
+}
+
 }

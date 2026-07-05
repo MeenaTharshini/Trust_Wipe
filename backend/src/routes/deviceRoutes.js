@@ -6,10 +6,32 @@ import {
   deleteDevice,
 } from "../controllers/deviceController.js";
 
+import authMiddleware from "../middleware/authMiddleware.js";
+
 const router = express.Router();
-router.get("/discover", autoDiscoverDevices);
-router.get("/", getDevices);
-router.post("/", createDevice);
-router.delete("/:id", deleteDevice);
+
+router.get(
+    "/discover",
+    authMiddleware,
+    autoDiscoverDevices
+);
+
+router.post(
+  "/",
+  authMiddleware,
+  createDevice
+);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  deleteDevice
+);
+
+router.get(
+  "/",
+  authMiddleware,
+  getDevices
+);
 
 export default router;

@@ -4,9 +4,19 @@ import {
   getAllJobs,
 } from "../controllers/wipeController.js";
 
-const router = express.Router();
 
-router.post("/start", startWipeController);
-router.get("/", getAllJobs);
+import authMiddleware from "../middleware/authMiddleware.js";
+const router = express.Router();
+router.post(
+  "/start",
+  authMiddleware,
+  startWipeController
+);
+
+router.get(
+  "/",
+  authMiddleware,
+  getAllJobs
+);
 
 export default router;

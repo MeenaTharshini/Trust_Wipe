@@ -27,26 +27,46 @@ function Dashboard() {
   // FETCH DEVICES
   // ----------------------------
   const fetchDevices = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/devices");
-      setDevices(res.data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
+    console.log("Dashboard Token:", token);
+
+    const res = await axios.get(
+      "http://localhost:5000/api/devices",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setDevices(res.data);
+  } catch (err) {
+    console.log(err.response?.data);
+  }
+};
 
   // ----------------------------
   // FETCH JOBS
   // ----------------------------
   const fetchJobs = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/wipe");
-      setJobs(res.data.jobs || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
 
+    const res = await axios.get(
+      "http://localhost:5000/api/wipe",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setJobs(res.data.jobs || []);
+  } catch (err) {
+    console.error("JOB ERROR:", err.response?.data || err.message);
+  }
+};
   // ----------------------------
   // LOAD ALL DATA
   // ----------------------------
@@ -102,20 +122,28 @@ function Dashboard() {
   // ----------------------------
   // START WIPE
   // ----------------------------
-  const startWipe = async (deviceId, deviceName) => {
-    try {
-      const res = await axios.post(
-        "http://localhost:5000/api/wipe/start",
-        { deviceId }
-      );
+  const startWipe = async (deviceId) => {
+  try {
+    const token = localStorage.getItem("token");
 
-      setJobs((prev) => [res.data, ...prev]);
-      fetchDevices();
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Failed to start wipe");
-    }
-  };
+    console.log("POST Token:", token);
+
+    const res = await axios.post(
+      "http://localhost:5000/api/wipe/start",
+      { deviceId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setJobs((prev) => [res.data, ...prev]);
+    fetchDevices();
+  } catch (err) {
+    console.log(err.response?.data || err.message);
+  }
+};
 
   // ----------------------------
   // FILTER DEVICES

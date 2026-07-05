@@ -5,21 +5,28 @@ function WipeJobs() {
   const [deviceId, setDeviceId] = useState("");
   const [job, setJob] = useState(null);
 
-  const startWipe = async () => {
-    try {
-      const res = await axios.post(
-        "http://localhost:5000/api/wipe/start",
-        {
-          deviceId,
-        }
-      );
+  const startWipe = async (deviceId) => {
+  try {
+    const token = localStorage.getItem("token");
 
-      setJob(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    console.log("POST Token:", token);
 
+    const res = await axios.post(
+      "http://localhost:5000/api/wipe/start",
+      { deviceId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setJobs((prev) => [res.data, ...prev]);
+    fetchDevices();
+  } catch (err) {
+    console.log(err.response?.data || err.message);
+  }
+};
   return (
     <div>
       <h1>Wipe Jobs</h1>
@@ -33,9 +40,9 @@ function WipeJobs() {
         }
       />
 
-      <button onClick={startWipe}>
-        Start Wipe
-      </button>
+      <button onClick={() => startWipe(deviceId)}>
+    Start Wipe
+</button>
 
       {job && (
         <div>
