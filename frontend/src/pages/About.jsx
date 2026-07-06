@@ -1,9 +1,10 @@
 import {
   FiShield,
-  FiLock,
+  FiTarget,
+  FiEye,
   FiCpu,
   FiDatabase,
-  FiAward,
+  FiLock,
   FiCheckCircle,
 } from "react-icons/fi";
 
@@ -26,167 +27,178 @@ function About() {
           </span>
 
           <h1>
-            Enterprise Data Destruction &
-            Certificate Verification Platform
+            Building Trust in
+            Secure Data Destruction
           </h1>
 
           <p>
-            TrustWipe is a secure enterprise solution designed to
-            permanently erase sensitive data, generate digitally signed
-            destruction certificates, and provide public certificate
-            verification through cryptographic validation.
+            TrustWipe was created to solve one critical challenge:
+            ensuring that deleted data is truly destroyed and can
+            never be recovered. Our platform combines secure data
+            sanitization, cryptographic verification and digital
+            certification into a single trusted solution.
           </p>
 
         </section>
 
-        {/* MISSION */}
+        {/* STORY */}
 
         <section className="about-section">
 
-          <h2>Our Mission</h2>
+          <h2>Why TrustWipe Exists</h2>
 
           <p>
-            Organizations store enormous amounts of confidential data.
-            Simply deleting files is not enough. TrustWipe ensures every
-            storage device is securely sanitized using industry-approved
-            techniques, preventing unauthorized data recovery while
-            maintaining complete auditability.
+            Organizations regularly replace computers, storage drives,
+            servers and IT assets. Simply deleting files does not
+            guarantee data removal. Sensitive information can still be
+            recovered using forensic tools.
+          </p>
+
+          <p>
+            TrustWipe was designed to provide verifiable proof that
+            data has been securely erased before devices are recycled,
+            reused or decommissioned.
           </p>
 
         </section>
 
-        {/* FEATURES */}
+        {/* MISSION + VISION */}
 
-        <section className="feature-grid">
+        <section className="mission-grid">
 
-          <div className="feature-card">
+          <div className="mission-card">
 
-            <FiShield />
+            <FiTarget />
 
-            <h3>Enterprise Security</h3>
+            <h3>Our Mission</h3>
 
             <p>
-              Built with strong authentication, digital signatures and
-              cryptographic verification to protect every certificate.
+              To help organizations securely destroy sensitive data
+              while maintaining transparency, compliance and trust.
             </p>
 
           </div>
 
-          <div className="feature-card">
+          <div className="mission-card">
 
-            <FiCpu />
+            <FiEye />
 
-            <h3>Advanced Wiping Engine</h3>
-
-            <p>
-              Securely erase HDDs, SSDs, USB drives and enterprise
-              storage devices using trusted sanitization methods.
-            </p>
-
-          </div>
-
-          <div className="feature-card">
-
-            <FiDatabase />
-
-            <h3>Asset Tracking</h3>
+            <h3>Our Vision</h3>
 
             <p>
-              Monitor every registered device, wipe operation and
-              certificate from one centralized dashboard.
-            </p>
-
-          </div>
-
-          <div className="feature-card">
-
-            <FiLock />
-
-            <h3>Public Verification</h3>
-
-            <p>
-              Anyone can validate certificate authenticity using the
-              unique Certificate ID and cryptographic signature.
+              To become a trusted standard for certified data
+              sanitization and verification across modern enterprises.
             </p>
 
           </div>
 
         </section>
 
-        {/* WHY TRUSTWIPE */}
+        {/* TECHNOLOGY */}
 
         <section className="about-section">
 
-          <h2>Why Choose TrustWipe?</h2>
+          <h2>Technology Behind TrustWipe</h2>
 
-          <div className="why-grid">
+          <div className="tech-grid">
 
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Digitally Signed Certificates</span>
+            <div className="tech-card">
+              <FiShield />
+              <h3>Cryptographic Security</h3>
+              <p>
+                SHA-256 hashing and RSA digital signatures ensure
+                certificate authenticity and integrity.
+              </p>
             </div>
 
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Cryptographic SHA Verification</span>
+            <div className="tech-card">
+              <FiCpu />
+              <h3>Secure Wiping Engine</h3>
+              <p>
+                Multi-pass data sanitization designed to minimize
+                recovery possibilities.
+              </p>
             </div>
 
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Enterprise Dashboard</span>
+            <div className="tech-card">
+              <FiDatabase />
+              <h3>Asset Tracking</h3>
+              <p>
+                Centralized management of devices, wipe jobs,
+                reports and certificates.
+              </p>
             </div>
 
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Device Lifecycle Management</span>
-            </div>
-
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Secure Wipe Reporting</span>
-            </div>
-
-            <div className="why-item">
-              <FiCheckCircle />
-              <span>Audit Ready Documentation</span>
+            <div className="tech-card">
+              <FiLock />
+              <h3>Public Verification</h3>
+              <p>
+                Certificates can be validated using unique IDs
+                and cryptographic evidence.
+              </p>
             </div>
 
           </div>
 
         </section>
 
-        {/* COMPLIANCE */}
+        {/* VALUES */}
 
-        <section className="compliance">
+        <section className="about-section">
 
-          <FiAward className="award-icon" />
+          <h2>Core Values</h2>
 
-          <h2>Built for Enterprise Compliance</h2>
+          <div className="values-grid">
 
-          <p>
-            TrustWipe helps organizations maintain secure data disposal
-            practices with complete traceability, certificate generation,
-            verification and reporting suitable for enterprise and
-            regulatory audit requirements.
-          </p>
+            <div className="value-item">
+              <FiCheckCircle />
+              Transparency
+            </div>
+
+            <div className="value-item">
+              <FiCheckCircle />
+              Security
+            </div>
+
+            <div className="value-item">
+              <FiCheckCircle />
+              Compliance
+            </div>
+
+            <div className="value-item">
+              <FiCheckCircle />
+              Accountability
+            </div>
+
+            <div className="value-item">
+              <FiCheckCircle />
+              Trust
+            </div>
+
+            <div className="value-item">
+              <FiCheckCircle />
+              Innovation
+            </div>
+
+          </div>
 
         </section>
 
-        {/* FOOTER */}
+        {/* CTA */}
 
-        <footer className="about-footer">
+        <section className="about-cta">
 
-          <h3>TrustWipe</h3>
+          <h2>
+            Secure Data Disposal Starts Here
+          </h2>
 
           <p>
-            Enterprise Data Destruction Platform
+            TrustWipe provides organizations with secure data
+            destruction, certificate generation and public
+            verification in one unified platform.
           </p>
 
-          <span>
-            © 2026 TrustWipe. All Rights Reserved.
-          </span>
-
-        </footer>
+        </section>
 
       </div>
     </>

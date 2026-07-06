@@ -18,7 +18,7 @@ import Reports from "./pages/Reports";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import Services from "./pages/Services";
 import About from "./pages/About";
-
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -60,11 +60,11 @@ function Layout() {
           {/* ==========================================
                     DEFAULT ROUTE
           ========================================== */}
-
           <Route
-            path="/"
-            element={<Navigate to="/verify" replace />}
-          />
+  path="/"
+  element={<Home />}
+/>
+        
 
           {/* ==========================================
                     PUBLIC ROUTES
@@ -119,6 +119,14 @@ function Layout() {
               </PrivateRoute>
             }
           />
+          <Route
+  path="/dashboard/:id"
+  element={
+    <PrivateRoute>
+      <Dashboard />
+    </PrivateRoute>
+  }
+/>
 
           <Route
             path="/devices"

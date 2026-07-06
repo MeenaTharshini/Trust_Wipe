@@ -16,7 +16,9 @@ function PublicNavbar() {
       </Link>
 
       <nav className="public-nav-links">
-
+        <Link to="/">
+  Home
+</Link>
         <Link to="/services">
   Services
 </Link>

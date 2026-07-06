@@ -11,6 +11,7 @@ import wipeRoutes from "./routes/wipeRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 import { initSocket } from "./socket/index.js";
 
@@ -47,7 +48,13 @@ app.use("/api/certificate", certificateRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
 });
-
+//==========generatereport=========
+app.use("/api/auth", authRoutes);
+app.use("/api/devices", deviceRoutes);
+app.use("/api/wipe", wipeRoutes);
+app.use("/api/certificates", certificateRoutes);
+app.use("/api/verification", verificationRoutes);
+app.use("/api/reports", reportRoutes);
 // ================= 404 =================
 app.use((req, res) => {
   res.status(404).json({

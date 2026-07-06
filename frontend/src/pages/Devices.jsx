@@ -8,7 +8,7 @@ import {
   FiRefreshCw,
   FiWifi,
 } from "react-icons/fi";
-
+import { Link } from "react-router-dom";
 function Devices() {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -389,12 +389,30 @@ console.log("ERROR:", err);
               </div>
             </div>
 
-            <div className="device-actions">
-              <button className="details-btn">Details</button>
-              <button className="delete-btn" onClick={() => deleteDevice(d._id)}>
-                Delete
-              </button>
-            </div>
+<div className="device-actions">
+  {d.status?.toLowerCase() === "pending" && (
+    <Link to={`/dashboard/${d._id}`} className="details-btn">
+      Go to Wipe
+    </Link>
+  )}
+
+  {d.status?.toLowerCase() === "completed" && (
+    <Link to={`/dashboard/${d._id}`} className="details-btn">
+      Go to Verify
+    </Link>
+  )}
+
+  {/* If status is failed, don't show any action button */}
+
+  <button
+    className="delete-btn"
+    onClick={() => deleteDevice(d._id)}
+  >
+    Delete
+  </button>
+</div>
+
+
 
           </div>
         ))}

@@ -172,60 +172,69 @@ BUTTONS
 SECURITY CARD
 =========================== */
 
-.security-card{
-  padding:40px;
-  border-radius:26px;
+/* ===========================
+SECURITY CARD
+=========================== */
 
-  text-align:center;
-
-  background:var(--panel);
-
-  border:1px solid var(--border);
-
-  box-shadow:var(--shadow);
-
-  transition:.35s;
+.security-card {
+  padding: 40px;
+  border-radius: 26px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: 0.35s;
 }
 
-.security-card:hover{
-  transform:translateY(-8px);
+.security-card:hover {
+  transform: translateY(-8px);
 }
 
-.security-card svg{
-  font-size:65px;
-  color:var(--primary);
+/* Only the main shield icon */
+.security-card > svg {
+  font-size: 48px;
+  color: var(--primary);
+  margin-bottom: 10px;
 }
 
-.security-card h2{
-  margin-top:18px;
-  font-size:28px;
+/* Title and subtitle */
+.security-card h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-.security-card p{
-  color:var(--muted);
-  margin:12px 0 30px;
+.security-card p {
+  color: var(--muted);
+  margin: 12px 0 30px;
 }
 
-.security-stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
+/* Feature list */
+.security-features {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-left: 100px;
 }
 
-.security-stats div{
-  background:rgba(255,255,255,.04);
-  border-radius:16px;
-  padding:18px;
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.security-stats h3{
-  color:var(--primary);
-  font-size:26px;
+/* Smaller icons for features */
+.feature-item svg {
+  font-size: 22px;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
-.security-stats span{
-  color:var(--muted);
-  font-size:14px;
+.feature-item span {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* ===========================

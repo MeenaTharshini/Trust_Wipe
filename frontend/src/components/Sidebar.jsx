@@ -49,11 +49,6 @@ function Sidebar() {
       icon: Database,
     },
     {
-      name: "Verification",
-      path: "/verification",
-      icon: ShieldCheck,
-    },
-    {
       name: "Reports",
       path: "/reports",
       icon: BarChart3,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import socket from "../services/socket";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate } from "react-router-dom";
 
 import {
   FiShield,
@@ -234,6 +234,9 @@ function Dashboard() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <Link to="/devices" className="add-btn">
+        + Add Device
+      </Link>
           </div>
 
           {loading ? (

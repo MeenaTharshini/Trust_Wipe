@@ -257,7 +257,14 @@ table td{
   margin-bottom: 12px;
   color: #0f172a;
 }
+.info-card table td {
+  color: #0f172a; /* dark navy for strong contrast */
+}
 
+.info-card table td:first-child {
+  color: #1e293b; /* slightly lighter for labels */
+  font-weight: 600;
+}
 table {
   width: 100%;
   border-collapse: collapse;

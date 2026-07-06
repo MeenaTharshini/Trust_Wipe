@@ -6,400 +6,227 @@ import {
   FiLock,
   FiCheckCircle,
   FiArrowRight,
+  FiSearch,
+  FiCpu,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
 
+import { Link } from "react-router-dom";
 import PublicNavbar from "../components/PublicNavbar/PublicNavbar";
+
 import "./Services.css";
 
+// Reusable card component
+function ServiceCard({ icon: Icon, title, description }) {
+  return (
+    <div className="service-card">
+      <Icon />
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  );
+}
+
 function Services() {
+  const services = [
+    {
+      icon: FiHardDrive,
+      title: "Device Registration",
+      description:
+        "Register storage devices with identification, serial numbers, capacity and location details.",
+    },
+    {
+      icon: FiShield,
+      title: "Secure Data Wiping",
+      description:
+        "Perform controlled wipe operations to sanitize storage media before disposal or reuse.",
+    },
+    {
+      icon: FiFileText,
+      title: "Certificate Generation",
+      description:
+        "Generate digital certificates after successful wipe completion.",
+    },
+    {
+      icon: FiDatabase,
+      title: "Asset Management",
+      description:
+        "Maintain centralized records of devices, wipe jobs and generated certificates.",
+    },
+    {
+      icon: FiLock,
+      title: "Cryptographic Security",
+      description:
+        "Protect verification data using SHA hashing and RSA-based digital signatures.",
+    },
+    {
+      icon: FiSearch,
+      title: "Certificate Verification",
+      description:
+        "Validate certificate authenticity through the public verification portal.",
+    },
+  ];
+
+  const benefits = [
+    {
+      icon: FiCheckCircle,
+      title: "Transparency",
+      description: "Every wipe activity is tracked and documented.",
+    },
+    {
+      icon: FiDatabase,
+      title: "Centralized Records",
+      description: "Manage devices, jobs and certificates in one place.",
+    },
+    {
+      icon: FiLock,
+      title: "Integrity Protection",
+      description: "Verification records are protected using cryptographic methods.",
+    },
+    {
+      icon: FiCpu,
+      title: "Simplified Workflow",
+      description: "Register, wipe, verify and certify devices efficiently.",
+    },
+  ];
+
+  const workflow = [
+    { step: "01", title: "Register Device", description: "Add device information and inventory details." },
+    { step: "02", title: "Perform Wipe", description: "Execute secure data sanitization operations." },
+    { step: "03", title: "Verify Results", description: "Validate wipe completion using verification tools." },
+    { step: "04", title: "Generate Certificate", description: "Produce digital proof of data destruction." },
+  ];
+
+  const technologies = [
+    "SHA-256 Hashing",
+    "RSA Signatures",
+    "Secure Wiping",
+    "Verification Engine",
+    "Asset Tracking",
+    "Certificate Generation",
+  ];
+
   return (
     <>
       <PublicNavbar />
 
       <div className="services-page">
-
-        {/* ================= HERO ================= */}
-
+        {/* HERO */}
         <section className="services-hero">
-
           <div className="hero-left">
-
-            <p className="hero-label">
-              ENTERPRISE DATA SANITIZATION
-            </p>
-
+            <p className="hero-label">TRUSTWIPE SERVICES</p>
             <h1>
-              Secure Data Destruction
-              <br />
-              for Modern Organizations
+              Complete Data <br />
+              Sanitization & <br />
+              Verification Platform
             </h1>
-
             <p className="hero-description">
-              TrustWipe delivers enterprise-grade certified data
-              sanitization, military-grade erasure, cryptographically
-              signed certificates, compliance reporting and public
-              verification for organizations handling sensitive
-              information.
+              TrustWipe provides secure device wiping, certificate generation, verification,
+              asset management and compliance-ready reporting through a unified platform.
             </p>
-
             <div className="hero-buttons">
-
-              <Link
-                to="/register"
-                className="primary-btn"
-              >
-                Get Started
-              </Link>
-
-              <Link
-                to="/verify-certificate"
-                className="secondary-btn"
-              >
-                Verify Certificate
-              </Link>
-
+              <Link to="/register" className="primary-btn">Get Started</Link>
+              <Link to="/verify" className="secondary-btn">Verify Certificate</Link>
             </div>
-
           </div>
 
           <div className="hero-right">
+  <div className="security-card">
+    <FiShield className="security-logo" />
+    <h2>TrustWipe Platform</h2>
+    <p className="security-subtitle">Secure • Verifiable • Centralized</p>
 
-            <div className="security-card">
-
-              <FiShield />
-
-              <h2>Enterprise Security</h2>
-
-              <p>
-                Trusted Data Sanitization Platform
-              </p>
-
-              <div className="security-stats">
-
-                <div>
-                  <h3>99.99%</h3>
-                  <span>Success Rate</span>
-                </div>
-
-                <div>
-                  <h3>256-bit</h3>
-                  <span>Encryption</span>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
+    <div className="security-features">
+      <div className="feature-item">
+        <FiCheckCircle className="feature-icon" />
+        <span>Device Tracking</span>
+      </div>
+      <div className="feature-item">
+        <FiLock className="feature-icon" />
+        <span>Digital Signatures</span>
+      </div>
+      <div className="feature-item">
+        <FiFileText className="feature-icon" />
+        <span>Certificates</span>
+      </div>
+      <div className="feature-item">
+        <FiSearch className="feature-icon" />
+        <span>Verification Portal</span>
+      </div>
+    </div>
+  </div>
+</div>
 
         </section>
 
-        {/* ================= SERVICES ================= */}
-
+        {/* SERVICES */}
         <section className="section">
-
           <div className="section-title">
-
             <p>OUR SERVICES</p>
-
-            <h2>
-              Everything Required for
-              <br />
-              Secure Data Destruction
-            </h2>
-
+            <h2>Everything Needed for Secure Data Disposal</h2>
           </div>
-
           <div className="services-grid">
-
-            <div className="service-card">
-
-              <FiHardDrive />
-
-              <h3>Secure Device Wiping</h3>
-
-              <p>
-                Certified sanitization for HDDs, SSDs,
-                USB drives and enterprise storage using
-                approved overwrite algorithms.
-              </p>
-
-            </div>
-
-            <div className="service-card">
-
-              <FiShield />
-
-              <h3>Military Grade Erasure</h3>
-
-              <p>
-                Multi-pass overwrite techniques and
-                secure erase procedures ensuring
-                irreversible destruction.
-              </p>
-
-            </div>
-
-            <div className="service-card">
-
-              <FiFileText />
-
-              <h3>Digital Certificates</h3>
-
-              <p>
-                Automatically generate digitally signed
-                destruction certificates with QR-based
-                public verification.
-              </p>
-
-            </div>
-
-            <div className="service-card">
-
-              <FiDatabase />
-
-              <h3>Asset Management</h3>
-
-              <p>
-                Maintain centralized records for storage
-                devices, serial numbers, wipe history
-                and certificates.
-              </p>
-
-            </div>
-
-            <div className="service-card">
-
-              <FiLock />
-
-              <h3>Compliance Reporting</h3>
-
-              <p>
-                Generate audit-ready compliance reports
-                for GDPR, ISO, HIPAA and enterprise
-                security standards.
-              </p>
-
-            </div>
-
-            <div className="service-card">
-
-              <FiCheckCircle />
-
-              <h3>Public Verification</h3>
-
-              <p>
-                Verify destruction certificates through
-                secure online validation and digital
-                signature verification.
-              </p>
-
-            </div>
-
+            {services.map((s, i) => (
+              <ServiceCard key={i} icon={s.icon} title={s.title} description={s.description} />
+            ))}
           </div>
-
         </section>
 
-        {/* ================= WHY TRUSTWIPE ================= */}
-
+        {/* PLATFORM BENEFITS */}
         <section className="section">
-
           <div className="section-title">
-
-            <p>WHY TRUSTWIPE</p>
-
-            <h2>
-              Trusted by Modern Enterprises
-            </h2>
-
+            <p>PLATFORM BENEFITS</p>
+            <h2>Why Use TrustWipe</h2>
           </div>
-
-          <div className="stats-grid">
-
-            <div className="stat-card">
-              <h2>5000+</h2>
-              <span>Devices Sanitized</span>
-            </div>
-
-            <div className="stat-card">
-              <h2>100%</h2>
-              <span>Certificate Integrity</span>
-            </div>
-
-            <div className="stat-card">
-              <h2>24/7</h2>
-              <span>Verification Portal</span>
-            </div>
-
-            <div className="stat-card">
-              <h2>256-bit</h2>
-              <span>Digital Security</span>
-            </div>
-
+          <div className="services-grid">
+            {benefits.map((b, i) => (
+              <ServiceCard key={i} icon={b.icon} title={b.title} description={b.description} />
+            ))}
           </div>
-
         </section>
 
-        {/* ================= WORKFLOW ================= */}
-
+        {/* WORKFLOW */}
         <section className="section">
-
           <div className="section-title">
-
             <p>WORKFLOW</p>
-
-            <h2>
-              How TrustWipe Works
-            </h2>
-
+            <h2>How TrustWipe Works</h2>
           </div>
-
           <div className="workflow-grid">
-
-            <div className="workflow-card">
-
-              <div className="step-number">
-                01
+            {workflow.map((w, i) => (
+              <div key={i} className="workflow-card">
+                <div className="step-number">{w.step}</div>
+                <h3>{w.title}</h3>
+                <p>{w.description}</p>
               </div>
-
-              <h3>Register Device</h3>
-
-              <p>
-                Add storage devices with complete
-                identification and inventory details.
-              </p>
-
-            </div>
-
-            <div className="workflow-card">
-
-              <div className="step-number">
-                02
-              </div>
-
-              <h3>Perform Secure Wipe</h3>
-
-              <p>
-                Execute enterprise-certified wipe
-                algorithms with complete monitoring.
-              </p>
-
-            </div>
-
-            <div className="workflow-card">
-
-              <div className="step-number">
-                03
-              </div>
-
-              <h3>Generate Certificate</h3>
-
-              <p>
-                Produce digitally signed proof of
-                destruction with cryptographic hash.
-              </p>
-
-            </div>
-
-            <div className="workflow-card">
-
-              <div className="step-number">
-                04
-              </div>
-
-              <h3>Public Verification</h3>
-
-              <p>
-                Anyone can verify authenticity using
-                the certificate ID and QR code.
-              </p>
-
-            </div>
-
+            ))}
           </div>
-
         </section>
 
-        {/* ================= COMPLIANCE ================= */}
-
+        {/* TECHNOLOGY */}
         <section className="section">
-
           <div className="section-title">
-
-            <p>COMPLIANCE</p>
-
-            <h2>
-              Standards We Support
-            </h2>
-
+            <p>TECHNOLOGY</p>
+            <h2>Core Technologies</h2>
           </div>
-
           <div className="compliance-grid">
-
-            <div className="compliance-card">
-              GDPR
-            </div>
-
-            <div className="compliance-card">
-              NIST 800-88
-            </div>
-
-            <div className="compliance-card">
-              ISO 27001
-            </div>
-
-            <div className="compliance-card">
-              DoD 5220.22-M
-            </div>
-
-            <div className="compliance-card">
-              HIPAA
-            </div>
-
-            <div className="compliance-card">
-              PCI DSS
-            </div>
-
+            {technologies.map((t, i) => (
+              <div key={i} className="compliance-card">{t}</div>
+            ))}
           </div>
-
         </section>
 
-        {/* ================= CTA ================= */}
-
+        {/* CTA */}
         <section className="cta-section">
-
-          <h2>
-            Ready to Secure Your Data?
-          </h2>
-
+          <h2>Secure Your Data Lifecycle</h2>
           <p>
-            Start using TrustWipe today and generate
-            enterprise-grade certified data destruction
-            reports with complete transparency.
+            Manage device sanitization, verification and certification through a single trusted platform.
           </p>
-
           <div className="hero-buttons">
-
-            <Link
-              to="/register"
-              className="primary-btn"
-            >
-              Create Account
+            <Link to="/register" className="primary-btn">Create Account</Link>
+            <Link to="/login" className="secondary-btn">
+              Login <FiArrowRight />
             </Link>
-
-            <Link
-              to="/login"
-              className="secondary-btn"
-            >
-              Login
-              <FiArrowRight />
-            </Link>
-
           </div>
-
         </section>
-
       </div>
     </>
   );

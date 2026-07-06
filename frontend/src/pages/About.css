@@ -4,332 +4,349 @@
   --border:rgba(255,255,255,.08);
 
   --primary:#00e5ff;
-  --success:#00e676;
-
   --text:#f8fafc;
   --muted:#94a3b8;
 
-  --shadow:0 15px 45px rgba(0,0,0,.35);
+  --shadow:
+    0 15px 45px rgba(0,0,0,.35);
+
   --radius:24px;
 }
 
-/* ===========================
+/* ==================================
 PAGE
-=========================== */
+================================== */
 
 .about-page{
-    min-height:100vh;
-    background:
-        radial-gradient(circle at top left,#12203d 0%,#0a1120 30%,#070b14 100%);
-    color:var(--text);
+  min-height:100vh;
 
-    padding:110px 20px 80px;
+  background:
+  radial-gradient(
+    circle at top left,
+    #12203d 0%,
+    #0a1120 35%,
+    #070b14 100%
+  );
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:70px;
+  color:var(--text);
+
+  padding:110px 20px 80px;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  gap:60px;
+
+  overflow-x:hidden;
 }
 
-/* ===========================
+/* ==================================
 HERO
-=========================== */
+================================== */
 
 .about-hero{
-    width:min(1400px,95vw);
+  width:min(1400px,95vw);
 
-    text-align:center;
+  text-align:center;
 
-    padding:70px 60px;
+  padding:80px 50px;
 
-    border-radius:30px;
+  border-radius:30px;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(0,229,255,.08),
-            rgba(255,255,255,.03)
-        );
+  background:
+  linear-gradient(
+    135deg,
+    rgba(0,229,255,.08),
+    rgba(255,255,255,.03)
+  );
 
-    border:1px solid rgba(0,229,255,.15);
+  border:1px solid rgba(0,229,255,.15);
 
-    backdrop-filter:blur(14px);
+  backdrop-filter:blur(15px);
 
-    box-shadow:var(--shadow);
+  box-shadow:var(--shadow);
 }
 
 .about-tag{
-    color:var(--primary);
+  display:inline-block;
 
-    letter-spacing:3px;
+  color:var(--primary);
 
-    font-size:13px;
+  letter-spacing:3px;
 
-    font-weight:700;
+  font-size:13px;
+  font-weight:700;
+
+  margin-bottom:20px;
 }
 
 .about-hero h1{
-    font-size:3.5rem;
+  font-size:4rem;
 
-    margin:20px 0;
+  line-height:1.15;
 
-    line-height:1.15;
+  margin-bottom:25px;
 }
 
 .about-hero p{
-    max-width:850px;
+  max-width:850px;
 
-    margin:auto;
+  margin:auto;
 
-    color:var(--muted);
+  color:var(--muted);
 
-    line-height:1.8;
+  line-height:1.9;
 
-    font-size:17px;
+  font-size:17px;
 }
 
-/* ===========================
+/* ==================================
 SECTION
-=========================== */
+================================== */
 
 .about-section{
-    width:min(1400px,95vw);
+  width:min(1200px,95vw);
+
+  text-align:center;
 }
 
 .about-section h2{
-    font-size:2.4rem;
+  font-size:2.7rem;
 
-    margin-bottom:20px;
+  margin-bottom:25px;
 }
 
 .about-section p{
-    color:var(--muted);
+  max-width:950px;
 
-    line-height:1.8;
+  margin:0 auto 20px;
 
-    font-size:17px;
+  color:var(--muted);
+
+  line-height:1.9;
+
+  font-size:16px;
 }
 
-/* ===========================
-FEATURES
-=========================== */
+/* ==================================
+MISSION / VISION
+================================== */
 
-.feature-grid{
-    width:min(1400px,95vw);
+.mission-grid{
+  width:min(1200px,95vw);
 
-    display:grid;
+  display:grid;
 
-    grid-template-columns:
-        repeat(auto-fit,minmax(280px,1fr));
+  grid-template-columns:
+  repeat(auto-fit,minmax(350px,1fr));
 
-    gap:25px;
+  gap:30px;
 }
 
-.feature-card{
-    background:var(--panel);
+.mission-card{
+  background:var(--panel);
 
-    border:1px solid var(--border);
+  border:1px solid var(--border);
 
-    backdrop-filter:blur(12px);
+  border-radius:24px;
 
-    border-radius:22px;
+  padding:40px;
 
-    padding:35px;
+  text-align:center;
 
-    transition:.35s;
+  transition:.35s;
 
-    box-shadow:var(--shadow);
-
-    cursor:pointer;
+  box-shadow:var(--shadow);
 }
 
-.feature-card:hover{
-    transform:translateY(-10px);
+.mission-card:hover{
+  transform:translateY(-8px);
 
-    border-color:rgba(0,229,255,.3);
-
-    box-shadow:
-        0 20px 45px rgba(0,229,255,.12);
+  border-color:
+  rgba(0,229,255,.25);
 }
 
-.feature-card svg{
-    font-size:50px;
+.mission-card svg{
+  font-size:55px;
 
-    color:var(--primary);
-
-    margin-bottom:20px;
-
-    transition:.35s;
+  color:var(--primary);
 }
 
-.feature-card:hover svg{
-    transform:scale(1.1);
+.mission-card h3{
+  margin:20px 0;
+
+  font-size:26px;
 }
 
-.feature-card h3{
-    margin-bottom:15px;
+.mission-card p{
+  color:var(--muted);
 
-    font-size:23px;
+  line-height:1.8;
 }
 
-.feature-card p{
-    color:var(--muted);
+/* ==================================
+TECH GRID
+================================== */
 
-    line-height:1.8;
+.tech-grid{
+  margin-top:40px;
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fit,minmax(280px,1fr));
+
+  gap:25px;
 }
 
-/* ===========================
-WHY TRUSTWIPE
-=========================== */
+.tech-card{
+  background:var(--panel);
 
-.why-grid{
-    display:grid;
+  border:1px solid var(--border);
 
-    grid-template-columns:
-        repeat(auto-fit,minmax(300px,1fr));
+  border-radius:22px;
 
-    gap:20px;
+  padding:35px;
 
-    margin-top:35px;
+  transition:.35s;
+
+  box-shadow:var(--shadow);
 }
 
-.why-item{
-    display:flex;
+.tech-card:hover{
+  transform:translateY(-8px);
 
-    align-items:center;
-
-    gap:18px;
-
-    padding:22px;
-
-    background:var(--panel);
-
-    border:1px solid var(--border);
-
-    border-radius:18px;
-
-    backdrop-filter:blur(12px);
-
-    transition:.35s;
+  border-color:
+  rgba(0,229,255,.25);
 }
 
-.why-item:hover{
-    transform:translateY(-6px);
+.tech-card svg{
+  font-size:48px;
 
-    border-color:rgba(0,229,255,.25);
+  color:var(--primary);
 }
 
-.why-item svg{
-    color:var(--success);
-
-    font-size:24px;
+.tech-card h3{
+  margin:20px 0 15px;
 }
 
-.why-item span{
-    font-size:16px;
+.tech-card p{
+  color:var(--muted);
+
+  line-height:1.8;
 }
 
-/* ===========================
-COMPLIANCE
-=========================== */
+/* ==================================
+VALUES
+================================== */
 
-.compliance{
-    width:min(1400px,95vw);
+.values-grid{
+  margin-top:40px;
 
-    text-align:center;
+  display:grid;
 
-    padding:70px 50px;
+  grid-template-columns:
+  repeat(auto-fit,minmax(250px,1fr));
 
-    border-radius:30px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(0,229,255,.10),
-            rgba(255,255,255,.03)
-        );
-
-    border:1px solid rgba(0,229,255,.15);
-
-    backdrop-filter:blur(14px);
-
-    box-shadow:var(--shadow);
+  gap:20px;
 }
 
-.award-icon{
-    font-size:70px;
+.value-item{
+  background:var(--panel);
 
-    color:var(--primary);
+  border:1px solid var(--border);
+
+  border-radius:18px;
+
+  padding:20px;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  gap:12px;
+
+  font-weight:600;
+
+  transition:.3s;
 }
 
-.compliance h2{
-    margin:20px 0;
+.value-item:hover{
+  transform:translateY(-5px);
 
-    font-size:2.5rem;
+  border-color:
+  rgba(0,229,255,.25);
+
+  color:var(--primary);
 }
 
-.compliance p{
-    max-width:850px;
+.value-item svg{
+  color:var(--primary);
 
-    margin:auto;
-
-    color:var(--muted);
-
-    line-height:1.9;
-
-    font-size:17px;
+  font-size:20px;
 }
 
-/* ===========================
-FOOTER
-=========================== */
+/* ==================================
+CTA
+================================== */
 
-.about-footer{
-    width:min(1400px,95vw);
+.about-cta{
+  width:min(1300px,95vw);
 
-    text-align:center;
+  text-align:center;
 
-    padding:40px;
+  padding:70px 40px;
 
-    border-top:1px solid rgba(255,255,255,.08);
+  border-radius:30px;
+
+  background:
+  linear-gradient(
+    135deg,
+    rgba(0,229,255,.08),
+    rgba(255,255,255,.03)
+  );
+
+  border:1px solid rgba(0,229,255,.15);
+
+  box-shadow:var(--shadow);
 }
 
-.about-footer h3{
-    color:var(--primary);
+.about-cta h2{
+  font-size:3rem;
 
-    font-size:2rem;
-
-    margin-bottom:10px;
+  margin-bottom:20px;
 }
 
-.about-footer p{
-    color:var(--muted);
+.about-cta p{
+  max-width:750px;
+
+  margin:auto;
+
+  color:var(--muted);
+
+  line-height:1.9;
+
+  font-size:16px;
 }
 
-.about-footer span{
-    display:block;
-
-    margin-top:15px;
-
-    color:#748396;
-}
-
-/* ===========================
+/* ==================================
 RESPONSIVE
-=========================== */
+================================== */
 
-@media(max-width:1100px){
-
-.about-page{
-    padding:95px 20px 60px;
-}
-
-.about-hero{
-    padding:50px 35px;
-}
+@media(max-width:1000px){
 
 .about-hero h1{
-    font-size:2.8rem;
+  font-size:3rem;
+}
+
+.about-section h2{
+  font-size:2.2rem;
+}
+
+.about-cta h2{
+  font-size:2.4rem;
 }
 
 }
@@ -337,38 +354,33 @@ RESPONSIVE
 @media(max-width:768px){
 
 .about-page{
-    padding:85px 15px 50px;
-
-    gap:50px;
+  padding:90px 15px 50px;
 }
 
 .about-hero{
-    padding:35px 25px;
+  padding:50px 25px;
 }
 
 .about-hero h1{
-    font-size:2rem;
+  font-size:2.2rem;
 }
 
 .about-section h2{
-    font-size:2rem;
+  font-size:1.8rem;
 }
 
-.feature-grid,
-.why-grid{
-    grid-template-columns:1fr;
+.about-cta{
+  padding:45px 25px;
 }
 
-.compliance{
-    padding:45px 25px;
+.about-cta h2{
+  font-size:2rem;
 }
 
-.compliance h2{
-    font-size:2rem;
-}
-
-.about-footer h3{
-    font-size:1.6rem;
+.mission-grid,
+.tech-grid,
+.values-grid{
+  grid-template-columns:1fr;
 }
 
 }
