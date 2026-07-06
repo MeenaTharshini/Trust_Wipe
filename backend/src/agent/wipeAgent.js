@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { exec } from "child_process";
 import os from "os";
 
-const SERVER_URL = "http://localhost:5000";
+const SERVER_URL = "https://trust-wipe.onrender.com/api";
 
 const socket = io(SERVER_URL);
 

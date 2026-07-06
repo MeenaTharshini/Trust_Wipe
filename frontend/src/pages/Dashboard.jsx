@@ -32,7 +32,7 @@ function Dashboard() {
     console.log("Dashboard Token:", token);
 
     const res = await axios.get(
-      "http://localhost:5000/api/devices",
+      "https://trust-wipe.onrender.com/api/devices",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +54,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      "http://localhost:5000/api/wipe",
+      "https://trust-wipe.onrender.com/api/wipe",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,7 +129,7 @@ function Dashboard() {
     console.log("POST Token:", token);
 
     const res = await axios.post(
-      "http://localhost:5000/api/wipe/start",
+      "https://trust-wipe.onrender.com/api/wipe/start",
       { deviceId },
       {
         headers: {

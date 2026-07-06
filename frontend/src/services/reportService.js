@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/reports";
+const API = "https://trust-wipe.onrender.com/api/reports";
 
 /* ======================================================
    COMMON DOWNLOAD FUNCTION

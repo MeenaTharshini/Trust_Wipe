@@ -37,7 +37,7 @@ function Devices() {
 
     const token = localStorage.getItem("token");
 
-    const res = await axios.get("http://localhost:5000/api/devices", {
+    const res = await axios.get("https://trust-wipe.onrender.com/api/devices", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -63,7 +63,7 @@ function Devices() {
     const token = localStorage.getItem("token");
 
     await axios.post(
-      "http://localhost:5000/api/devices",
+      "https://trust-wipe.onrender.com/api/devices",
       form,
       {
         headers: {
@@ -109,7 +109,7 @@ console.log("ERROR:", err);
     if (!confirmed) return;
 
     await axios.delete(
-      `http://localhost:5000/api/devices/${id}`,
+      `https://trust-wipe.onrender.com/api/devices/${id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -141,7 +141,7 @@ console.log("ERROR:", err);
     const token = localStorage.getItem("token");
     console.log("TOKEN =", token);
     const res = await axios.get(
-      "http://localhost:5000/api/devices/discover",
+      "https://trust-wipe.onrender.com/api/devices/discover",
       {
         headers: {
           Authorization: `Bearer ${token}`,
