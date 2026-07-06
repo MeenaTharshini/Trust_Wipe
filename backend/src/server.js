@@ -55,6 +55,23 @@ app.use("/api/wipe", wipeRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/reports", reportRoutes);
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    application: "TrustWipe Enterprise API",
+    version: "1.0.0",
+    status: "Running",
+    endpoints: {
+      auth: "/api/auth",
+      devices: "/api/devices",
+      wipe: "/api/wipe",
+      certificates: "/api/certificate",
+      verification: "/api/verification",
+      reports: "/api/reports",
+      health: "/api/health",
+    },
+  });
+});
 // ================= 404 =================
 app.use((req, res) => {
   res.status(404).json({
