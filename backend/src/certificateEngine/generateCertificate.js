@@ -399,8 +399,8 @@ export const generateCertificate = async (
 
   try {
     const qr = await QRCode.toDataURL(
-      `https://trust-wipe.onrender.com/verify/${certificate.certificateId}`
-    );
+  `https://trust-wipe-tau.vercel.app/verify/${certificate.certificateId}`
+);
 
     doc.image(qr, 420, 610, {
       width: 100,

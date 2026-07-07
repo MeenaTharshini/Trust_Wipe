@@ -105,6 +105,7 @@ function Layout() {
               </PrivateRoute>
             }
           />
+          
           <Route
             path="/certificates"
             element={
@@ -121,13 +122,14 @@ function Layout() {
               </PrivateRoute>
             }
           />
-
+          
           {/* Legacy Route */}
           <Route
             path="/wipe-jobs"
             element={<Navigate to="/dashboard" replace />}
           />
-
+          
+          
           {/* ==========================================
               404
           ========================================== */}

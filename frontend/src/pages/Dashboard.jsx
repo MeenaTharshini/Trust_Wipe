@@ -23,6 +23,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const [showAgentPrompt, setShowAgentPrompt] = useState(false);
+  const [showRunGuide, setShowRunGuide] = useState(false);
   // ----------------------------
   // FETCH DEVICES
   // ----------------------------
@@ -132,6 +133,12 @@ function Dashboard() {
     "https://trust-wipe.onrender.com/downloads/TrustWipeAgent.exe",
     "_blank"
   );
+
+  // Close first popup
+  setShowAgentPrompt(false);
+
+  // Show run instructions
+  setShowRunGuide(true);
 };
   // ----------------------------
   // START WIPE
@@ -371,26 +378,102 @@ function Dashboard() {
 
       <div className="agent-actions">
 
-        <button
-          className="download-btn"
-          onClick={downloadAgent}
-        >
-          Download Agent
-        </button>
+  <button
+    className="download-btn"
+    onClick={downloadAgent}
+  >
+    Download Agent
+  </button>
 
-        <button
-          className="cancel-btn"
-          onClick={() => setShowAgentPrompt(false)}
-        >
-          Cancel
-        </button>
+  <button
+    className="already-btn"
+    onClick={() => {
+      setShowAgentPrompt(false);
+      setShowRunGuide(true);
+    }}
+  >
+    Already Downloaded
+  </button>
 
-      </div>
+  <button
+    className="cancel-btn"
+    onClick={() => setShowAgentPrompt(false)}
+  >
+    Cancel
+  </button>
+
+</div>
 
       <div className="agent-note">
 
         After installation, launch the TrustWipe Agent.
         Once it connects, click <strong>Add Device</strong> again.
+
+      </div>
+
+    </div>
+  </div>
+)}
+{showRunGuide && (
+  <div className="agent-modal-overlay">
+    <div className="agent-modal">
+
+      <h2>Run TrustWipe Agent</h2>
+
+      <p>
+        If you have already downloaded the TrustWipe Agent,
+        please make sure it is running before continuing.
+      </p>
+
+      <div className="agent-features">
+
+        <div>1. Locate <b>TrustWipeAgent.exe</b>.</div>
+
+        <div>2. Right-click and choose <b>Run as Administrator</b>.</div>
+
+        <div>3. If Windows SmartScreen appears, click <b>More Info → Run Anyway</b>.</div>
+
+        <div>4. Wait until the console shows:</div>
+
+      </div>
+
+      <div
+        style={{
+          background: "#111",
+          color: "#0f0",
+          padding: "15px",
+          borderRadius: "8px",
+          margin: "18px 0",
+          fontFamily: "monospace",
+          textAlign: "left",
+        }}
+      >
+        🟢 Connected to TrustWipe Server<br />
+        📡 Agent registration sent<br />
+      </div>
+
+      <p>
+        Once these messages appear, click <b>Continue</b>.
+      </p>
+
+      <div className="agent-actions">
+
+        <button
+          className="download-btn"
+          onClick={() => {
+            setShowRunGuide(false);
+            navigate("/devices");
+          }}
+        >
+          Continue
+        </button>
+
+        <button
+          className="cancel-btn"
+          onClick={() => setShowRunGuide(false)}
+        >
+          Close
+        </button>
 
       </div>
 

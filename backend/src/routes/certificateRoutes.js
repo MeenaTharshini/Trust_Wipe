@@ -2,7 +2,7 @@ import express from "express";
 
 import {
   generateCertificate,
-  verifyCertificate
+  verifyCertificate,
 } from "../controllers/certificateController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 

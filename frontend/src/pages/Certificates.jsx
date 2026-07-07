@@ -275,7 +275,7 @@ const res = await axios.get(
         <div className="qr-area">
 
           <QRCodeCanvas
-            value={`https://trust-wipe.onrender.com/verify/${certificate.certificateId}`}
+            value={`https://trust-wipe-tau.vercel.app/verify/${certificate.certificateId}`}
             size={90}
             level="H"
           />
