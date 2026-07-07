@@ -1,58 +1,167 @@
 // agent/core/jobStore.js
 
-// In-memory store for active jobs
+
+/* =====================================================
+   IN-MEMORY JOB STORE
+
+   Stores active wipe jobs locally inside the agent
+===================================================== */
+
+
 const activeJobs = new Map();
 
-/**
- * Create a new job entry
- */
+
+
+
+
+/* =====================================================
+   CREATE JOB
+===================================================== */
+
 export const createJob = (id) => {
-  activeJobs.set(id, {
-    cancelled: false,
-    createdAt: new Date(),
-    status: "running",
-  });
+
+    activeJobs.set(id, {
+
+        cancelled: false,
+
+        createdAt: new Date(),
+
+        status: "running"
+
+    });
+
 };
 
-/**
- * Cancel a job
- */
+
+
+
+
+
+/* =====================================================
+   CANCEL JOB
+===================================================== */
+
 export const cancelJob = (id) => {
-  if (activeJobs.has(id)) {
-    const job = activeJobs.get(id);
-    job.cancelled = true;
-    job.status = "cancelled";
-    job.cancelledAt = new Date();
-  }
+
+
+    if(activeJobs.has(id)) {
+
+
+        const job = activeJobs.get(id);
+
+
+        job.cancelled = true;
+
+
+        job.status = "cancelled";
+
+
+        job.cancelledAt = new Date();
+
+
+        console.log(
+            "⛔ Job cancelled:",
+            id
+        );
+
+    }
+
 };
 
-/**
- * Check if a job is cancelled
- */
+
+
+
+
+
+/* =====================================================
+   CHECK CANCEL STATUS
+===================================================== */
+
 export const isCancelled = (id) => {
-  return activeJobs.get(id)?.cancelled === true;
+
+
+    return (
+        activeJobs.get(id)?.cancelled === true
+    );
+
+
 };
 
-/**
- * Remove a job from the store
- */
+
+
+
+
+
+/* =====================================================
+   REMOVE JOB
+===================================================== */
+
 export const removeJob = (id) => {
-  activeJobs.delete(id);
+
+
+    activeJobs.delete(id);
+
+
 };
 
-/**
- * Get job details
- */
+
+
+
+
+
+/* =====================================================
+   GET JOB
+===================================================== */
+
 export const getJob = (id) => {
-  return activeJobs.get(id) || null;
+
+
+    return (
+        activeJobs.get(id) || null
+    );
+
+
 };
 
-/**
- * List all active jobs
- */
+
+
+
+
+
+/* =====================================================
+   LIST ACTIVE JOBS
+===================================================== */
+
 export const listJobs = () => {
-  return Array.from(activeJobs.entries()).map(([id, data]) => ({
-    id,
-    ...data,
-  }));
+
+
+    return Array.from(
+        activeJobs.entries()
+    )
+    .map(([id,data]) => ({
+
+        id,
+
+        ...data
+
+    }));
+
+
+};
+
+
+
+
+
+
+/* =====================================================
+   CLEAR ALL JOBS
+===================================================== */
+
+export const clearJobs = () => {
+
+
+    activeJobs.clear();
+
+
 };

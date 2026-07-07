@@ -1,19 +1,33 @@
 {
-  "name": "agent",
+  "name": "trustwipe-agent",
   "version": "1.0.0",
-  "description": "",
-  "main": "wipeAgent.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "TrustWipe Enterprise Secure Data Wiping Agent",
+  "type": "module",
+  "main": "./core/socketClient.js",
+  "bin": {
+    "trustwipe-agent": "./core/socketClient.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-   "type": "module",
+  "scripts": {
+    "start": "node ./core/socketClient.js",
+    "build": "pkg . --targets node18-win-x64 --output TrustWipeAgent.exe",
+    "build-debug": "pkg . --debug --targets node18-win-x64 --output TrustWipeAgent.exe"
+  },
+  "pkg": {
+    "scripts": [
+      "./core/socketClient.js",
+      "./core/systemEngine.js",
+      "./core/taskEngine.js",
+      "./core/jobStore.js"
+    ],
+    "assets": [
+      "./core/**/*"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
+  },
   "dependencies": {
     "dotenv": "^17.4.2",
     "socket.io-client": "^4.8.3"
   }
-  
 }
-

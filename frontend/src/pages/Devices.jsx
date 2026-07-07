@@ -40,7 +40,7 @@ function Devices() {
         const token=localStorage.getItem("token");
 
         const res=await axios.get(
-            "http://localhost:5000/api/devices",
+            "https://trust-wipe.onrender.com/api/devices",
             {
                 headers:{
                     Authorization:`Bearer ${token}`
@@ -69,7 +69,7 @@ function Devices() {
     const token = localStorage.getItem("token");
     console.log("API URL =", import.meta.env.VITE_API_URL);
     await axios.post(
-      "http://localhost:5000/api/devices",
+      "https://trust-wipe.onrender.com/api/devices",
       form,
       {
         headers: {
@@ -147,7 +147,7 @@ console.log("ERROR:", err);
     const token = localStorage.getItem("token");
     console.log("TOKEN =", token);
     const res = await axios.get(
-      "http://localhost:5000/api/devices/discover",
+      "https://trust-wipe.onrender.com/api/devices/discover",
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,108 +1,333 @@
 // agent/core/socketClient.js
+
 import { io } from "socket.io-client";
 import os from "os";
+import dotenv from "dotenv";
 
 import { runDriveDiscovery } from "./systemEngine.js";
-import { startWipeTask, cancelWipeTask } from "./taskEngine.js";
+import {
+  startWipeTask,
+  cancelWipeTask,
+} from "./taskEngine.js";
 
-const SERVER_URL = "http://localhost:5000";
+
+dotenv.config();
+
+
+/* =====================================================
+   SERVER CONFIG
+===================================================== */
+
+const SERVER_URL =
+  process.env.SERVER_URL ||
+  "https://trust-wipe.onrender.com";
+
+
+/* =====================================================
+   SOCKET CONNECTION
+===================================================== */
 
 const socket = io(SERVER_URL, {
-  transports: ["websocket"],
+
+  transports: [
+    "websocket"
+  ],
+
   reconnection: true,
+
   reconnectionAttempts: Infinity,
+
   timeout: 10000,
+
 });
 
-const AGENT_ID = process.env.AGENT_ID || os.hostname();
+
+/* =====================================================
+   AGENT IDENTITY
+===================================================== */
+
+const AGENT_ID =
+  process.env.AGENT_ID ||
+  os.hostname();
+
+
+
+/* =====================================================
+   STARTUP LOG
+===================================================== */
+
+console.log("=================================");
+console.log(" TrustWipe Agent Starting");
+console.log(" Agent ID:", AGENT_ID);
+console.log(" Server:", SERVER_URL);
+console.log("=================================");
+
+
 
 /* =====================================================
    CONNECT
 ===================================================== */
-socket.on("connect", () => {
-  console.log("🟢 Connected to TrustWipe Server");
 
-  socket.emit("register-agent", {
-    deviceId: AGENT_ID, // MUST match Device.agentId in DB
-    hostname: os.hostname(),
-    platform: os.platform(),
-    arch: os.arch(),
-    username: os.userInfo().username,
-    connectedAt: new Date(),
-  });
+socket.on("connect", () => {
+
+  console.log(
+    "🟢 Connected to TrustWipe Server"
+  );
+
+
+  socket.emit(
+    "register-agent",
+    {
+
+      deviceId: AGENT_ID,
+
+      hostname:
+        os.hostname(),
+
+      platform:
+        os.platform(),
+
+      arch:
+        os.arch(),
+
+      username:
+        os.userInfo().username,
+
+      connectedAt:
+        new Date()
+
+    }
+  );
+
+
+  console.log(
+    "📡 Agent registration sent"
+  );
+
 });
+
+
 
 /* =====================================================
    DISCONNECT
 ===================================================== */
-socket.on("disconnect", (reason) => {
-  console.log("🔴 Disconnected:", reason);
-});
+
+socket.on(
+  "disconnect",
+  (reason)=>{
+
+    console.log(
+      "🔴 Disconnected:",
+      reason
+    );
+
+  }
+);
+
+
 
 /* =====================================================
-   CONNECT ERROR
+   SOCKET ERROR
 ===================================================== */
-socket.on("connect_error", (err) => {
-  console.error("❌ Socket Error:", err.message);
-});
+
+socket.on(
+  "connect_error",
+  (err)=>{
+
+    console.error(
+      "❌ Socket Error:",
+      err.message
+    );
+
+  }
+);
+
+
 
 /* =====================================================
    HEARTBEAT
 ===================================================== */
-setInterval(() => {
-  if (socket.connected) {
-    socket.emit("heartbeat", {
-      deviceId: AGENT_ID,
-      timestamp: new Date(),
-    });
+
+setInterval(()=>{
+
+
+  if(socket.connected){
+
+    socket.emit(
+      "heartbeat",
+      {
+
+        deviceId:
+          AGENT_ID,
+
+        timestamp:
+          new Date()
+
+      }
+    );
+
   }
-}, 30000);
+
+
+},30000);
+
+
 
 /* =====================================================
    DRIVE DISCOVERY
 ===================================================== */
-socket.on("discover-drives", async (payload) => {
-  console.log("📀 Drive discovery requested for userId:", payload.userId);
 
-  try {
-    const drives = await runDriveDiscovery();
+socket.on(
+  "discover-drives",
+  async(payload)=>{
 
-    console.log("Discovered Drives:", JSON.stringify(drives, null, 2));
-    console.log("📤 Sending drive-list for userId:", payload.userId);
 
-    socket.emit("drive-list", {
-      deviceId: AGENT_ID,
-      userId: payload.userId,
-      drives,
-    });
+    console.log(
+      "📀 Drive discovery requested:",
+      payload.userId
+    );
 
-    console.log("📤 Drive list sent");
-  } catch (err) {
-    console.error("❌ Drive discovery failed:", err.message);
 
-    socket.emit("drive-list", {
-      deviceId: AGENT_ID,
-      userId: payload.userId,
-      drives: [],
-      error: err.message,
-    });
+    try {
+
+
+      const drives =
+        await runDriveDiscovery();
+
+
+
+      console.log(
+        "Discovered Drives:",
+        JSON.stringify(
+          drives,
+          null,
+          2
+        )
+      );
+
+
+
+      socket.emit(
+        "drive-list",
+        {
+
+          deviceId:
+            AGENT_ID,
+
+
+          userId:
+            payload.userId,
+
+
+          drives
+
+        }
+      );
+
+
+
+      console.log(
+        "📤 Drive list sent"
+      );
+
+
+    }
+    catch(err){
+
+
+      console.error(
+        "❌ Drive discovery failed:",
+        err.message
+      );
+
+
+
+      socket.emit(
+        "drive-list",
+        {
+
+          deviceId:
+            AGENT_ID,
+
+
+          userId:
+            payload.userId,
+
+
+          drives: [],
+
+
+          error:
+            err.message
+
+        }
+      );
+
+
+    }
+
+
   }
-});
+);
+
+
+
 
 /* =====================================================
    START WIPE
 ===================================================== */
-socket.on("start-wipe", (job) => {
-  console.log("▶ Start wipe:", job.commandId);
-  startWipeTask(socket, job);
-});
+
+socket.on(
+  "start-wipe",
+  (job)=>{
+
+
+    console.log(
+      "▶ Starting wipe:",
+      job.commandId
+    );
+
+
+    startWipeTask(
+      socket,
+      job
+    );
+
+
+  }
+);
+
+
+
 
 /* =====================================================
    CANCEL WIPE
 ===================================================== */
-socket.on("cancel-wipe", (job) => {
-  console.log("⛔ Cancel wipe:", job.commandId);
-  cancelWipeTask(job.commandId);
-});
+
+socket.on(
+  "cancel-wipe",
+  (job)=>{
+
+
+    console.log(
+      "⛔ Cancelling wipe:",
+      job.commandId
+    );
+
+
+    cancelWipeTask(
+      job.commandId
+    );
+
+
+  }
+);
+
+
+
+
+/* =====================================================
+   EXPORT
+===================================================== */
 
 export default socket;
