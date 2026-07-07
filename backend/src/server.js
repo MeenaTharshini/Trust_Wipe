@@ -54,7 +54,10 @@ app.use("/api/reports", reportRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
 });
-
+app.use(
+  "/downloads",
+  express.static(path.join(process.cwd(), "downloads"))
+);
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({

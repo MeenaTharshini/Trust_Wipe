@@ -987,3 +987,71 @@ td{
 
 }
 }
+.agent-modal-overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.65);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+backdrop-filter:blur(6px);
+}
+
+.agent-modal{
+width:520px;
+background:#0f172a;
+padding:35px;
+border-radius:20px;
+border:1px solid rgba(255,255,255,.08);
+color:white;
+animation:fadeUp .25s ease;
+}
+
+.agent-modal h2{
+margin-bottom:12px;
+}
+
+.agent-modal p{
+color:#cbd5e1;
+line-height:1.7;
+}
+
+.agent-features{
+margin:25px 0;
+display:grid;
+gap:12px;
+}
+
+.agent-actions{
+display:flex;
+gap:15px;
+margin-top:25px;
+}
+
+.download-btn{
+flex:1;
+padding:14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+background:#00d4ff;
+color:#000;
+font-weight:700;
+}
+
+.cancel-btn{
+flex:1;
+padding:14px;
+border:none;
+border-radius:10px;
+background:#1e293b;
+color:white;
+cursor:pointer;
+}
+
+.agent-note{
+margin-top:20px;
+font-size:.9rem;
+color:#94a3b8;
+}

@@ -22,7 +22,7 @@ function Dashboard() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
-
+  const [showAgentPrompt, setShowAgentPrompt] = useState(false);
   // ----------------------------
   // FETCH DEVICES
   // ----------------------------
@@ -117,7 +117,22 @@ function Dashboard() {
       socket.off("device-updated", onDeviceUpdated);
     };
   }, []);
+  const handleAddDevice = () => {
+  // If agent is already connected, go directly
+  if (connected) {
+    navigate("/devices");
+    return;
+  }
 
+  // Otherwise show install dialog
+  setShowAgentPrompt(true);
+};
+  const downloadAgent = () => {
+  window.open(
+    "https://trust-wipe.onrender.com/downloads/TrustWipeAgentSetup.exe",
+    "_blank"
+  );
+};
   // ----------------------------
   // START WIPE
   // ----------------------------
@@ -128,7 +143,7 @@ function Dashboard() {
     console.log("POST Token:", token);
 
     const res = await axios.post(
-      "https://trust-wipe.onrender.com/api/wipe/start",
+      "https://your-render-backend.onrender.com/api/wipe/start",
       { deviceId },
       {
         headers: {
@@ -233,9 +248,12 @@ function Dashboard() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Link to="/devices" className="add-btn">
-        + Add Device
-      </Link>
+            <button
+  className="add-btn"
+  onClick={handleAddDevice}
+>
+  + Add Device
+</button>
           </div>
 
           {loading ? (
@@ -328,6 +346,57 @@ function Dashboard() {
         </section>
 
       </div>
+      {showAgentPrompt && (
+  <div className="agent-modal-overlay">
+    <div className="agent-modal">
+
+      <h2>TrustWipe Agent Required</h2>
+
+      <p>
+        Before discovering devices, the TrustWipe Agent must be installed
+        on this computer.
+      </p>
+
+      <div className="agent-features">
+
+        <div>✔ Detects internal & external drives</div>
+
+        <div>✔ Performs certified data wiping</div>
+
+        <div>✔ Streams live wipe progress</div>
+
+        <div>✔ Generates verification evidence</div>
+
+      </div>
+
+      <div className="agent-actions">
+
+        <button
+          className="download-btn"
+          onClick={downloadAgent}
+        >
+          Download Agent
+        </button>
+
+        <button
+          className="cancel-btn"
+          onClick={() => setShowAgentPrompt(false)}
+        >
+          Cancel
+        </button>
+
+      </div>
+
+      <div className="agent-note">
+
+        After installation, launch the TrustWipe Agent.
+        Once it connects, click <strong>Add Device</strong> again.
+
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
