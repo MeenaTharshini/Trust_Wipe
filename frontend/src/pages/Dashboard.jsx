@@ -129,7 +129,7 @@ function Dashboard() {
 };
   const downloadAgent = () => {
   window.open(
-    "https://trust-wipe.onrender.com/downloads/TrustWipeAgentSetup.exe",
+    "https://trust-wipe.onrender.com/downloads/TrustWipeAgent.exe",
     "_blank"
   );
 };
