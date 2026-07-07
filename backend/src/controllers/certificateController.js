@@ -12,10 +12,7 @@ export const generateCertificate = async (req, res) => {
       certificateId,
     }).populate("deviceId");
 
-    console.log(
-  "CERTIFICATE DATA:",
-  JSON.stringify(certificate, null, 2)
-);
+    
 
     if (!certificate) {
       return res.status(404).json({

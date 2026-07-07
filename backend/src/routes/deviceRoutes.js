@@ -5,6 +5,7 @@ import {
   createDevice,
   deleteDevice,
 } from "../controllers/deviceController.js";
+import { discoverDrives } from "../services/driveDiscovery.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -13,7 +14,7 @@ const router = express.Router();
 router.get(
     "/discover",
     authMiddleware,
-    autoDiscoverDevices
+    discoverDrives
 );
 
 router.post(

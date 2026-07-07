@@ -29,10 +29,9 @@ function Dashboard() {
   const fetchDevices = async () => {
   try {
     const token = localStorage.getItem("token");
-    console.log("Dashboard Token:", token);
 
     const res = await axios.get(
-      "https://trust-wipe.onrender.com/api/devices",
+      "http://localhost:5000/api/devices",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +53,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      "https://trust-wipe.onrender.com/api/wipe",
+      "http://localhost:5000/api/wipe",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,7 +128,7 @@ function Dashboard() {
     console.log("POST Token:", token);
 
     const res = await axios.post(
-      "https://trust-wipe.onrender.com/api/wipe/start",
+      "http://localhost:5000/api/wipe/start",
       { deviceId },
       {
         headers: {
@@ -285,8 +284,8 @@ function Dashboard() {
                             className="verify-btn"
                             onClick={() =>
                               navigate(
-                                `/verification?jobId=${device.currentJobId}`
-                              )
+  `/verification?jobId=${device.lastJobId}`
+)
                             }
                           >
                             Verify

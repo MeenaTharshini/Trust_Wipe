@@ -1,35 +1,23 @@
 import Device from "../models/Device.js";
 import { discoverDrives } from "../services/driveDiscovery.js";
-
+import { requestDriveDiscovery } from "../services/driveDiscovery.js";
 // =====================================
 // AUTO DISCOVER DRIVES
 // =====================================
 
 export const autoDiscoverDevices = async (req, res) => {
   try {
-    const drives = await discoverDrives();
+    const result = await requestDriveDiscovery(req.user.id);
 
-    const formattedDrives = drives.map((drive, index) => ({
-      deviceName: drive.deviceName || `Drive ${index}`,
-      serialNumber:
-        drive.mount ||
-        drive.serialNumber ||
-        `AUTO-${Date.now()}-${index}`,
-      storageType: drive.storageType || "Unknown",
-      capacity: drive.capacity || "Unknown",
-      location: "",
-      status: "Pending",
-    }));
-
-    res.status(200).json({
-      success: true,
-      message: "Drives discovered successfully",
-      devices: formattedDrives,
+    return res.status(200).json({
+      success: result.success,
+      message: result.message || "Drives discovered successfully",
+      devices: result.devices,
     });
   } catch (err) {
-    console.error("DISCOVERY ERROR:", err);
+    console.error("Drive Discovery Error:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -52,6 +40,7 @@ export const createDevice = async (req, res) => {
       modelNumber,
       deviceType,
       storagePath,
+      agentId,
     } = req.body;
 
     
@@ -83,6 +72,7 @@ export const createDevice = async (req, res) => {
         },
       ],
       status: "Pending",
+      agentId,
     });
 
     res.status(201).json({

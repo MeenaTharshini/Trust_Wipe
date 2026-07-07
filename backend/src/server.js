@@ -1,3 +1,4 @@
+// backend/src/server.js
 import express from "express";
 import cors from "cors";
 import http from "http";
@@ -6,18 +7,19 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import authRoutes from "./routes/authRoutes.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import wipeRoutes from "./routes/wipeRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 
-import { initSocket } from "./socket/index.js";
+import { initAgentClient } from "./socket/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load environment variables
 dotenv.config({
   path: path.join(__dirname, "../.env"),
 });
@@ -25,54 +27,44 @@ dotenv.config({
 const app = express();
 const server = http.createServer(app);
 
-// ================= SOCKET =================
-initSocket(server);
-
-// ================= MIDDLEWARE =================
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.log(`➡️ ${req.method} ${req.url}`);
-  next();
-});
+// Request logging (non-production only)
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+  });
+}
 
-// ================= ROUTES =================
+// Initialize Socket.IO
+initAgentClient(server);
+
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/wipe", wipeRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/certificate", certificateRoutes);
+app.use("/api/reports", reportRoutes);
 
-// ================= HEALTH CHECK =================
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
 });
-//==========generatereport=========
-app.use("/api/auth", authRoutes);
-app.use("/api/devices", deviceRoutes);
-app.use("/api/wipe", wipeRoutes);
-app.use("/api/certificates", certificateRoutes);
-app.use("/api/verification", verificationRoutes);
-app.use("/api/reports", reportRoutes);
+
+// Root endpoint
 app.get("/", (req, res) => {
   res.json({
     success: true,
     application: "TrustWipe Enterprise API",
     version: "1.0.0",
-    status: "Running",
-    endpoints: {
-      auth: "/api/auth",
-      devices: "/api/devices",
-      wipe: "/api/wipe",
-      certificates: "/api/certificate",
-      verification: "/api/verification",
-      reports: "/api/reports",
-      health: "/api/health",
-    },
   });
 });
-// ================= 404 =================
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -80,30 +72,29 @@ app.use((req, res) => {
   });
 });
 
-// ================= ERROR HANDLER =================
+// Error handler
 app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err);
+  console.error("❌ Server Error:", err);
   res.status(500).json({
     success: false,
-    message: err.message,
+    message: "Internal Server Error",
   });
 });
 
-app.post("/test", (req, res) => {
-  console.log("TEST HIT", req.body);
-  res.json({ ok: true });
-});
-
-// ================= DB =================
+// Database connection and server start
+// Database
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI) // no extra options needed in Mongoose v7+
   .then(() => {
     console.log("✅ MongoDB Connected");
 
-    server.listen(process.env.PORT || 5000, () => {
-      console.log("🚀 TrustWipe running");
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`🚀 TrustWipe Server Running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("❌ DB ERROR:", err);
+    console.error("❌ MongoDB Connection Error:", err.message);
+    process.exit(1);
   });
+

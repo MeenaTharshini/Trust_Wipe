@@ -24,6 +24,8 @@ function Devices() {
     capacity: "",
     location: "",
     storagePath: "",
+    agentId: "",
+
   });
 
   const [search, setSearch] = useState("");
@@ -32,24 +34,28 @@ function Devices() {
   // LOAD DEVICES
   // =========================
   const loadDevices = async () => {
-  try {
-    setLoading(true);
+    try{
+        setLoading(true);
 
-    const token = localStorage.getItem("token");
+        const token=localStorage.getItem("token");
 
-    const res = await axios.get("https://trust-wipe.onrender.com/api/devices", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+        const res=await axios.get(
+            "http://localhost:5000/api/devices",
+            {
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            }
+        );
 
-    setDevices(res.data || []);
-  } catch (err) {
-    console.log("LOAD ERROR:", err.response?.data || err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+        setDevices(res.data);
+
+    }catch(err){
+        console.log(err.response?.data||err.message);
+    }finally{
+        setLoading(false);
+    }
+}
 
   useEffect(() => {
     loadDevices();
@@ -61,9 +67,9 @@ function Devices() {
   const registerDevice = async () => {
   try {
     const token = localStorage.getItem("token");
-
+    console.log("API URL =", import.meta.env.VITE_API_URL);
     await axios.post(
-      "https://trust-wipe.onrender.com/api/devices",
+      "http://localhost:5000/api/devices",
       form,
       {
         headers: {
@@ -109,7 +115,7 @@ console.log("ERROR:", err);
     if (!confirmed) return;
 
     await axios.delete(
-      `https://trust-wipe.onrender.com/api/devices/${id}`,
+      `http://localhost:5000/api/devices/${id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -141,15 +147,19 @@ console.log("ERROR:", err);
     const token = localStorage.getItem("token");
     console.log("TOKEN =", token);
     const res = await axios.get(
-      "https://trust-wipe.onrender.com/api/devices/discover",
+      "http://localhost:5000/api/devices/discover",
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
+    console.log("Discovery Response:");
+console.log(res.data);
 
-    console.log("DISCOVERY RESULT:", res.data);
+console.log("Drive:");
+console.log(res.data.devices[0]);
+    console.log(JSON.stringify(res.data, null, 2));
 
     if (
       res.data.success &&
@@ -165,6 +175,7 @@ console.log("ERROR:", err);
         storageType: drive.storageType || "",
         capacity: drive.capacity || "",
         location: "",
+        agentId: drive.agentId || "",
       }));
 
       alert(

@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import {
   BrowserRouter,
   Routes,
@@ -44,73 +45,34 @@ function Layout() {
 
   return (
     <div className="app-layout">
-
       {!hideSidebar && <Sidebar />}
 
-      <main
-        className={
-          hideSidebar
-            ? "auth-content"
-            : "main-content"
-        }
-      >
-
+      <main className={hideSidebar ? "auth-content" : "main-content"}>
         <Routes>
+          {/* ==========================================
+              DEFAULT ROUTE
+          ========================================== */}
+          <Route path="/" element={<Home />} />
 
           {/* ==========================================
-                    DEFAULT ROUTE
+              PUBLIC ROUTES
           ========================================== */}
-          <Route
-  path="/"
-  element={<Home />}
-/>
-        
-
-          {/* ==========================================
-                    PUBLIC ROUTES
-          ========================================== */}
-
-          <Route
-            path="/services"
-            element={<Services />}
-          />
-
-          <Route
-            path="/about"
-            element={<About />}
-          />
-
-          <Route
-            path="/verify"
-            element={<VerifyCertificate />}
-          />
-
-          <Route
-            path="/verify/:id"
-            element={<VerifyCertificate />}
-          />
+          <Route path="/services" element={<Services />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/verify" element={<VerifyCertificate />} />
+          <Route path="/verify/:id" element={<VerifyCertificate />} />
 
           {/* Backward compatibility */}
-
           <Route
             path="/verify-certificate"
             element={<Navigate to="/verify" replace />}
           />
-
-          <Route
-            path="/login"
-            element={<Login />}
-          />
-
-          <Route
-            path="/register"
-            element={<Register />}
-          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* ==========================================
-                    PROTECTED ROUTES
+              PROTECTED ROUTES
           ========================================== */}
-
           <Route
             path="/dashboard"
             element={
@@ -120,14 +82,13 @@ function Layout() {
             }
           />
           <Route
-  path="/dashboard/:id"
-  element={
-    <PrivateRoute>
-      <Dashboard />
-    </PrivateRoute>
-  }
-/>
-
+            path="/dashboard/:id"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/devices"
             element={
@@ -136,7 +97,6 @@ function Layout() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/verification"
             element={
@@ -145,7 +105,6 @@ function Layout() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/certificates"
             element={
@@ -154,7 +113,6 @@ function Layout() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/reports"
             element={
@@ -165,16 +123,14 @@ function Layout() {
           />
 
           {/* Legacy Route */}
-
           <Route
             path="/wipe-jobs"
             element={<Navigate to="/dashboard" replace />}
           />
 
           {/* ==========================================
-                    404
+              404
           ========================================== */}
-
           <Route
             path="*"
             element={
@@ -184,11 +140,8 @@ function Layout() {
               </div>
             }
           />
-
         </Routes>
-
       </main>
-
     </div>
   );
 }

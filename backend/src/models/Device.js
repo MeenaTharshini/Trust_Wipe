@@ -52,7 +52,10 @@ const deviceSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
-
+    agentId: {
+      type: String,
+      required: true,
+    },
     files: [
         {
             fileName: String,
@@ -81,6 +84,11 @@ const deviceSchema = new mongoose.Schema({
         ref: "WipeJob",
         default: null,
     },
+    lastJobId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "WipeJob",
+    default: null
+},
 
 }, {
     timestamps: true,

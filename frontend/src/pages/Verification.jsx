@@ -31,13 +31,13 @@ function Verification() {
       alert("Please enter Job ID");
       return;
     }
-
+    console.log("Job ID being sent:", jobId);
     try {
       setLoading(true);
 
       const res = await axios.post(
-        "https://trust-wipe.onrender.com/api/verification/verify",
-        { jobId }
+        "http://localhost:5000/api/verification/verify",
+         { jobId }, 
       );
 
       const data = res.data;
@@ -47,7 +47,7 @@ function Verification() {
           data.certificateId ||
           data.certificate?.id,
 
-        jobId,
+        jobId: data.jobId,
 
         algorithm:
           data.algorithm ||

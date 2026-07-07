@@ -1,51 +1,118 @@
-import os from "os";
-import { exec } from "child_process";
+// backend/src/services/driveDiscovery.js
 
-export const discoverDrives = async () => {
-  const platform = os.platform();
+import {
+  getSocket,
+  addPendingDiscovery,
+  removePendingDiscovery,
+} from "../socket/agentBridge.js";
 
-  return new Promise((resolve, reject) => {
-    if (platform === "win32") {
-      exec(
-        `powershell "Get-PhysicalDisk | Select FriendlyName,SerialNumber,MediaType,Size | ConvertTo-Json"`,
-        (err, stdout) => {
-          if (err) return reject(err);
+import { getConnectedAgents } from "../socket/index.js";
 
-          try {
-            const disks = JSON.parse(stdout);
+/**
+ * ==========================================
+ * API Controller
+ * ==========================================
+ */
+export const discoverDrives = async (req, res) => {
+  try {
+    const result = await requestDriveDiscovery(req.user.id);
 
-            const list = Array.isArray(disks)
-              ? disks
-              : [disks];
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Drive Discovery Error:", err);
 
-            resolve(
-              list.map((disk) => ({
-                deviceName:
-                  disk.FriendlyName,
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
 
-                serialNumber:
-                  disk.SerialNumber,
+/**
+ * ==========================================
+ * Request Drive Discovery
+ * ==========================================
+ */
+export const requestDriveDiscovery = async (userId) => {
+  const io = getSocket();
+  const agents = getConnectedAgents();
 
-                storageType:
-                  disk.MediaType,
+  console.log("====================================");
+  console.log("CONNECTED AGENTS");
+  console.table(agents);
+  console.log("====================================");
 
-                capacity: (
-                  disk.Size /
-                  1024 /
-                  1024 /
-                  1024
-                ).toFixed(2) + " GB",
-              }))
-            );
-          } catch (e) {
-            reject(e);
-          }
-        }
-      );
-    }
+  if (!agents.length) {
+    throw new Error("No TrustWipe Agent Connected");
+  }
 
-    else {
-      resolve([]);
-    }
+  const agent = agents[0];
+
+  console.log("Using Agent:", agent.deviceId);
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      console.warn("Drive discovery timed out.");
+
+      removePendingDiscovery(userId);
+
+      resolve({
+        success: false,
+        devices: [],
+        message: "Agent timeout",
+      });
+    }, 10000);
+
+    addPendingDiscovery(userId, (payload) => {
+      clearTimeout(timeout);
+
+      removePendingDiscovery(userId);
+
+      console.log("============== AGENT RESPONSE ==============");
+      console.log(JSON.stringify(payload, null, 2));
+      console.log("============================================");
+
+      if (!payload) {
+        return resolve({
+          success: false,
+          devices: [],
+          message: "Empty response from agent",
+        });
+      }
+
+      if (!Array.isArray(payload.drives)) {
+        return resolve({
+          success: false,
+          devices: [],
+          message: "Invalid drive list received",
+        });
+      }
+
+      const devices = payload.drives.map((drive) => ({
+        ...drive,
+
+        // IMPORTANT
+        agentId: payload.deviceId,
+
+        discoveredAt: new Date(),
+      }));
+
+      console.log("Returning Drives:");
+      console.table(devices);
+
+      resolve({
+        success: true,
+        devices,
+        message: `${devices.length} drive(s) discovered`,
+      });
+    });
+
+    console.log(
+      `Sending discover-drives -> agent:${agent.deviceId}`
+    );
+
+    io.to(`agent:${agent.deviceId}`).emit("discover-drives", {
+      userId,
+    });
   });
 };

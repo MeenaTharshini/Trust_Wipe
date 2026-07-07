@@ -1,50 +1,71 @@
+// backend/src/controllers/wipeController.js
 import Device from "../models/Device.js";
 import WipeJob from "../models/WipeJob.js";
-import { startWipe } from "../wipeEngine/startWipe.js";
+import { runWipeEngine } from "../wipeEngine/wipeEngine.js";
 
+/**
+ * Start a new wipe job
+ */
 export const startWipeController = async (req, res) => {
   try {
     const { deviceId } = req.body;
 
     if (!deviceId) {
-      return res.status(400).json({
-        message: "deviceId required",
-      });
+      return res.status(400).json({ success: false, message: "deviceId required" });
     }
 
+    // 1. Load device
     const device = await Device.findById(deviceId);
-
     if (!device) {
-      return res.status(404).json({
-        message: "Device not found",
-      });
+      return res.status(404).json({ success: false, message: "Device not found" });
     }
 
-    const job = await startWipe(deviceId, req.user.id);
+    // 2. Run wipe engine (orchestration only)
+    const job = await runWipeEngine(deviceId, req.user.id);
 
-    return res.status(201).json(job);
-
+    // 3. Return job info
+    return res.status(201).json({
+      success: true,
+      job,
+      message: "Wipe job started successfully",
+    });
   } catch (err) {
-  console.error("START WIPE ERROR");
-  console.error(err);
-
-  return res.status(500).json({
-    message: err.message,
-  });
-}
+    console.error("START WIPE ERROR:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 };
 
+/**
+ * Get all wipe jobs
+ */
 export const getAllJobs = async (req, res) => {
   try {
     const jobs = await WipeJob.find()
       .populate("deviceId")
       .sort({ createdAt: -1 });
 
-    return res.json(jobs);
-
+    return res.json({ success: true, jobs });
   } catch (err) {
-    return res.status(500).json({
-      message: err.message,
-    });
+    console.error("GET JOBS ERROR:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * Get a single wipe job by ID
+ */
+export const getJobById = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const job = await WipeJob.findById(jobId).populate("deviceId");
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Wipe job not found" });
+    }
+
+    return res.json({ success: true, job });
+  } catch (err) {
+    console.error("GET JOB ERROR:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };

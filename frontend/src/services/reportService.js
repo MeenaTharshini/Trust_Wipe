@@ -54,7 +54,7 @@ const downloadFile = async (url, filename) => {
 export const downloadPDF = () => {
 
   downloadFile(
-    `${API}/pdf`,
+    `${API}/api/reports/pdf`,
     "TrustWipe_Report.pdf"
   );
 
@@ -67,7 +67,7 @@ export const downloadPDF = () => {
 export const downloadExcel = () => {
 
   downloadFile(
-    `${API}/excel`,
+    `${API}/api/reports/excel`,
     "TrustWipe_Report.xlsx"
   );
 
@@ -80,7 +80,7 @@ export const downloadExcel = () => {
 export const downloadCompliance = () => {
 
   downloadFile(
-    `${API}/compliance`,
+    `${API}/api/reports/compliance`,
     "Compliance_Report.pdf"
   );
 

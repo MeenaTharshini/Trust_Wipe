@@ -34,7 +34,7 @@ function Reports() {
     console.log("Reports Token:", token);
 
     const res = await axios.get(
-      "https://trust-wipe.onrender.com/api/devices",
+      "http://localhost:5000/api/devices",
       {
         headers: {
           Authorization: `Bearer ${token}`,
