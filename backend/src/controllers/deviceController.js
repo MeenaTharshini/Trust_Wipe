@@ -18,8 +18,9 @@ export const autoDiscoverDevices = async (req, res) => {
     console.error("Drive Discovery Error:", err);
 
     return res.status(500).json({
-      success: false,
-      message: err.message,
+        success:false,
+        message:err.message,
+        stack:err.stack
     });
   }
 };

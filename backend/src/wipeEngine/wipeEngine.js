@@ -12,9 +12,11 @@ export const runWipeEngine = async (deviceId, userId) => {
   const io = getSocket();
 
   // 1. Load device
+  console.log("STEP 1");
   const device = await Device.findById(deviceId);
   if (!device) throw new Error("Device not found");
-
+  console.log(device.agentId);
+console.log(getConnectedAgents());
   // 2. Find agent (must match agentId registered by wipeAgent.js)
   const agentId = device.agentId;
 
@@ -25,7 +27,7 @@ console.log(device);
 
 console.log("Connected Agents:");
 console.log(getConnectedAgents());
-
+console.log("STEP 2");
 const agent = getAgent(agentId);
 
 console.log("Found Agent:", agent);
@@ -34,15 +36,17 @@ console.log("================================");
 if (!agent) {
   throw new Error("Agent offline");
 }
-
+  console.log("STEP 3");
   // 3. Ensure no active job
   const runningJob = await WipeJob.findOne({ deviceId, status: "running" });
   if (runningJob) throw new Error("A wipe job is already running.");
 
   // 4. Create job record
+
+console.log("STEP 4");
   const job = await WipeJob.create({
     deviceId,
-    owner: userId,
+    initiatedBy: userId,
     algorithm: "NIST SP 800-88 Rev.1",
     status: "running",
     progress: 0,
@@ -56,6 +60,7 @@ if (!agent) {
   // 5. Update device
   device.status = "Wiping";
   device.currentJobId = job._id;
+  console.log("STEP 5");
   await device.save();
 
   // 6. Notify frontend
@@ -63,6 +68,7 @@ if (!agent) {
   io.emit("wipe-progress", job);
 
   // 7. Dispatch wipe command to agent ROOM
+  console.log("STEP 6");
   io.to(`agent:${agent.deviceId}`).emit("start-wipe", {
     commandId: job._id.toString(),
     deviceId,
@@ -71,7 +77,7 @@ if (!agent) {
     algorithm: job.algorithm,
     issuedAt: new Date(),
   });
-
+  console.log("STEP 7");
   console.log(`🚀 Wipe job ${job._id} dispatched to agent ${agent.deviceId}`);
 
   return job;
