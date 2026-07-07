@@ -399,7 +399,7 @@ export const generateCertificate = async (
 
   try {
     const qr = await QRCode.toDataURL(
-      `http://localhost:5173/verify/${certificate.certificateId}`
+      `https://trust-wipe.onrender.com/verify/${certificate.certificateId}`
     );
 
     doc.image(qr, 420, 610, {

@@ -115,7 +115,7 @@ console.log("ERROR:", err);
     if (!confirmed) return;
 
     await axios.delete(
-      `http://localhost:5000/api/devices/${id}`,
+      `https://trust-wipe.onrender.com/api/devices/${id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -28,7 +28,7 @@ function Certificates() {
         const token = localStorage.getItem("token");
 
 const res = await axios.get(
-  `http://localhost:5000/api/certificate/verify/${id}`,
+  `https://trust-wipe.onrender.com/api/certificate/verify/${id}`,
   {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -275,7 +275,7 @@ const res = await axios.get(
         <div className="qr-area">
 
           <QRCodeCanvas
-            value={`http://localhost:5173/verify/${certificate.certificateId}`}
+            value={`https://trust-wipe.onrender.com/verify/${certificate.certificateId}`}
             size={90}
             level="H"
           />
