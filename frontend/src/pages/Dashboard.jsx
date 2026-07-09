@@ -49,33 +49,33 @@ function Dashboard() {
   // ----------------------------
   // FETCH JOBS
   // ----------------------------
-  const fetchJobs = async () => {
+  const fetchLatestJob = async () => {
   try {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      "https://trust-wipe.onrender.com/api/wipe",
+      "https://trust-wipe.onrender.com/api/wipe/latest",
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
-    setJobs(res.data.jobs || []);
+    setJobs(res.data.job ? [res.data.job] : []); // store only one job
   } catch (err) {
     console.error("JOB ERROR:", err.response?.data || err.message);
   }
 };
+
   // ----------------------------
   // LOAD ALL DATA
   // ----------------------------
   const loadData = async () => {
-    setLoading(true);
-    await Promise.all([fetchDevices(), fetchJobs()]);
-    setLoading(false);
-  };
+  setLoading(true);
+  await Promise.all([fetchDevices(), fetchLatestJob()]);
+  setLoading(false);
+};
 
+const [latestJob, setLatestJob] = useState(null);
   // initial load + polling
   useEffect(() => {
     loadData();
@@ -91,15 +91,22 @@ function Dashboard() {
     const onDisconnect = () => setConnected(false);
 
     const onWipeProgress = (job) => {
-  setJobs((prev) => {
-    const index = prev.findIndex((j) => j._id === job._id);
 
-    if (index === -1) return [job, ...prev];
+    setLatestJob(job);
 
-    const updated = [...prev];
-    updated[index] = job;
-    return updated;
-  });
+    setJobs(prev => {
+
+        const index = prev.findIndex(j => j._id === job._id);
+
+        if(index === -1)
+            return [job,...prev];
+
+        const updated=[...prev];
+        updated[index]=job;
+
+        return updated;
+    });
+
 };
 
     const onDeviceUpdated = () => {
@@ -326,31 +333,30 @@ function Dashboard() {
         </section>
 
         {/* LIVE OPS */}
-        <section className="side-column">
-          <div className="panel">
-            <h2>Live Operations</h2>
 
-            {activeJobs.length === 0 ? (
-              <div className="empty">No Active Jobs</div>
-            ) : (
-              activeJobs.map((job) => (
-                <div className="job-card" key={job._id}>
-                  <div className="job-top">
-                    <span>Job #{job._id}</span>
-                    <span>{job.progress}%</span>
-                  </div>
+<section className="side-column">
+  <div className="panel">
+    <h2>Live Operations</h2>
 
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${job.progress}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+    {!latestJob ? (
+      <div className="empty">No Active Jobs</div>
+    ) : (
+      <div className="job-card" key={latestJob._id}>
+        <div className="job-top">
+          <span>Job #{latestJob._id}</span>
+          <span>{latestJob.progress}%</span>
+        </div>
+        <div className="progress-track">
+          <div
+            className="progress-fill"
+            style={{ width: `${latestJob.progress}%` }}
+          />
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
 
       </div>
       {showAgentPrompt && (

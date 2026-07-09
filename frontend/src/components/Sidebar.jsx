@@ -44,11 +44,6 @@ function Sidebar() {
       icon: LayoutDashboard,
     },
     {
-      name: "Devices",
-      path: "/devices",
-      icon: Database,
-    },
-    {
       name: "Reports",
       path: "/reports",
       icon: BarChart3,

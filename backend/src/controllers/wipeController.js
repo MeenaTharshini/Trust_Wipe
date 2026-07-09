@@ -69,3 +69,20 @@ export const getJobById = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
+// backend/src/controllers/wipeController.js
+export const getLatestJobForUser = async (req, res) => {
+  try {
+    const job = await WipeJob.findOne({ userId: req.user.id })
+      .populate("deviceId")
+      .sort({ createdAt: -1 });
+
+    if (!job) {
+      return res.json({ success: true, job: null });
+    }
+
+    return res.json({ success: true, job });
+  } catch (err) {
+    console.error("GET LATEST JOB ERROR:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
