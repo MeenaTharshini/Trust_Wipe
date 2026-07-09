@@ -126,13 +126,6 @@ const [latestJob, setLatestJob] = useState(null);
     };
   }, []);
   const handleAddDevice = () => {
-  // If agent is already connected, go directly
-  if (connected) {
-    navigate("/devices");
-    return;
-  }
-
-  // Otherwise show install dialog
   setShowAgentPrompt(true);
 };
   const downloadAgent = () => {
@@ -467,9 +460,13 @@ const [latestJob, setLatestJob] = useState(null);
         <button
           className="download-btn"
           onClick={() => {
-            setShowRunGuide(false);
-            navigate("/devices");
-          }}
+  if (connected) {
+    setShowRunGuide(false);
+    navigate("/devices");
+  } else {
+    alert("Please start the TrustWipe Agent first.");
+  }
+}}
         >
           Continue
         </button>
