@@ -87,6 +87,7 @@ const [latestJob, setLatestJob] = useState(null);
   // SOCKET HANDLING (FIXED)
   // ----------------------------
   useEffect(() => {
+    setConnected(socket.connected);
     const onConnect = () => setConnected(true);
     const onDisconnect = () => setConnected(false);
 
