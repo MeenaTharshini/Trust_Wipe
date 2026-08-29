@@ -339,48 +339,22 @@ export const generateCertificate = async (
   doc
     .fontSize(8)
     .fillColor("#16a34a")
-    .text(
-      certificate.verificationHash,
-      30,
-      325,
-      {
-        width: 520,
-      }
+    .text(certificate.verificationHash,30,325,
+      {width: 520,}
     );
-
   doc
     .fontSize(10)
     .fillColor("#111827")
-    .text(
-      "Evidence Hash",
-      30,
-      400
-    );
-
+    .text("Evidence Hash",30,400);
   doc
     .fontSize(8)
     .fillColor("#16a34a")
-    .text(
-      certificate.verificationEvidenceHash,
-      30,
-      420,
-      {
-        width: 520,
-      }
-    );
-
-  //------------------------------------------------
-  // SIGNATURE
-  //------------------------------------------------
-
+    .text(certificate.verificationEvidenceHash,30,420,
+      {width: 520,});
   doc
     .fontSize(16)
     .fillColor("#111827")
-    .text(
-      "Digital Signature",
-      30,
-      510
-    );
+    .text("Digital Signature",30,510);
 
   doc
     .fontSize(7)
@@ -400,8 +374,7 @@ export const generateCertificate = async (
   try {
     const qr = await QRCode.toDataURL(
   `https://trust-wipe-tau.vercel.app/verify/${certificate.certificateId}`
-);
-
+   );
     doc.image(qr, 420, 610, {
       width: 100,
     });
