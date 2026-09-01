@@ -1,5 +1,7 @@
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import socket from "../services/socket";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -18,31 +20,23 @@ function Dashboard() {
   const navigate = useNavigate();
 
   const [devices, setDevices] = useState([]);
-  const [wipeJobs, setWipeJobs] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [connected, setConnected] = useState(false);
+  const [showAgentPrompt, setShowAgentPrompt] = useState(false);
+  const [showRunGuide, setShowRunGuide] = useState(false);
+  const [latestJob, setLatestJob] = useState(null);
 
-  /*
-   * =========================================================
-   * LOAD DASHBOARD DATA
-   * =========================================================
-   */
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  // ----------------------------
+  // FETCH DEVICES
+  // ----------------------------
+  const fetchDevices = async () => {
     try {
-      setLoading(true);
-
       const token = localStorage.getItem("token");
 
-      /*
-       * Get devices
-       */
-      const devicesResponse = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/devices`,
+      const res = await axios.get(
+        "https://trust-wipe.onrender.com/api/devices",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,560 +44,700 @@ function Dashboard() {
         }
       );
 
-      if (devicesResponse.ok) {
-        const devicesData = await devicesResponse.json();
-
-        if (Array.isArray(devicesData)) {
-          setDevices(devicesData);
-        } else if (Array.isArray(devicesData.devices)) {
-          setDevices(devicesData.devices);
-        } else {
-          setDevices([]);
-        }
-      }
-
-      /*
-       * Get wipe jobs
-       */
-      const jobsResponse = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/wipe`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (jobsResponse.ok) {
-        const jobsData = await jobsResponse.json();
-
-        if (Array.isArray(jobsData)) {
-          setWipeJobs(jobsData);
-        } else if (Array.isArray(jobsData.jobs)) {
-          setWipeJobs(jobsData.jobs);
-        } else {
-          setWipeJobs([]);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to load dashboard data:", error);
-    } finally {
-      setLoading(false);
+      setDevices(res.data);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
     }
   };
 
-  /*
-   * =========================================================
-   * NAVIGATION HANDLERS
-   * =========================================================
-   */
+  // ----------------------------
+  // FETCH LATEST JOB
+  // ----------------------------
+  const fetchLatestJob = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  const handleAddDevice = () => {
-    navigate("/devices");
+      const res = await axios.get(
+        "https://trust-wipe.onrender.com/api/wipe/latest",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setJobs(res.data.job ? [res.data.job] : []);
+      setLatestJob(res.data.job || null);
+    } catch (err) {
+      console.error(
+        "JOB ERROR:",
+        err.response?.data || err.message
+      );
+    }
   };
 
+  // ----------------------------
+  // LOAD ALL DATA
+  // ----------------------------
+  const loadData = async () => {
+    setLoading(true);
+
+    await Promise.all([
+      fetchDevices(),
+      fetchLatestJob(),
+    ]);
+
+    setLoading(false);
+  };
+
+  // ----------------------------
+  // INITIAL LOAD + POLLING
+  // ----------------------------
+  useEffect(() => {
+    loadData();
+
+    const interval = setInterval(loadData, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ----------------------------
+  // SOCKET HANDLING
+  // ----------------------------
+  useEffect(() => {
+    setConnected(socket.connected);
+
+    const onConnect = () => {
+      setConnected(true);
+    };
+
+    const onDisconnect = () => {
+      setConnected(false);
+    };
+
+    const onWipeProgress = (job) => {
+      setLatestJob(job);
+
+      setJobs((prev) => {
+        const index = prev.findIndex(
+          (j) => j._id === job._id
+        );
+
+        if (index === -1) {
+          return [job, ...prev];
+        }
+
+        const updated = [...prev];
+        updated[index] = job;
+
+        return updated;
+      });
+    };
+
+    const onDeviceUpdated = () => {
+      fetchDevices();
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("wipe-progress", onWipeProgress);
+    socket.on("device-updated", onDeviceUpdated);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("wipe-progress", onWipeProgress);
+      socket.off("device-updated", onDeviceUpdated);
+    };
+  }, []);
+
+  // ----------------------------
+  // ADD DEVICE
+  // ----------------------------
+  const handleAddDevice = () => {
+    setShowAgentPrompt(true);
+  };
+
+  // ----------------------------
+  // PATH VERIFICATION
+  // ----------------------------
   const handlePathVerification = () => {
     navigate("/path-verification");
   };
 
-  const handleVerification = () => {
-    navigate("/verification");
-  };
-
-  const handleCertificates = () => {
-    navigate("/certificates");
-  };
-
-  const handleReports = () => {
-    navigate("/reports");
-  };
-
-  /*
-   * =========================================================
-   * SEARCH
-   * =========================================================
-   */
-
-  const filteredDevices = devices.filter((device) => {
-    const search = searchTerm.toLowerCase();
-
-    return (
-      device?.name?.toLowerCase().includes(search) ||
-      device?.hostname?.toLowerCase().includes(search) ||
-      device?.deviceName?.toLowerCase().includes(search) ||
-      device?.serialNumber?.toLowerCase().includes(search) ||
-      device?._id?.toLowerCase().includes(search)
+  // ----------------------------
+  // DOWNLOAD AGENT
+  // ----------------------------
+  const downloadAgent = () => {
+    window.open(
+      "https://trust-wipe.onrender.com/downloads/TrustWipeAgent.exe",
+      "_blank"
     );
-  });
 
-  /*
-   * =========================================================
-   * STATISTICS
-   * =========================================================
-   */
+    setShowAgentPrompt(false);
+    setShowRunGuide(true);
+  };
 
-  const totalDevices = devices.length;
-
-  const onlineDevices = devices.filter(
-    (device) =>
-      device?.status === "online" ||
-      device?.online === true ||
-      device?.isOnline === true
-  ).length;
-
-  const completedJobs = wipeJobs.filter(
-    (job) =>
-      job?.status === "completed" ||
-      job?.status === "success"
-  ).length;
-
-  const activeJobs = wipeJobs.filter(
-    (job) =>
-      job?.status === "running" ||
-      job?.status === "in-progress" ||
-      job?.status === "pending"
-  ).length;
-
-  /*
-   * =========================================================
-   * FORMAT DATE
-   * =========================================================
-   */
-
-  const formatDate = (date) => {
-    if (!date) return "—";
-
+  // ----------------------------
+  // START WIPE
+  // ----------------------------
+  const startWipe = async (deviceId) => {
     try {
-      return new Date(date).toLocaleString();
-    } catch {
-      return "—";
+      const token = localStorage.getItem("token");
+
+      console.log("POST Token:", token);
+
+      const res = await axios.post(
+        "https://trust-wipe.onrender.com/api/wipe/start",
+        { deviceId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setJobs((prev) => [res.data, ...prev]);
+
+      fetchDevices();
+    } catch (err) {
+      console.log(err.response?.data || err.message);
     }
   };
 
-  /*
-   * =========================================================
-   * STATUS CLASS
-   * =========================================================
-   */
+  // ----------------------------
+  // FILTER DEVICES
+  // ----------------------------
+  const filteredDevices = devices.filter(
+    (device) =>
+      device.deviceName
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+      device.serialNumber
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
+  );
 
-  const getStatusClass = (status) => {
-    if (!status) return "unknown";
+  // ----------------------------
+  // DASHBOARD STATS
+  // ----------------------------
+  const totalDevices = devices.length;
 
-    return status
-      .toString()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
-  };
+  const completedDevices = devices.filter(
+    (device) => device.status === "Completed"
+  ).length;
 
-  /*
-   * =========================================================
-   * RENDER
-   * =========================================================
-   */
+  const activeJobs = jobs.filter(
+    (job) =>
+      job.status === "running" ||
+      job.status === "pending"
+  );
 
+  // ----------------------------
+  // RENDER
+  // ----------------------------
   return (
     <div className="dashboard">
 
-      {/* =====================================================
+      {/* =========================
           HEADER
-      ===================================================== */}
+      ========================== */}
+      <section className="hero-section">
 
-      <div className="dashboard-header">
+        <div className="hero-content">
+          <p className="hero-label">
+            SECURITY OPERATIONS CENTER
+          </p>
 
-        <div>
-          <h1>Dashboard</h1>
+          <h1>
+            TrustWipe Enterprise Console
+          </h1>
 
           <p>
-            Monitor devices, secure data wiping, and verification
-            activity from one place.
+            Secure Data Sanitization, Verification & Compliance Platform
           </p>
         </div>
 
-      </div>
+        <div className="trust-card">
+          <FiShield size={50} />
 
+          <h2>
+            {connected ? "ONLINE" : "OFFLINE"}
+          </h2>
 
-      {/* =====================================================
-          STATISTICS
-      ===================================================== */}
-
-      <div className="stats-grid">
-
-        {/* TOTAL DEVICES */}
-        <div className="stat-card">
-
-          <div className="stat-icon">
-            <FiHardDrive />
-          </div>
-
-          <div className="stat-content">
-            <span className="stat-label">
-              Total Devices
-            </span>
-
-            <strong>
-              {loading ? "..." : totalDevices}
-            </strong>
-          </div>
-
+          <span>
+            Socket Status
+          </span>
         </div>
 
+      </section>
 
-        {/* ONLINE DEVICES */}
+      {/* =========================
+          STATS
+      ========================== */}
+      <section className="stats-grid">
+
         <div className="stat-card">
-
-          <div className="stat-icon">
-            <FiCpu />
-          </div>
-
-          <div className="stat-content">
-            <span className="stat-label">
-              Online Devices
-            </span>
-
-            <strong>
-              {loading ? "..." : onlineDevices}
-            </strong>
-          </div>
-
-        </div>
-
-
-        {/* COMPLETED WIPES */}
-        <div className="stat-card">
-
-          <div className="stat-icon">
-            <FiCheckCircle />
-          </div>
-
-          <div className="stat-content">
-            <span className="stat-label">
-              Completed Wipes
-            </span>
-
-            <strong>
-              {loading ? "..." : completedJobs}
-            </strong>
-          </div>
-
-        </div>
-
-
-        {/* ACTIVE JOBS */}
-        <div className="stat-card">
-
-          <div className="stat-icon">
-            <FiActivity />
-          </div>
-
-          <div className="stat-content">
-            <span className="stat-label">
-              Active Jobs
-            </span>
-
-            <strong>
-              {loading ? "..." : activeJobs}
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* =====================================================
-          DEVICE INVENTORY HEADER
-      ===================================================== */}
-
-      <div className="dashboard-section">
-
-        <div className="section-header">
+          <FiHardDrive />
 
           <div>
-            <h2>Device Inventory</h2>
-
-            <p>
-              Manage connected devices and perform secure
-              verification operations.
-            </p>
+            <span>Total Assets</span>
+            <h2>{totalDevices}</h2>
           </div>
+        </div>
 
+        <div className="stat-card active">
+          <FiActivity />
 
-          {/* =================================================
-              ACTION BUTTONS
-          ================================================= */}
+          <div>
+            <span>Active Wipes</span>
+            <h2>{activeJobs.length}</h2>
+          </div>
+        </div>
 
-          <div className="dashboard-actions">
+        <div className="stat-card success">
+          <FiCheckCircle />
 
-            {/* SEARCH */}
+          <div>
+            <span>Completed</span>
+            <h2>{completedDevices}</h2>
+          </div>
+        </div>
+
+        <div className="stat-card compliance">
+          <FiShield />
+
+          <div>
+            <span>Compliance</span>
+            <h2>100%</h2>
+          </div>
+        </div>
+
+      </section>
+
+      {/* =========================
+          MAIN DASHBOARD
+      ========================== */}
+      <div className="dashboard-grid">
+
+        {/* =========================
+            DEVICE INVENTORY
+        ========================== */}
+        <section className="panel inventory-panel">
+
+          <div className="panel-header">
+
+            <h2>
+              Device Inventory
+            </h2>
 
             <div className="search-box">
 
               <FiSearch />
 
               <input
-                type="text"
-                placeholder="Search devices..."
-                value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(event.target.value)
+                value={search}
+                placeholder="Search..."
+                onChange={(e) =>
+                  setSearch(e.target.value)
                 }
               />
 
             </div>
 
+            {/* ACTION BUTTONS */}
+            <div className="dashboard-actions">
 
-            {/* ADD DEVICE */}
+              {/* ADD DEVICE */}
+              <button
+                className="add-btn"
+                onClick={handleAddDevice}
+              >
+                + Add Device
+              </button>
 
-            <button
-              className="add-btn"
-              onClick={handleAddDevice}
-              type="button"
-            >
-              + Add Device
-            </button>
+              {/* PATH VERIFICATION */}
+              <button
+                className="path-verification-btn"
+                onClick={handlePathVerification}
+              >
+                <FiMapPin />
+                Path Verification
+              </button>
 
-
-            {/* PATH VERIFICATION */}
-
-            <button
-              className="path-verification-btn"
-              onClick={handlePathVerification}
-              type="button"
-              title="Verify a file or folder path"
-            >
-              <FiMapPin />
-              Verify Path
-            </button>
+            </div>
 
           </div>
 
-        </div>
+          {/* DEVICE TABLE */}
 
+          {loading ? (
 
-        {/* =================================================
-            DEVICE TABLE
-        ================================================= */}
+            <div className="empty">
+              Loading Devices...
+            </div>
 
-        <div className="table-container">
+          ) : (
 
-          <table className="devices-table">
+            <div className="table-wrapper">
 
-            <thead>
-              <tr>
-                <th>Device</th>
-                <th>Hostname</th>
-                <th>Status</th>
-                <th>Last Seen</th>
-              </tr>
-            </thead>
+              <table>
 
-            <tbody>
-
-              {loading ? (
-
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="empty-state"
-                  >
-                    Loading devices...
-                  </td>
-                </tr>
-
-              ) : filteredDevices.length === 0 ? (
-
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="empty-state"
-                  >
-                    {searchTerm
-                      ? "No devices match your search."
-                      : "No devices registered yet."}
-                  </td>
-                </tr>
-
-              ) : (
-
-                filteredDevices.map((device) => (
-
-                  <tr
-                    key={
-                      device?._id ||
-                      device?.id ||
-                      device?.serialNumber
-                    }
-                  >
-
-                    <td>
-
-                      <div className="device-name">
-
-                        <FiHardDrive />
-
-                        <span>
-                          {
-                            device?.name ||
-                            device?.deviceName ||
-                            "Unknown Device"
-                          }
-                        </span>
-
-                      </div>
-
-                    </td>
-
-
-                    <td>
-                      {device?.hostname || "—"}
-                    </td>
-
-
-                    <td>
-
-                      <span
-                        className={`status-badge ${getStatusClass(
-                          device?.status
-                        )}`}
-                      >
-                        {device?.status || "Unknown"}
-                      </span>
-
-                    </td>
-
-
-                    <td>
-                      {
-                        formatDate(
-                          device?.lastSeen ||
-                          device?.updatedAt ||
-                          device?.createdAt
-                        )
-                      }
-                    </td>
-
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Serial</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
+                </thead>
 
-                ))
+                <tbody>
 
-              )}
+                  {filteredDevices.length === 0 ? (
 
-            </tbody>
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="empty"
+                      >
+                        No devices found.
+                      </td>
+                    </tr>
 
-          </table>
+                  ) : (
 
-        </div>
+                    filteredDevices.map((device) => (
+
+                      <tr key={device._id}>
+
+                        <td>
+                          <FiCpu />{" "}
+                          {device.deviceName}
+                        </td>
+
+                        <td>
+                          {device.serialNumber}
+                        </td>
+
+                        <td>
+
+                          <span
+                            className={`badge ${device.status?.toLowerCase()}`}
+                          >
+                            {device.status}
+                          </span>
+
+                        </td>
+
+                        <td>
+
+                          {/* START WIPE */}
+
+                          {device.status === "Pending" && (
+
+                            <button
+                              className="wipe-btn"
+                              onClick={() =>
+                                startWipe(
+                                  device._id,
+                                  device.deviceName
+                                )
+                              }
+                            >
+                              Start Wipe
+                            </button>
+
+                          )}
+
+                          {/* VERIFY */}
+
+                          {device.status === "Completed" && (
+
+                            <button
+                              className="verify-btn"
+                              onClick={() =>
+                                navigate(
+                                  `/verification?jobId=${device.lastJobId}`
+                                )
+                              }
+                            >
+                              Verify
+                            </button>
+
+                          )}
+
+                        </td>
+
+                      </tr>
+
+                    ))
+
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
+
+        </section>
+
+        {/* =========================
+            LIVE OPERATIONS
+        ========================== */}
+
+        <section className="side-column">
+
+          <div className="panel">
+
+            <h2>
+              Live Operations
+            </h2>
+
+            {!latestJob ? (
+
+              <div className="empty">
+                No Active Jobs
+              </div>
+
+            ) : (
+
+              <div
+                className="job-card"
+                key={latestJob._id}
+              >
+
+                <div className="job-top">
+
+                  <span>
+                    Job #{latestJob._id}
+                  </span>
+
+                  <span>
+                    {latestJob.progress}%
+                  </span>
+
+                </div>
+
+                <div className="progress-track">
+
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${latestJob.progress}%`,
+                    }}
+                  />
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+        </section>
 
       </div>
 
+      {/* =========================
+          AGENT REQUIRED MODAL
+      ========================== */}
 
-      {/* =====================================================
-          QUICK ACTIONS
-      ===================================================== */}
+      {showAgentPrompt && (
 
-      <div className="dashboard-section">
+        <div className="agent-modal-overlay">
 
-        <div className="section-header">
+          <div className="agent-modal">
 
-          <div>
-            <h2>Quick Actions</h2>
+            <h2>
+              TrustWipe Agent Required
+            </h2>
 
             <p>
-              Access frequently used TrustWipe operations.
+              Before discovering devices, the
+              TrustWipe Agent must be installed
+              on this computer.
             </p>
+
+            <div className="agent-features">
+
+              <div>
+                ✔ Detects internal & external drives
+              </div>
+
+              <div>
+                ✔ Performs certified data wiping
+              </div>
+
+              <div>
+                ✔ Streams live wipe progress
+              </div>
+
+              <div>
+                ✔ Generates verification evidence
+              </div>
+
+            </div>
+
+            <div className="agent-actions">
+
+              <button
+                className="download-btn"
+                onClick={downloadAgent}
+              >
+                Download Agent
+              </button>
+
+              <button
+                className="already-btn"
+                onClick={() => {
+                  setShowAgentPrompt(false);
+                  setShowRunGuide(true);
+                }}
+              >
+                Already Downloaded
+              </button>
+
+              <button
+                className="cancel-btn"
+                onClick={() =>
+                  setShowAgentPrompt(false)
+                }
+              >
+                Cancel
+              </button>
+
+            </div>
+
+            <div className="agent-note">
+
+              After installation, launch the
+              TrustWipe Agent.
+
+              Once it connects, click{" "}
+              <strong>Add Device</strong> again.
+
+            </div>
+
           </div>
 
         </div>
 
+      )}
 
-        <div className="quick-actions">
+      {/* =========================
+          RUN AGENT GUIDE MODAL
+      ========================== */}
 
-          {/* VERIFICATION */}
+      {showRunGuide && (
 
-          <button
-            type="button"
-            className="quick-action-card"
-            onClick={handleVerification}
-          >
+        <div className="agent-modal-overlay">
 
-            <FiShield />
+          <div className="agent-modal">
 
-            <div>
-              <h3>Verification</h3>
+            <h2>
+              Run TrustWipe Agent
+            </h2>
 
-              <p>
-                Verify secure wiping results.
-              </p>
+            <p>
+              If you have already downloaded the
+              TrustWipe Agent, please make sure
+              it is running before continuing.
+            </p>
+
+            <div className="agent-features">
+
+              <div>
+                1. Locate{" "}
+                <b>TrustWipeAgent.exe</b>.
+              </div>
+
+              <div>
+                2. Right-click and choose{" "}
+                <b>Run as Administrator</b>.
+              </div>
+
+              <div>
+                3. If Windows SmartScreen appears,
+                click{" "}
+                <b>
+                  More Info → Run Anyway
+                </b>.
+              </div>
+
+              <div>
+                4. Wait until the console shows:
+              </div>
+
             </div>
 
-          </button>
-
-
-          {/* CERTIFICATES */}
-
-          <button
-            type="button"
-            className="quick-action-card"
-            onClick={handleCertificates}
-          >
-
-            <FiCheckCircle />
-
-            <div>
-              <h3>Certificates</h3>
-
-              <p>
-                View and manage wipe certificates.
-              </p>
+            <div
+              style={{
+                background: "#111",
+                color: "#0f0",
+                padding: "15px",
+                borderRadius: "8px",
+                margin: "18px 0",
+                fontFamily: "monospace",
+                textAlign: "left",
+              }}
+            >
+              🟢 Connected to TrustWipe Server
+              <br />
+              📡 Agent registration sent
+              <br />
             </div>
 
-          </button>
+            <p>
+              Once these messages appear,
+              click <b>Continue</b>.
+            </p>
 
+            <div className="agent-actions">
 
-          {/* REPORTS */}
+              <button
+                className="download-btn"
+                onClick={() => {
 
-          <button
-            type="button"
-            className="quick-action-card"
-            onClick={handleReports}
-          >
+                  if (connected) {
 
-            <FiActivity />
+                    setShowRunGuide(false);
 
-            <div>
-              <h3>Reports</h3>
+                    navigate("/devices");
 
-              <p>
-                Generate compliance reports.
-              </p>
+                  } else {
+
+                    alert(
+                      "Please start the TrustWipe Agent first."
+                    );
+
+                  }
+
+                }}
+              >
+                Continue
+              </button>
+
+              <button
+                className="cancel-btn"
+                onClick={() =>
+                  setShowRunGuide(false)
+                }
+              >
+                Close
+              </button>
+
             </div>
 
-          </button>
-
-
-          {/* PATH VERIFICATION */}
-
-          <button
-            type="button"
-            className="quick-action-card"
-            onClick={handlePathVerification}
-          >
-
-            <FiMapPin />
-
-            <div>
-              <h3>Path Verification</h3>
-
-              <p>
-                Verify files and folders before secure wiping.
-              </p>
-            </div>
-
-          </button>
+          </div>
 
         </div>
 
-      </div>
+      )}
 
     </div>
   );
