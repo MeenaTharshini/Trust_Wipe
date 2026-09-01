@@ -1,19 +1,98 @@
-import { useState } from "react";
-import axios from "axios";
-import PublicNavbar from "../components/PublicNavbar/PublicNavbar";
-import { FiShield, FiCheckCircle, FiXCircle, FiLoader, FiSearch, FiHardDrive } from "react-icons/fi";
 
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  FiShield,
+  FiCheckCircle,
+  FiXCircle,
+  FiLoader,
+  FiSearch,
+  FiHardDrive,
+  FiFolder,
+  FiFile,
+  FiRefreshCw,
+  FiAlertTriangle,
+  FiClock,
+  FiDatabase,
+  FiActivity,
+} from "react-icons/fi";
+
+import PublicNavbar from "../components/PublicNavbar/PublicNavbar";
 import "./PathVerification.css";
 
 function PathVerification() {
+  const [devices, setDevices] = useState([]);
+
   const [deviceId, setDeviceId] = useState("");
   const [path, setPath] = useState("");
-  const [state, setState] = useState("idle"); // idle | loading | found | not_found | error
+  const [verificationType, setVerificationType] = useState("auto");
+
+  const [state, setState] = useState("idle");
   const [result, setResult] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  /*
+   * =========================================================
+   * LOAD DEVICES
+   * =========================================================
+   */
+
+  useEffect(() => {
+    const loadDevices = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          "https://trust-wipe.onrender.com/api/devices",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setDevices(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error(
+          "DEVICE LOAD ERROR:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    loadDevices();
+  }, []);
+
+  /*
+   * =========================================================
+   * PATH VALIDATION
+   * =========================================================
+   */
+
+  const validateInput = () => {
+    if (!deviceId.trim()) {
+      setErrorMessage("Select or enter a device before verification.");
+      return false;
+    }
+
+    if (!path.trim()) {
+      setErrorMessage("Enter the file or folder path to verify.");
+      return false;
+    }
+
+    return true;
+  };
+
+  /*
+   * =========================================================
+   * RUN PATH VERIFICATION
+   * =========================================================
+   */
 
   const runCheck = async () => {
-    if (!deviceId.trim() || !path.trim()) {
-      alert("Enter Device ID and Path");
+    setErrorMessage("");
+
+    if (!validateInput()) {
       return;
     }
 
@@ -21,149 +100,822 @@ function PathVerification() {
       setState("loading");
       setResult(null);
 
+      const token = localStorage.getItem("token");
+
       const res = await axios.post(
         "https://trust-wipe.onrender.com/api/verification/path-check",
-        { deviceId, path }
+        {
+          deviceId: deviceId.trim(),
+          path: path.trim(),
+          verificationType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = res.data;
+
       setResult(data);
-      setState(data.exists ? "found" : "not_found");
-    } catch (err) {
-      console.error(err);
+
+      if (data.exists === true) {
+        setState("found");
+      } else if (data.exists === false) {
+        setState("not_found");
+      } else {
+        setState("error");
+        setErrorMessage(
+          "The verification service returned an unexpected response."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "PATH VERIFICATION ERROR:",
+        error.response?.data || error.message
+      );
+
       setState("error");
+
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Unable to reach the device agent. Make sure the device is online and the TrustWipe Agent is running."
+      );
     }
   };
 
+  /*
+   * =========================================================
+   * RESET
+   * =========================================================
+   */
+
   const reset = () => {
-    setDeviceId("");
     setPath("");
     setResult(null);
+    setErrorMessage("");
     setState("idle");
   };
 
+  /*
+   * =========================================================
+   * DEVICE NAME
+   * =========================================================
+   */
+
+  const selectedDevice = devices.find(
+    (device) =>
+      device._id === deviceId ||
+      device.serialNumber === deviceId
+  );
+
+  /*
+   * =========================================================
+   * DATE FORMATTER
+   * =========================================================
+   */
+
+  const formatDate = (date) => {
+    if (!date) return "Not available";
+
+    try {
+      return new Date(date).toLocaleString();
+    } catch {
+      return "Not available";
+    }
+  };
+
+  /*
+   * =========================================================
+   * RESULT VALUE HELPERS
+   * =========================================================
+   */
+
+  const getCheckedAt = () => {
+    return result?.checkedAt || result?.verifiedAt || result?.timestamp;
+  };
+
+  const getVerificationId = () => {
+    return (
+      result?.verificationId ||
+      result?.verification_id ||
+      result?._id ||
+      null
+    );
+  };
+
+  /*
+   * =========================================================
+   * RENDER
+   * =========================================================
+   */
+
   return (
     <div className="path-verify-page">
+
       <PublicNavbar />
 
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+
       <section className="verify-hero">
-        <div>
-          <p className="hero-label">PATH VERIFICATION</p>
-          <h1>Confirm a Path Was Removed</h1>
+
+        <div className="verify-hero-content">
+
+          <div className="hero-label">
+            <FiShield />
+            TRUSTWIPE VERIFICATION ENGINE
+          </div>
+
+          <h1>
+            Path Verification
+          </h1>
+
           <p className="hero-subtitle">
-            Check whether a specific file or folder still exists
-            on a wiped device, verified directly by the device agent.
+            Independently verify whether a specific file or
+            directory remains on a target device after
+            sanitization.
           </p>
+
+          <div className="verification-trust-line">
+
+            <span>
+              <FiCheckCircle />
+              Agent-side verification
+            </span>
+
+            <span>
+              <FiShield />
+              Evidence-oriented
+            </span>
+
+            <span>
+              <FiActivity />
+              Real-time check
+            </span>
+
+          </div>
+
         </div>
+
+
+        {/* STATUS CARD */}
 
         <div className="verify-status-card">
-          <FiHardDrive />
-          <h2>LIVE CHECK</h2>
-          <span>Agent-Verified</span>
+
+          <div className="status-icon">
+            <FiHardDrive />
+          </div>
+
+          <span className="status-title">
+            VERIFICATION STATUS
+          </span>
+
+          <strong>
+            {state === "loading"
+              ? "CHECKING"
+              : state === "idle"
+              ? "READY"
+              : state === "not_found"
+              ? "VERIFIED"
+              : state === "found"
+              ? "ACTION REQUIRED"
+              : "UNAVAILABLE"}
+          </strong>
+
+          <small>
+            {selectedDevice
+              ? selectedDevice.deviceName ||
+                selectedDevice.serialNumber ||
+                "Selected Device"
+              : "No device selected"}
+          </small>
+
         </div>
+
       </section>
 
+
+      {/* =====================================================
+          VERIFICATION FORM
+      ===================================================== */}
+
       {state === "idle" && (
+
         <section className="verify-panel">
-          <h2>Check a Path</h2>
 
-          <div className="verify-search">
-            <FiSearch />
-            <input
-              value={deviceId}
-              onChange={(e) => setDeviceId(e.target.value)}
-              placeholder="Device ID or serial number..."
-            />
+          <div className="panel-heading">
+
+            <div className="panel-heading-icon">
+              <FiSearch />
+            </div>
+
+            <div>
+              <span className="section-kicker">
+                NEW VERIFICATION
+              </span>
+
+              <h2>
+                Verify a File or Folder
+              </h2>
+
+              <p>
+                Select a target device and specify the exact
+                path you want the TrustWipe Agent to inspect.
+              </p>
+            </div>
+
           </div>
 
-          <div className="verify-search">
-            <FiSearch />
-            <input
-              value={path}
-              onChange={(e) => setPath(e.target.value)}
-              placeholder="Path to check, e.g. D:\Reports\file.xlsx"
-            />
+
+          {/* DEVICE */}
+
+          <div className="form-group">
+
+            <label>
+              Target Device
+            </label>
+
+            {devices.length > 0 ? (
+
+              <select
+                value={deviceId}
+                onChange={(e) => setDeviceId(e.target.value)}
+              >
+
+                <option value="">
+                  Select a device...
+                </option>
+
+                {devices.map((device) => (
+
+                  <option
+                    key={device._id}
+                    value={device._id}
+                  >
+                    {device.deviceName ||
+                      device.serialNumber ||
+                      device._id}
+                  </option>
+
+                ))}
+
+              </select>
+
+            ) : (
+
+              <div className="input-with-icon">
+
+                <FiHardDrive />
+
+                <input
+                  value={deviceId}
+                  onChange={(e) =>
+                    setDeviceId(e.target.value)
+                  }
+                  placeholder="Device ID or serial number"
+                />
+
+              </div>
+
+            )}
+
           </div>
 
-          <button className="verify-action-btn" onClick={runCheck}>
-            Check Path
+
+          {/* PATH */}
+
+          <div className="form-group">
+
+            <label>
+              Path to Verify
+            </label>
+
+            <div className="input-with-icon path-input">
+
+              <FiSearch />
+
+              <input
+                value={path}
+                onChange={(e) => setPath(e.target.value)}
+                placeholder="Example: D:\Reports\confidential.xlsx"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    runCheck();
+                  }
+                }}
+              />
+
+            </div>
+
+            <small className="field-hint">
+              Enter the exact absolute path as it existed on
+              the target device.
+            </small>
+
+          </div>
+
+
+          {/* VERIFICATION TYPE */}
+
+          <div className="form-group">
+
+            <label>
+              Verification Target
+            </label>
+
+            <div className="verification-types">
+
+              <button
+                type="button"
+                className={
+                  verificationType === "auto"
+                    ? "type-card active"
+                    : "type-card"
+                }
+                onClick={() =>
+                  setVerificationType("auto")
+                }
+              >
+                <FiSearch />
+
+                <div>
+                  <strong>Auto Detect</strong>
+                  <span>File or folder</span>
+                </div>
+              </button>
+
+
+              <button
+                type="button"
+                className={
+                  verificationType === "file"
+                    ? "type-card active"
+                    : "type-card"
+                }
+                onClick={() =>
+                  setVerificationType("file")
+                }
+              >
+                <FiFile />
+
+                <div>
+                  <strong>File</strong>
+                  <span>Verify a file</span>
+                </div>
+              </button>
+
+
+              <button
+                type="button"
+                className={
+                  verificationType === "folder"
+                    ? "type-card active"
+                    : "type-card"
+                }
+                onClick={() =>
+                  setVerificationType("folder")
+                }
+              >
+                <FiFolder />
+
+                <div>
+                  <strong>Folder</strong>
+                  <span>Verify a directory</span>
+                </div>
+              </button>
+
+            </div>
+
+          </div>
+
+
+          {/* SECURITY NOTICE */}
+
+          <div className="verification-notice">
+
+            <FiShield />
+
+            <div>
+              <strong>
+                Agent-side verification
+              </strong>
+
+              <p>
+                The requested path is checked directly against
+                the target device through the TrustWipe Agent.
+                The dashboard does not assume deletion based
+                solely on database records.
+              </p>
+            </div>
+
+          </div>
+
+
+          {/* ERROR */}
+
+          {errorMessage && (
+
+            <div className="inline-error">
+
+              <FiAlertTriangle />
+
+              <span>
+                {errorMessage}
+              </span>
+
+            </div>
+
+          )}
+
+
+          {/* ACTION */}
+
+          <button
+            className="verify-action-btn"
+            onClick={runCheck}
+            disabled={
+              !deviceId.trim() ||
+              !path.trim()
+            }
+          >
+            <FiShield />
+            Verify Path
           </button>
+
         </section>
+
       )}
+
+
+      {/* =====================================================
+          LOADING
+      ===================================================== */}
 
       {state === "loading" && (
-        <section className="result-panel">
-          <div className="result-header">
+
+        <section className="result-panel verification-loading">
+
+          <div className="loading-icon">
             <FiLoader className="spin" />
-            <h2>Checking Path...</h2>
           </div>
+
+          <span className="section-kicker">
+            LIVE VERIFICATION
+          </span>
+
+          <h2>
+            Inspecting Target Path
+          </h2>
+
+          <p>
+            TrustWipe is requesting the agent to verify the
+            selected path on the target device.
+          </p>
+
+
+          <div className="verification-steps">
+
+            <div className="verification-step active">
+              <FiCheckCircle />
+              <span>Verification request submitted</span>
+            </div>
+
+            <div className="verification-step active">
+              <FiLoader className="spin" />
+              <span>Contacting device agent</span>
+            </div>
+
+            <div className="verification-step">
+              <FiSearch />
+              <span>Inspecting requested path</span>
+            </div>
+
+            <div className="verification-step">
+              <FiDatabase />
+              <span>Recording verification evidence</span>
+            </div>
+
+          </div>
+
         </section>
+
       )}
 
-      {state === "error" && (
-        <section className="result-panel">
-          <div className="result-header invalid">
-            <FiXCircle />
-            <h2>Check Failed</h2>
-          </div>
-          <p>The device is offline or unreachable. Try again once it reconnects.</p>
-          <button className="verify-action-btn" onClick={reset}>Try Again</button>
-        </section>
-      )}
+
+      {/* =====================================================
+          VERIFIED — PATH NOT FOUND
+      ===================================================== */}
 
       {state === "not_found" && result && (
-        <section className="result-panel">
-          <div className="result-header success">
+
+        <section className="result-panel success-panel">
+
+          <div className="result-icon success">
             <FiCheckCircle />
-            <h2>Path Not Found</h2>
           </div>
+
+          <span className="section-kicker">
+            VERIFICATION PASSED
+          </span>
+
+          <h2>
+            Path Not Found
+          </h2>
+
+          <p className="result-description">
+            The TrustWipe Agent confirmed that the requested
+            path is not present on the target device at the
+            time of verification.
+          </p>
+
+
+          <div className="verification-result-banner success">
+
+            <FiCheckCircle />
+
+            <div>
+              <strong>
+                Path absence confirmed
+              </strong>
+
+              <span>
+                Agent-reported result
+              </span>
+            </div>
+
+          </div>
+
 
           <div className="result-grid">
+
             <div className="result-card">
-              <span>Path Checked</span>
-              <strong>{path}</strong>
+
+              <span>
+                <FiSearch />
+                Path Checked
+              </span>
+
+              <strong className="path-value">
+                {path}
+              </strong>
+
             </div>
+
+
             <div className="result-card">
-              <span>Result</span>
-              <strong className="verified">Not present on device</strong>
+
+              <span>
+                <FiHardDrive />
+                Device
+              </span>
+
+              <strong>
+                {selectedDevice?.deviceName ||
+                  selectedDevice?.serialNumber ||
+                  deviceId}
+              </strong>
+
             </div>
+
+
             <div className="result-card">
-              <span>Checked At</span>
-              <strong>{new Date(result.checkedAt).toLocaleString()}</strong>
+
+              <span>
+                <FiClock />
+                Checked At
+              </span>
+
+              <strong>
+                {formatDate(getCheckedAt())}
+              </strong>
+
             </div>
+
+
+            {getVerificationId() && (
+
+              <div className="result-card">
+
+                <span>
+                  <FiDatabase />
+                  Verification ID
+                </span>
+
+                <strong>
+                  {getVerificationId()}
+                </strong>
+
+              </div>
+
+            )}
+
           </div>
 
-          <div className="certificate-action">
-            <button className="certificate-btn" onClick={reset}>Check Another</button>
+
+          <div className="result-actions">
+
+            <button
+              className="certificate-btn primary"
+              onClick={reset}
+            >
+              <FiRefreshCw />
+              Verify Another Path
+            </button>
+
           </div>
+
         </section>
+
       )}
+
+
+      {/* =====================================================
+          FOUND — PATH STILL EXISTS
+      ===================================================== */}
 
       {state === "found" && result && (
-        <section className="result-panel">
-          <div className="result-header invalid">
+
+        <section className="result-panel danger-panel">
+
+          <div className="result-icon danger">
             <FiXCircle />
-            <h2>Path Still Exists</h2>
           </div>
 
-          <p>This location is still present on the device. The wipe may be incomplete, or the path may be incorrect.</p>
+          <span className="section-kicker">
+            VERIFICATION FAILED
+          </span>
+
+          <h2>
+            Path Still Exists
+          </h2>
+
+          <p className="result-description">
+            The TrustWipe Agent found the requested path on
+            the target device. Do not treat this device as
+            fully verified until the issue has been investigated.
+          </p>
+
+
+          <div className="verification-result-banner danger">
+
+            <FiAlertTriangle />
+
+            <div>
+              <strong>
+                Path presence detected
+              </strong>
+
+              <span>
+                Further investigation recommended
+              </span>
+            </div>
+
+          </div>
+
 
           <div className="result-grid">
+
             <div className="result-card">
-              <span>Path Checked</span>
-              <strong>{path}</strong>
+
+              <span>
+                <FiSearch />
+                Path Detected
+              </span>
+
+              <strong className="path-value">
+                {path}
+              </strong>
+
             </div>
+
+
             <div className="result-card">
-              <span>Checked At</span>
-              <strong>{new Date(result.checkedAt).toLocaleString()}</strong>
+
+              <span>
+                <FiHardDrive />
+                Device
+              </span>
+
+              <strong>
+                {selectedDevice?.deviceName ||
+                  selectedDevice?.serialNumber ||
+                  deviceId}
+              </strong>
+
             </div>
+
+
+            <div className="result-card">
+
+              <span>
+                <FiClock />
+                Checked At
+              </span>
+
+              <strong>
+                {formatDate(getCheckedAt())}
+              </strong>
+
+            </div>
+
           </div>
 
-          <div className="certificate-action">
-            <button className="certificate-btn" onClick={reset}>Check Another</button>
+
+          <div className="result-actions">
+
+            <button
+              className="certificate-btn"
+              onClick={reset}
+            >
+              <FiRefreshCw />
+              Check Again
+            </button>
+
           </div>
+
         </section>
+
       )}
+
+
+      {/* =====================================================
+          ERROR
+      ===================================================== */}
+
+      {state === "error" && (
+
+        <section className="result-panel error-panel">
+
+          <div className="result-icon error">
+            <FiXCircle />
+          </div>
+
+          <span className="section-kicker">
+            VERIFICATION UNAVAILABLE
+          </span>
+
+          <h2>
+            Unable to Complete Verification
+          </h2>
+
+          <p className="result-description">
+            {errorMessage ||
+              "The device could not be reached or the verification request failed."}
+          </p>
+
+
+          <div className="error-help">
+
+            <FiAlertTriangle />
+
+            <div>
+
+              <strong>
+                Check the following:
+              </strong>
+
+              <ul>
+                <li>
+                  The TrustWipe Agent is running.
+                </li>
+
+                <li>
+                  The device is connected.
+                </li>
+
+                <li>
+                  The device is registered with TrustWipe.
+                </li>
+
+                <li>
+                  The requested path is valid.
+                </li>
+              </ul>
+
+            </div>
+
+          </div>
+
+
+          <div className="result-actions">
+
+            <button
+              className="certificate-btn primary"
+              onClick={reset}
+            >
+              <FiRefreshCw />
+              Try Again
+            </button>
+
+          </div>
+
+        </section>
+
+      )}
+
     </div>
   );
 }
