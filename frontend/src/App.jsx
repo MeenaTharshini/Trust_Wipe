@@ -22,6 +22,7 @@ import About from "./pages/About";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PathVerification from "./pages/PathVerification";
 
 import "./App.css";
 
@@ -105,7 +106,7 @@ function Layout() {
               </PrivateRoute>
             }
           />
-          
+          <Route path="/path-verification" element={ <PrivateRoute> <PathVerification /> </PrivateRoute> } />
           <Route
             path="/certificates"
             element={
