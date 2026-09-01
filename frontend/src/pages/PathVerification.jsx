@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+
 import {
   FiShield,
   FiCheckCircle,
@@ -17,7 +18,6 @@ import {
   FiActivity,
 } from "react-icons/fi";
 
-import PublicNavbar from "../components/PublicNavbar/PublicNavbar";
 import "./PathVerification.css";
 
 function PathVerification() {
@@ -31,16 +31,19 @@ function PathVerification() {
   const [result, setResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  /*
-   * =========================================================
-   * LOAD DEVICES
-   * =========================================================
-   */
+  // =========================================================
+  // LOAD REGISTERED DEVICES
+  // =========================================================
 
   useEffect(() => {
     const loadDevices = async () => {
       try {
         const token = localStorage.getItem("token");
+
+        if (!token) {
+          setErrorMessage("Authentication session expired. Please login again.");
+          return;
+        }
 
         const res = await axios.get(
           "https://trust-wipe.onrender.com/api/devices",
@@ -57,21 +60,24 @@ function PathVerification() {
           "DEVICE LOAD ERROR:",
           error.response?.data || error.message
         );
+
+        setErrorMessage(
+          error.response?.data?.message ||
+            "Unable to load registered devices."
+        );
       }
     };
 
     loadDevices();
   }, []);
 
-  /*
-   * =========================================================
-   * PATH VALIDATION
-   * =========================================================
-   */
+  // =========================================================
+  // VALIDATE INPUT
+  // =========================================================
 
   const validateInput = () => {
     if (!deviceId.trim()) {
-      setErrorMessage("Select or enter a device before verification.");
+      setErrorMessage("Select a target device before verification.");
       return false;
     }
 
@@ -80,14 +86,17 @@ function PathVerification() {
       return false;
     }
 
+    if (path.trim().length < 2) {
+      setErrorMessage("Enter a valid absolute path.");
+      return false;
+    }
+
     return true;
   };
 
-  /*
-   * =========================================================
-   * RUN PATH VERIFICATION
-   * =========================================================
-   */
+  // =========================================================
+  // RUN VERIFICATION
+  // =========================================================
 
   const runCheck = async () => {
     setErrorMessage("");
@@ -102,19 +111,30 @@ function PathVerification() {
 
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        throw new Error("Authentication token missing.");
+      }
+
+      const payload = {
+        deviceId: deviceId.trim(),
+        path: path.trim(),
+        verificationType,
+      };
+
+      console.log("PATH VERIFICATION REQUEST:", payload);
+
       const res = await axios.post(
         "https://trust-wipe.onrender.com/api/verification/path-check",
-        {
-          deviceId: deviceId.trim(),
-          path: path.trim(),
-          verificationType,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
+
+      console.log("PATH VERIFICATION RESPONSE:", res.data);
 
       const data = res.data;
 
@@ -127,7 +147,7 @@ function PathVerification() {
       } else {
         setState("error");
         setErrorMessage(
-          "The verification service returned an unexpected response."
+          "The verification service returned an invalid response."
         );
       }
     } catch (error) {
@@ -138,18 +158,45 @@ function PathVerification() {
 
       setState("error");
 
+      if (error.response?.status === 401) {
+        setErrorMessage(
+          "Your session has expired. Please login again."
+        );
+        return;
+      }
+
+      if (error.response?.status === 403) {
+        setErrorMessage(
+          "You are not authorized to verify paths on this device."
+        );
+        return;
+      }
+
+      if (error.response?.status === 404) {
+        setErrorMessage(
+          "The path verification service is not available on the server. Check that the /api/verification/path-check backend route is deployed."
+        );
+        return;
+      }
+
+      if (error.response?.status === 500) {
+        setErrorMessage(
+          error.response?.data?.message ||
+            "The verification server encountered an internal error."
+        );
+        return;
+      }
+
       setErrorMessage(
         error.response?.data?.message ||
-          "Unable to reach the device agent. Make sure the device is online and the TrustWipe Agent is running."
+          "Unable to reach the TrustWipe Agent. Make sure the device is online and the TrustWipe Agent is running."
       );
     }
   };
 
-  /*
-   * =========================================================
-   * RESET
-   * =========================================================
-   */
+  // =========================================================
+  // RESET
+  // =========================================================
 
   const reset = () => {
     setPath("");
@@ -158,11 +205,9 @@ function PathVerification() {
     setState("idle");
   };
 
-  /*
-   * =========================================================
-   * DEVICE NAME
-   * =========================================================
-   */
+  // =========================================================
+  // SELECTED DEVICE
+  // =========================================================
 
   const selectedDevice = devices.find(
     (device) =>
@@ -170,51 +215,50 @@ function PathVerification() {
       device.serialNumber === deviceId
   );
 
-  /*
-   * =========================================================
-   * DATE FORMATTER
-   * =========================================================
-   */
+  const deviceName =
+    selectedDevice?.deviceName ||
+    selectedDevice?.serialNumber ||
+    deviceId ||
+    "Unknown Device";
+
+  // =========================================================
+  // DATE FORMATTER
+  // =========================================================
 
   const formatDate = (date) => {
     if (!date) return "Not available";
 
-    try {
-      return new Date(date).toLocaleString();
-    } catch {
+    const parsed = new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) {
       return "Not available";
     }
+
+    return parsed.toLocaleString();
   };
 
-  /*
-   * =========================================================
-   * RESULT VALUE HELPERS
-   * =========================================================
-   */
+  // =========================================================
+  // RESULT HELPERS
+  // =========================================================
 
-  const getCheckedAt = () => {
-    return result?.checkedAt || result?.verifiedAt || result?.timestamp;
-  };
+  const getCheckedAt = () =>
+    result?.checkedAt ||
+    result?.verifiedAt ||
+    result?.timestamp ||
+    result?.createdAt;
 
-  const getVerificationId = () => {
-    return (
-      result?.verificationId ||
-      result?.verification_id ||
-      result?._id ||
-      null
-    );
-  };
+  const getVerificationId = () =>
+    result?.verificationId ||
+    result?.verification_id ||
+    result?._id ||
+    null;
 
-  /*
-   * =========================================================
-   * RENDER
-   * =========================================================
-   */
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <div className="path-verify-page">
-
-      <PublicNavbar />
 
       {/* =====================================================
           HERO
@@ -260,7 +304,6 @@ function PathVerification() {
 
         </div>
 
-
         {/* STATUS CARD */}
 
         <div className="verify-status-card">
@@ -287,16 +330,13 @@ function PathVerification() {
 
           <small>
             {selectedDevice
-              ? selectedDevice.deviceName ||
-                selectedDevice.serialNumber ||
-                "Selected Device"
+              ? deviceName
               : "No device selected"}
           </small>
 
         </div>
 
       </section>
-
 
       {/* =====================================================
           VERIFICATION FORM
@@ -313,6 +353,7 @@ function PathVerification() {
             </div>
 
             <div>
+
               <span className="section-kicker">
                 NEW VERIFICATION
               </span>
@@ -325,10 +366,10 @@ function PathVerification() {
                 Select a target device and specify the exact
                 path you want the TrustWipe Agent to inspect.
               </p>
+
             </div>
 
           </div>
-
 
           {/* DEVICE */}
 
@@ -340,29 +381,38 @@ function PathVerification() {
 
             {devices.length > 0 ? (
 
-              <select
-                value={deviceId}
-                onChange={(e) => setDeviceId(e.target.value)}
-              >
+              <div className="select-wrapper">
 
-                <option value="">
-                  Select a device...
-                </option>
+                <FiHardDrive />
 
-                {devices.map((device) => (
+                <select
+                  value={deviceId}
+                  onChange={(e) => {
+                    setDeviceId(e.target.value);
+                    setErrorMessage("");
+                  }}
+                >
 
-                  <option
-                    key={device._id}
-                    value={device._id}
-                  >
-                    {device.deviceName ||
-                      device.serialNumber ||
-                      device._id}
+                  <option value="">
+                    Select a device...
                   </option>
 
-                ))}
+                  {devices.map((device) => (
 
-              </select>
+                    <option
+                      key={device._id}
+                      value={device._id}
+                    >
+                      {device.deviceName ||
+                        device.serialNumber ||
+                        device._id}
+                    </option>
+
+                  ))}
+
+                </select>
+
+              </div>
 
             ) : (
 
@@ -372,9 +422,10 @@ function PathVerification() {
 
                 <input
                   value={deviceId}
-                  onChange={(e) =>
-                    setDeviceId(e.target.value)
-                  }
+                  onChange={(e) => {
+                    setDeviceId(e.target.value);
+                    setErrorMessage("");
+                  }}
                   placeholder="Device ID or serial number"
                 />
 
@@ -383,7 +434,6 @@ function PathVerification() {
             )}
 
           </div>
-
 
           {/* PATH */}
 
@@ -399,8 +449,11 @@ function PathVerification() {
 
               <input
                 value={path}
-                onChange={(e) => setPath(e.target.value)}
-                placeholder="Example: D:\Reports\confidential.xlsx"
+                onChange={(e) => {
+                  setPath(e.target.value);
+                  setErrorMessage("");
+                }}
+                placeholder={"Example: D:\\Reports\\confidential.xlsx"}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     runCheck();
@@ -416,7 +469,6 @@ function PathVerification() {
             </small>
 
           </div>
-
 
           {/* VERIFICATION TYPE */}
 
@@ -439,14 +491,15 @@ function PathVerification() {
                   setVerificationType("auto")
                 }
               >
+
                 <FiSearch />
 
                 <div>
                   <strong>Auto Detect</strong>
                   <span>File or folder</span>
                 </div>
-              </button>
 
+              </button>
 
               <button
                 type="button"
@@ -459,14 +512,15 @@ function PathVerification() {
                   setVerificationType("file")
                 }
               >
+
                 <FiFile />
 
                 <div>
                   <strong>File</strong>
                   <span>Verify a file</span>
                 </div>
-              </button>
 
+              </button>
 
               <button
                 type="button"
@@ -479,18 +533,19 @@ function PathVerification() {
                   setVerificationType("folder")
                 }
               >
+
                 <FiFolder />
 
                 <div>
                   <strong>Folder</strong>
                   <span>Verify a directory</span>
                 </div>
+
               </button>
 
             </div>
 
           </div>
-
 
           {/* SECURITY NOTICE */}
 
@@ -499,6 +554,7 @@ function PathVerification() {
             <FiShield />
 
             <div>
+
               <strong>
                 Agent-side verification
               </strong>
@@ -509,10 +565,10 @@ function PathVerification() {
                 The dashboard does not assume deletion based
                 solely on database records.
               </p>
+
             </div>
 
           </div>
-
 
           {/* ERROR */}
 
@@ -529,7 +585,6 @@ function PathVerification() {
             </div>
 
           )}
-
 
           {/* ACTION */}
 
@@ -548,7 +603,6 @@ function PathVerification() {
         </section>
 
       )}
-
 
       {/* =====================================================
           LOADING
@@ -575,27 +629,34 @@ function PathVerification() {
             selected path on the target device.
           </p>
 
-
           <div className="verification-steps">
 
             <div className="verification-step active">
               <FiCheckCircle />
-              <span>Verification request submitted</span>
+              <span>
+                Verification request submitted
+              </span>
             </div>
 
             <div className="verification-step active">
               <FiLoader className="spin" />
-              <span>Contacting device agent</span>
+              <span>
+                Contacting device agent
+              </span>
             </div>
 
             <div className="verification-step">
               <FiSearch />
-              <span>Inspecting requested path</span>
+              <span>
+                Inspecting requested path
+              </span>
             </div>
 
             <div className="verification-step">
               <FiDatabase />
-              <span>Recording verification evidence</span>
+              <span>
+                Recording verification evidence
+              </span>
             </div>
 
           </div>
@@ -604,9 +665,8 @@ function PathVerification() {
 
       )}
 
-
       {/* =====================================================
-          VERIFIED — PATH NOT FOUND
+          VERIFIED
       ===================================================== */}
 
       {state === "not_found" && result && (
@@ -631,7 +691,6 @@ function PathVerification() {
             time of verification.
           </p>
 
-
           <div className="verification-result-banner success">
 
             <FiCheckCircle />
@@ -648,7 +707,6 @@ function PathVerification() {
 
           </div>
 
-
           <div className="result-grid">
 
             <div className="result-card">
@@ -664,7 +722,6 @@ function PathVerification() {
 
             </div>
 
-
             <div className="result-card">
 
               <span>
@@ -673,13 +730,10 @@ function PathVerification() {
               </span>
 
               <strong>
-                {selectedDevice?.deviceName ||
-                  selectedDevice?.serialNumber ||
-                  deviceId}
+                {deviceName}
               </strong>
 
             </div>
-
 
             <div className="result-card">
 
@@ -693,7 +747,6 @@ function PathVerification() {
               </strong>
 
             </div>
-
 
             {getVerificationId() && (
 
@@ -714,7 +767,6 @@ function PathVerification() {
 
           </div>
 
-
           <div className="result-actions">
 
             <button
@@ -731,9 +783,8 @@ function PathVerification() {
 
       )}
 
-
       {/* =====================================================
-          FOUND — PATH STILL EXISTS
+          PATH FOUND
       ===================================================== */}
 
       {state === "found" && result && (
@@ -758,7 +809,6 @@ function PathVerification() {
             fully verified until the issue has been investigated.
           </p>
 
-
           <div className="verification-result-banner danger">
 
             <FiAlertTriangle />
@@ -775,7 +825,6 @@ function PathVerification() {
 
           </div>
 
-
           <div className="result-grid">
 
             <div className="result-card">
@@ -791,7 +840,6 @@ function PathVerification() {
 
             </div>
 
-
             <div className="result-card">
 
               <span>
@@ -800,13 +848,10 @@ function PathVerification() {
               </span>
 
               <strong>
-                {selectedDevice?.deviceName ||
-                  selectedDevice?.serialNumber ||
-                  deviceId}
+                {deviceName}
               </strong>
 
             </div>
-
 
             <div className="result-card">
 
@@ -821,8 +866,24 @@ function PathVerification() {
 
             </div>
 
-          </div>
+            {getVerificationId() && (
 
+              <div className="result-card">
+
+                <span>
+                  <FiDatabase />
+                  Verification ID
+                </span>
+
+                <strong>
+                  {getVerificationId()}
+                </strong>
+
+              </div>
+
+            )}
+
+          </div>
 
           <div className="result-actions">
 
@@ -839,7 +900,6 @@ function PathVerification() {
         </section>
 
       )}
-
 
       {/* =====================================================
           ERROR
@@ -866,7 +926,6 @@ function PathVerification() {
               "The device could not be reached or the verification request failed."}
           </p>
 
-
           <div className="error-help">
 
             <FiAlertTriangle />
@@ -878,6 +937,7 @@ function PathVerification() {
               </strong>
 
               <ul>
+
                 <li>
                   The TrustWipe Agent is running.
                 </li>
@@ -893,12 +953,16 @@ function PathVerification() {
                 <li>
                   The requested path is valid.
                 </li>
+
+                <li>
+                  The backend verification route is deployed.
+                </li>
+
               </ul>
 
             </div>
 
           </div>
-
 
           <div className="result-actions">
 
