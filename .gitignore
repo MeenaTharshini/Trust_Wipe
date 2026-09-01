@@ -1,108 +1,146 @@
-# ==========================================
-# TrustWipe - Git Ignore
-# ==========================================
-
-# --------------------
-# Dependencies
-# --------------------
-node_modules/
+```text
+# Trust Wipe - Dependencies
 backend/node_modules/
 frontend/node_modules/
 
-# --------------------
 # Environment variables
-# --------------------
-.env
-.env.*
-!.env.example
 backend/.env
 frontend/.env
+.env
+.env.*
 
-# --------------------
-# RSA / Private Keys
-# --------------------
+# RSA Keys
 backend/private.pem
 backend/public.pem
-*.pem
 
-# --------------------
 # Logs
-# --------------------
-logs/
 *.log
-npm-debug.log*
+logs
+*.log*
+*npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# --------------------
 # Build files
-# --------------------
-dist/
-dist-ssr/
 frontend/dist/
-.output/
-.next/
-.nuxt/
-.cache/
-.parcel-cache/
-.vite/
+dist/
+.next
+out
+.nuxt
+.output
+.vuepress/dist
+.svelte-kit/
+**/.vitepress/dist
+**/.vitepress/cache
 
-# --------------------
 # OS files
-# --------------------
 .DS_Store
 Thumbs.db
 
-# --------------------
-# IDE / Editor files
-# --------------------
+# IDE files
 .vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.vscode-test
 
-# --------------------
 # Generated certificates
-# --------------------
 backend/certificates/*.pdf
 
-# --------------------
 # Temporary files
-# --------------------
-*.tmp
-*.local
+# *.tmp
 
-# --------------------
+# Node.js diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
 # Coverage
-# --------------------
-coverage/
+coverage
 *.lcov
 .nyc_output
 
-# --------------------
-# TypeScript
-# --------------------
-*.tsbuildinfo
+# Dependency directories
+node_modules/
+jspm_packages/
+bower_components/
 
-# --------------------
-# npm / Yarn
-# --------------------
-.npm/
+# Build / compiled files
+build/Release
+lib-cov
+
+# Package manager files
+.npm
 *.tgz
 .yarn-integrity
+.pnpm-store
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint / Stylelint
+.eslintcache
+.stylelintcache
+
+# Node REPL
+.node_repl_history
+
+# Yarn
 .pnp.*
 .yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
-# --------------------
-# Other caches
-# --------------------
-.grunt/
-bower_components/
-jspm_packages/
-web_modules/
+# Parcel
+.cache
+.parcel-cache
+
+# Next.js
+.next
+out
+
+# Gatsby
+.cache/
+
+# Public directory
+# public
+
+# VuePress
+.vuepress/dist
+.temp
+
+# SvelteKit
 .svelte-kit/
-.temp/
+
+# VitePress
+**/.vitepress/dist
+**/.vitepress/cache
+
+# Docusaurus
+.docusaurus
+
+# Serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB Local
+.dynamodb/
+
+# Firebase
+.firebase/
+
+# TernJS
+.tern-port
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+.vite/
+```
