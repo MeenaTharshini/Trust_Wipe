@@ -124,15 +124,15 @@ function PathVerification() {
       console.log("PATH VERIFICATION REQUEST:", payload);
 
       const res = await axios.post(
-        "https://trust-wipe.onrender.com/api/verification/path-check",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  "https://trust-wipe.onrender.com/api/path-verification/check",
+  payload,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  }
+);
 
       console.log("PATH VERIFICATION RESPONSE:", res.data);
 
