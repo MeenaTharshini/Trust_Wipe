@@ -13,6 +13,7 @@ import wipeRoutes from "./routes/wipeRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import pathVerificationRoutes from "./routes/pathVerificationRoutes.js";
 
 import { initAgentClient } from "./socket/index.js";
 
@@ -49,7 +50,10 @@ app.use("/api/wipe", wipeRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/certificate", certificateRoutes);
 app.use("/api/reports", reportRoutes);
-
+app.use(
+  "/api/path-verification",
+  pathVerificationRoutes
+);
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
