@@ -356,15 +356,6 @@ function Dashboard() {
                 + Add Device
               </button>
 
-              {/* PATH VERIFICATION */}
-              <button
-                className="path-verification-btn"
-                onClick={handlePathVerification}
-              >
-                <FiMapPin />
-                Path Verification
-              </button>
-
             </div>
 
           </div>
