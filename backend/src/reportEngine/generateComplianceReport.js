@@ -1,8 +1,11 @@
+
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function generateComplianceReport(data = {}) {
   const {
+    devices = [],
+    certificates = [],
     generatedBy = "TrustWipe Enterprise",
   } = data;
 
@@ -11,49 +14,23 @@ export default function generateComplianceReport(data = {}) {
   const PAGE_WIDTH = doc.internal.pageSize.getWidth();
   const PAGE_HEIGHT = doc.internal.pageSize.getHeight();
 
-  // =================================================
+  // =========================================================
   // COLORS
-  // =================================================
+  // =========================================================
 
   const PRIMARY = [0, 180, 255];
-  const DARK = [32, 41, 56];
+  const DARK = [30, 41, 59];
   const SUCCESS = [22, 163, 74];
   const WARNING = [245, 158, 11];
-  const LIGHT = [248, 250, 252];
+  const DANGER = [220, 38, 38];
   const MUTED = [100, 116, 139];
+  const LIGHT = [248, 250, 252];
   const BORDER = [226, 232, 240];
+  const WHITE = [255, 255, 255];
 
-  // =================================================
-  // FIXED TRUSTWIPE ASSESSMENT VALUES
-  // =================================================
-  // These values are intentionally fixed for the report.
-  // They do not depend on application-side verification,
-  // certificate, evidence, or audit-log integration.
-
-  const TOTAL_ASSETS = 10;
-  const COMPLETED_SANITIZATIONS = 10;
-  const VERIFIED_ASSETS = 10;
-  const CERTIFICATES_GENERATED = 10;
-  const IDENTIFIED_ASSETS = 10;
-  const EVIDENCE_RECORDS = 10;
-  const AUDIT_RECORDS = 10;
-
-  const SANITIZATION_COVERAGE = 100;
-  const VERIFICATION_COVERAGE = 100;
-  const CERTIFICATE_COVERAGE = 100;
-  const IDENTIFICATION_COVERAGE = 100;
-  const EVIDENCE_COVERAGE = 100;
-  const AUDIT_COVERAGE = 100;
-
-  const PENDING_OPERATIONS = 0;
-  const RUNNING_OPERATIONS = 0;
-  const FAILED_OPERATIONS = 0;
-
-  const OVERALL_STATUS = "PASSED";
-
-  // =================================================
+  // =========================================================
   // REPORT INFORMATION
-  // =================================================
+  // =========================================================
 
   const now = new Date();
 
@@ -67,26 +44,152 @@ export default function generateComplianceReport(data = {}) {
 
   const generatedAt = now.toLocaleString();
 
-  // =================================================
+  // =========================================================
+  // NORMALIZE DATA
+  // =========================================================
+
+  const safeDevices = Array.isArray(devices) ? devices : [];
+  const safeCertificates = Array.isArray(certificates)
+    ? certificates
+    : [];
+
+  const totalAssets = safeDevices.length;
+
+  const completedAssets = safeDevices.filter(
+    (d) =>
+      String(d?.status || "").toLowerCase() === "completed"
+  ).length;
+
+  const pendingAssets = safeDevices.filter(
+    (d) =>
+      String(d?.status || "").toLowerCase() === "pending"
+  ).length;
+
+  const runningAssets = safeDevices.filter(
+    (d) =>
+      ["wiping", "running", "in progress"].includes(
+        String(d?.status || "").toLowerCase()
+      )
+  ).length;
+
+  const failedAssets = safeDevices.filter(
+    (d) =>
+      ["failed", "error", "interrupted"].includes(
+        String(d?.status || "").toLowerCase()
+      )
+  ).length;
+
+  const verifiedAssets = safeDevices.filter(
+    (d) =>
+      ["verified", "successful", "passed"].includes(
+        String(
+          d?.verificationStatus ||
+            d?.verification ||
+            ""
+        ).toLowerCase()
+      )
+  ).length;
+
+  const identifiedAssets = safeDevices.filter(
+    (d) =>
+      d?.deviceName ||
+      d?.serialNumber ||
+      d?.deviceId
+  ).length;
+
+  const evidenceRecords = safeDevices.filter(
+    (d) =>
+      d?.evidenceHash ||
+      d?.hash ||
+      d?.sha256 ||
+      d?.cryptographicEvidence
+  ).length;
+
+  const certificateCount = safeCertificates.length;
+
+  const certificateVerified = safeCertificates.filter(
+    (c) =>
+      String(c?.status || "").toLowerCase() === "verified"
+  ).length;
+
+  const sanitizationCoverage =
+    totalAssets > 0
+      ? Math.round((completedAssets / totalAssets) * 100)
+      : 0;
+
+  const verificationCoverage =
+    totalAssets > 0
+      ? Math.round((verifiedAssets / totalAssets) * 100)
+      : 0;
+
+  const identificationCoverage =
+    totalAssets > 0
+      ? Math.round((identifiedAssets / totalAssets) * 100)
+      : 0;
+
+  const evidenceCoverage =
+    totalAssets > 0
+      ? Math.round((evidenceRecords / totalAssets) * 100)
+      : 0;
+
+  const certificateCoverage =
+    totalAssets > 0
+      ? Math.min(
+          100,
+          Math.round((certificateCount / totalAssets) * 100)
+        )
+      : 0;
+
+  /*
+   * IMPORTANT:
+   * The report's overall status is based on the recorded
+   * TrustWipe operational results only.
+   *
+   * It does NOT claim independent ISO/GDPR/HIPAA compliance.
+   */
+
+  const overallPassed =
+    totalAssets > 0 &&
+    completedAssets === totalAssets &&
+    pendingAssets === 0 &&
+    runningAssets === 0 &&
+    failedAssets === 0 &&
+    verifiedAssets === totalAssets &&
+    certificateCount >= totalAssets;
+
+  const overallStatus = overallPassed
+    ? "PASSED"
+    : "REVIEW REQUIRED";
+
+  // =========================================================
   // HELPERS
-  // =================================================
+  // =========================================================
 
-  function sectionTitle(text, y) {
-    doc.setTextColor(...DARK);
+  function setText(color = DARK) {
+    doc.setTextColor(...color);
+  }
+
+  function sectionTitle(title, y) {
+    setText(DARK);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(text, 15, y);
-    return y + 8;
+    doc.setFontSize(15);
+    doc.text(title, 15, y);
+
+    doc.setDrawColor(...PRIMARY);
+    doc.setLineWidth(0.7);
+    doc.line(15, y + 3, 42, y + 3);
+
+    return y + 10;
   }
 
-  function nextY(defaultValue = 42) {
+  function getTableEnd() {
     return doc.lastAutoTable
-      ? doc.lastAutoTable.finalY + 14
-      : defaultValue;
+      ? doc.lastAutoTable.finalY + 12
+      : 42;
   }
 
-  function addPageIfNeeded(y, height = 35) {
-    if (y + height > PAGE_HEIGHT - 25) {
+  function ensureSpace(y, required = 35) {
+    if (y + required > PAGE_HEIGHT - 28) {
       doc.addPage();
       return 25;
     }
@@ -94,28 +197,37 @@ export default function generateComplianceReport(data = {}) {
     return y;
   }
 
-  function drawStatusBox(
-    text,
-    x,
-    y,
-    width = 60,
-    height = 12
-  ) {
-    doc.setFillColor(...SUCCESS);
+  function drawStatusBadge(text, x, y, width = 55) {
+    let fill = SUCCESS;
 
+    if (
+      text === "REVIEW REQUIRED" ||
+      text === "REVIEW"
+    ) {
+      fill = WARNING;
+    }
+
+    if (
+      text === "FAILED" ||
+      text === "ERROR"
+    ) {
+      fill = DANGER;
+    }
+
+    doc.setFillColor(...fill);
     doc.roundedRect(
       x,
       y,
       width,
-      height,
+      12,
       2,
       2,
       "F"
     );
 
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...WHITE);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
 
     doc.text(
       text,
@@ -125,39 +237,89 @@ export default function generateComplianceReport(data = {}) {
     );
   }
 
-  // =================================================
+  function addFooter() {
+    const pages = doc.getNumberOfPages();
+
+    for (let page = 1; page <= pages; page++) {
+      doc.setPage(page);
+
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.3);
+
+      doc.line(
+        15,
+        PAGE_HEIGHT - 18,
+        PAGE_WIDTH - 15,
+        PAGE_HEIGHT - 18
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+
+      doc.text(
+        "TrustWipe Enterprise",
+        15,
+        PAGE_HEIGHT - 10
+      );
+
+      doc.text(
+        "Sanitization Assessment Report",
+        PAGE_WIDTH / 2,
+        PAGE_HEIGHT - 10,
+        { align: "center" }
+      );
+
+      doc.text(
+        `Page ${page} of ${pages}`,
+        PAGE_WIDTH - 15,
+        PAGE_HEIGHT - 10,
+        { align: "right" }
+      );
+    }
+  }
+
+  // =========================================================
   // HEADER
-  // =================================================
+  // =========================================================
 
   doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, PAGE_WIDTH, 29, "F");
+  doc.rect(
+    0,
+    0,
+    PAGE_WIDTH,
+    30,
+    "F"
+  );
 
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...WHITE);
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(23);
+  doc.setFontSize(22);
 
   doc.text(
     "TrustWipe Enterprise",
     15,
-    15
+    14
   );
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10.5);
 
   doc.text(
-    "Sanitization Assessment & Audit Report",
+    "Sanitization Assessment Report",
     15,
     22
   );
 
-  // =================================================
+  // =========================================================
   // REPORT TITLE
-  // =================================================
+  // =========================================================
 
   let y = 42;
 
-  doc.setTextColor(...DARK);
+  setText(DARK);
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(21);
 
@@ -171,10 +333,10 @@ export default function generateComplianceReport(data = {}) {
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(...MUTED);
+  setText(MUTED);
 
   doc.text(
-    `Report ID : ${reportId}`,
+    `Report ID: ${reportId}`,
     15,
     y
   );
@@ -182,7 +344,7 @@ export default function generateComplianceReport(data = {}) {
   y += 6;
 
   doc.text(
-    `Generated : ${generatedAt}`,
+    `Generated: ${generatedAt}`,
     15,
     y
   );
@@ -190,14 +352,14 @@ export default function generateComplianceReport(data = {}) {
   y += 6;
 
   doc.text(
-    `Generated By : ${generatedBy}`,
+    `Generated By: ${generatedBy}`,
     15,
     y
   );
 
-  // =================================================
+  // =========================================================
   // EXECUTIVE SUMMARY
-  // =================================================
+  // =========================================================
 
   y = sectionTitle(
     "Executive Summary",
@@ -208,175 +370,221 @@ export default function generateComplianceReport(data = {}) {
     startY: y,
 
     head: [
-      ["Metric", "Result", "Coverage"],
+      [
+        "Metric",
+        "Result",
+        "Coverage",
+      ],
     ],
 
     body: [
       [
         "Total Assets",
-        TOTAL_ASSETS,
-        "100%",
+        totalAssets,
+        totalAssets > 0 ? "100%" : "0%",
       ],
       [
         "Sanitization Completed",
-        COMPLETED_SANITIZATIONS,
-        `${SANITIZATION_COVERAGE}%`,
+        completedAssets,
+        `${sanitizationCoverage}%`,
       ],
       [
         "Verification Successful",
-        VERIFIED_ASSETS,
-        `${VERIFICATION_COVERAGE}%`,
+        verifiedAssets,
+        `${verificationCoverage}%`,
       ],
       [
         "Certificates Generated",
-        CERTIFICATES_GENERATED,
-        `${CERTIFICATE_COVERAGE}%`,
+        certificateCount,
+        `${certificateCoverage}%`,
       ],
       [
         "Device Identification",
-        IDENTIFIED_ASSETS,
-        `${IDENTIFICATION_COVERAGE}%`,
+        identifiedAssets,
+        `${identificationCoverage}%`,
       ],
       [
         "Cryptographic Evidence",
-        EVIDENCE_RECORDS,
-        `${EVIDENCE_COVERAGE}%`,
+        evidenceRecords,
+        `${evidenceCoverage}%`,
       ],
       [
-        "Audit Records",
-        AUDIT_RECORDS,
-        `${AUDIT_COVERAGE}%`,
+        "Failed / Interrupted",
+        failedAssets,
+        totalAssets > 0
+          ? `${Math.round(
+              (failedAssets / totalAssets) * 100
+            )}%`
+          : "0%",
       ],
     ],
 
+    theme: "grid",
+
     headStyles: {
       fillColor: PRIMARY,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
     alternateRowStyles: {
       fillColor: LIGHT,
     },
-
-    theme: "grid",
 
     styles: {
       fontSize: 9,
       cellPadding: 3,
+      textColor: DARK,
+    },
+
+    columnStyles: {
+      0: { cellWidth: 85 },
+      1: { cellWidth: 35, halign: "center" },
+      2: { cellWidth: 35, halign: "center" },
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // OVERALL ASSESSMENT
-  // =================================================
+  // =========================================================
 
-  y = nextY();
+  y = getTableEnd();
 
-  y = addPageIfNeeded(y, 40);
+  y = ensureSpace(y, 45);
 
-  doc.setTextColor(...DARK);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(15);
-
-  doc.text(
+  y = sectionTitle(
     "Overall Assessment",
-    15,
     y
   );
 
-  y += 5;
-
-  drawStatusBox(
-    OVERALL_STATUS,
+  drawStatusBadge(
+    overallStatus,
     15,
     y,
-    65,
-    13
+    overallStatus === "PASSED"
+      ? 55
+      : 65
   );
 
-  y += 22;
+  y += 20;
 
-  doc.setTextColor(...MUTED);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
+  setText(MUTED);
+
+  const overallText = overallPassed
+    ? "All recorded TrustWipe sanitization operations have completed successfully, with successful verification and certificate coverage for the assessed assets."
+    : "The recorded TrustWipe results require review because one or more sanitization, verification, certificate, or operational controls are incomplete.";
+
+  const overallLines =
+    doc.splitTextToSize(
+      overallText,
+      PAGE_WIDTH - 30
+    );
 
   doc.text(
-    "All recorded TrustWipe sanitization controls achieved",
+    overallLines,
     15,
     y
   );
 
-  doc.text(
-    "the required assessment result for this report.",
-    15,
-    y + 5
-  );
+  y += overallLines.length * 4 + 10;
 
-  // =================================================
-  // CONTROL ASSESSMENT
-  // =================================================
+  // =========================================================
+  // TRUSTWIPE CONTROL ASSESSMENT
+  // =========================================================
+
+  y = ensureSpace(y, 55);
 
   y = sectionTitle(
     "TrustWipe Control Assessment",
-    y + 17
+    y
   );
+
+  const controlRows = [
+    [
+      "Device Identification",
+      identifiedAssets === totalAssets &&
+      totalAssets > 0
+        ? "PASS"
+        : "REVIEW",
+      `${identifiedAssets}/${totalAssets} assets contain device identification data.`,
+    ],
+
+    [
+      "Sanitization Execution",
+      completedAssets === totalAssets &&
+      totalAssets > 0
+        ? "PASS"
+        : "REVIEW",
+      `${completedAssets}/${totalAssets} sanitization operations completed.`,
+    ],
+
+    [
+      "Post-Operation Verification",
+      verifiedAssets === totalAssets &&
+      totalAssets > 0
+        ? "PASS"
+        : "REVIEW",
+      `${verifiedAssets}/${totalAssets} assets have successful verification status.`,
+    ],
+
+    [
+      "Certificate Generation",
+      certificateCount >= totalAssets &&
+      totalAssets > 0
+        ? "PASS"
+        : "REVIEW",
+      `${certificateCount} certificate record(s) available for ${totalAssets} asset(s).`,
+    ],
+
+    [
+      "Cryptographic Evidence",
+      evidenceRecords === totalAssets &&
+      totalAssets > 0
+        ? "PASS"
+        : "REVIEW",
+      `${evidenceRecords}/${totalAssets} assets contain recorded evidence.`,
+    ],
+
+    [
+      "Operational Exceptions",
+      failedAssets === 0 &&
+      pendingAssets === 0 &&
+      runningAssets === 0
+        ? "PASS"
+        : "REVIEW",
+      `${pendingAssets} pending, ${runningAssets} running, ${failedAssets} failed/interrupted.`,
+    ],
+  ];
 
   autoTable(doc, {
     startY: y,
 
     head: [
-      ["Control", "Status", "Assessment Result"],
+      [
+        "Control",
+        "Status",
+        "Evidence / Basis",
+      ],
     ],
 
-    body: [
-      [
-        "Device Identification",
-        "PASS",
-        "10/10 assets identified successfully.",
-      ],
-      [
-        "Sanitization Execution",
-        "PASS",
-        "10/10 sanitization operations completed.",
-      ],
-      [
-        "Post-Operation Verification",
-        "PASS",
-        "10/10 assets successfully verified.",
-      ],
-      [
-        "Cryptographic Evidence",
-        "PASS",
-        "10/10 evidence records generated.",
-      ],
-      [
-        "Certificate Generation",
-        "PASS",
-        "10/10 sanitization certificates generated.",
-      ],
-      [
-        "Certificate Verification",
-        "PASS",
-        "10/10 certificates marked VERIFIED.",
-      ],
-      [
-        "Audit Records",
-        "PASS",
-        "10/10 required audit records available.",
-      ],
-    ],
+    body: controlRows,
+
+    theme: "grid",
 
     headStyles: {
       fillColor: SUCCESS,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -384,63 +592,78 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
       fontSize: 8.5,
       cellPadding: 3,
+      textColor: DARK,
+    },
+
+    columnStyles: {
+      0: { cellWidth: 52 },
+      1: { cellWidth: 25, halign: "center" },
+      2: { cellWidth: 78 },
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // REFERENCE FRAMEWORKS
-  // =================================================
+  // =========================================================
+
+  y = getTableEnd();
 
   y = sectionTitle(
     "Reference Frameworks",
-    nextY()
+    y
   );
 
   autoTable(doc, {
     startY: y,
 
     head: [
-      ["Framework", "Reference Status", "Purpose"],
+      [
+        "Framework",
+        "Reference Status",
+        "Scope",
+      ],
     ],
 
     body: [
       [
         "NIST SP 800-88 Rev.2",
         "REFERENCE",
-        "Media sanitization guidance.",
+        "Media sanitization guidance",
       ],
       [
         "ISO/IEC 27001",
         "REFERENCE",
-        "Information security management.",
+        "Information security management",
       ],
       [
         "GDPR Article 17",
         "REFERENCE",
-        "Right to erasure.",
+        "Right to erasure",
       ],
       [
         "HIPAA",
         "REFERENCE",
-        "Healthcare information security.",
+        "Healthcare information security",
       ],
     ],
 
+    theme: "grid",
+
     headStyles: {
       fillColor: PRIMARY,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -448,165 +671,118 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
       fontSize: 8.5,
       cellPadding: 3,
+      textColor: DARK,
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
-  // ASSESSMENT STATEMENT
-  // =================================================
+  // =========================================================
+  // IMPORTANT ASSESSMENT NOTE
+  // =========================================================
 
-  y = nextY();
+  y = getTableEnd();
 
-  y = addPageIfNeeded(y, 40);
+  y = ensureSpace(y, 55);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...DARK);
-
-  doc.text(
-    "Assessment Statement",
-    15,
+  y = sectionTitle(
+    "Important Assessment Note",
     y
   );
 
-  y += 6;
+  doc.setFillColor(...LIGHT);
+
+  doc.roundedRect(
+    15,
+    y,
+    PAGE_WIDTH - 30,
+    32,
+    2,
+    2,
+    "F"
+  );
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
+  setText(MUTED);
 
-  const assessmentText =
-    "Based on the recorded TrustWipe assessment results, all " +
-    "sanitization operations, verification activities, certificate " +
-    "generation, evidence generation, and audit controls represented " +
-    "in this report have achieved a successful assessment status.";
+  const noteText =
+    "This report records TrustWipe operational results and evidence available within the reporting data. Reference frameworks are provided for assessment context only. A successful TrustWipe assessment does not by itself constitute independent certification or legal compliance with ISO/IEC 27001, GDPR, HIPAA, or any other regulation.";
 
-  const assessmentLines =
+  const noteLines =
     doc.splitTextToSize(
-      assessmentText,
-      PAGE_WIDTH - 30
+      noteText,
+      PAGE_WIDTH - 40
     );
 
   doc.text(
-    assessmentLines,
-    15,
-    y
+    noteLines,
+    20,
+    y + 8
   );
 
-  // =================================================
-  // ASSET INVENTORY
-  // =================================================
+  y += 43;
 
-  y += assessmentLines.length * 4 + 12;
+  // =========================================================
+  // ASSET INVENTORY
+  // =========================================================
+
+  y = ensureSpace(y, 50);
 
   y = sectionTitle(
-    "Verified Assets",
+    "Asset Inventory",
     y
   );
 
-  const assetRows = [
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0000_0001_00A0_7500_490E_FB8C",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+  const assetRows = safeDevices.length
+    ? safeDevices.map((device, index) => {
+        const verification =
+          device?.verificationStatus ||
+          device?.verification ||
+          "Not Assessed";
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0000_0001_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+        return [
+          device?.deviceName ||
+            device?.deviceId ||
+            `ASSET-${String(index + 1).padStart(3, "0")}`,
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0000_0001_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+          device?.serialNumber ||
+            device?.serial ||
+            "N/A",
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0001_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+          device?.storageType ||
+            device?.mediaType ||
+            "N/A",
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0002_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+          device?.capacity ||
+            "N/A",
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0003_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
+          device?.status ||
+            "Unknown",
 
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0004_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
-
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0005_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
-
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0006_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
-
-    [
-      "MTFDKBA512QFM-1BD1AABHA",
-      "0000_0000_0007_00A0_7500_4704_C6BE",
-      "HDD",
-      "476.94 GB",
-      "COMPLETED",
-      "VERIFIED",
-    ],
-  ];
+          verification,
+        ];
+      })
+    : [
+        [
+          "No assets recorded",
+          "N/A",
+          "N/A",
+          "N/A",
+          "N/A",
+          "N/A",
+        ],
+      ];
 
   autoTable(doc, {
     startY: y,
@@ -624,9 +800,11 @@ export default function generateComplianceReport(data = {}) {
 
     body: assetRows,
 
+    theme: "grid",
+
     headStyles: {
       fillColor: PRIMARY,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -634,83 +812,107 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
       fontSize: 6.8,
-      cellPadding: 2,
+      cellPadding: 2.2,
       overflow: "linebreak",
+      textColor: DARK,
     },
 
     columnStyles: {
-      0: { cellWidth: 39 },
-      1: { cellWidth: 56 },
-      2: { cellWidth: 19 },
-      3: { cellWidth: 24 },
+      0: { cellWidth: 36 },
+      1: { cellWidth: 52 },
+      2: { cellWidth: 18 },
+      3: { cellWidth: 23 },
       4: { cellWidth: 27 },
-      5: { cellWidth: 25 },
+      5: { cellWidth: 29 },
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // RISK ASSESSMENT
-  // =================================================
+  // =========================================================
+
+  y = getTableEnd();
 
   y = sectionTitle(
     "Risk Assessment",
-    nextY()
+    y
   );
+
+  const riskRows = [
+    [
+      "Pending Devices",
+      pendingAssets > 0 ? "MEDIUM" : "NONE",
+      pendingAssets > 0
+        ? `${pendingAssets} asset(s) pending sanitization.`
+        : "No pending sanitization operations.",
+    ],
+
+    [
+      "Running Operations",
+      runningAssets > 0 ? "LOW" : "NONE",
+      runningAssets > 0
+        ? `${runningAssets} active operation(s).`
+        : "No active sanitization operations.",
+    ],
+
+    [
+      "Failed / Interrupted",
+      failedAssets > 0 ? "HIGH" : "NONE",
+      failedAssets > 0
+        ? `${failedAssets} operation(s) failed or interrupted.`
+        : "No failed or interrupted operations.",
+    ],
+
+    [
+      "Unverified Assets",
+      verifiedAssets < totalAssets
+        ? "MEDIUM"
+        : "NONE",
+      verifiedAssets < totalAssets
+        ? `${totalAssets - verifiedAssets} asset(s) lack successful verification.`
+        : "All assessed assets have successful verification.",
+    ],
+
+    [
+      "Missing Evidence",
+      evidenceRecords < totalAssets
+        ? "MEDIUM"
+        : "NONE",
+      evidenceRecords < totalAssets
+        ? `${totalAssets - evidenceRecords} asset(s) lack recorded evidence.`
+        : "Evidence records available for all assessed assets.",
+    ],
+  ];
 
   autoTable(doc, {
     startY: y,
 
     head: [
-      ["Risk Area", "Severity", "Result"],
+      [
+        "Risk Area",
+        "Severity",
+        "Observation",
+      ],
     ],
 
-    body: [
-      [
-        "Pending Devices",
-        "NONE",
-        "No pending sanitization operations.",
-      ],
-      [
-        "Running Operations",
-        "NONE",
-        "No active sanitization operations.",
-      ],
-      [
-        "Failed Operations",
-        "NONE",
-        "No failed or interrupted operations.",
-      ],
-      [
-        "Verification",
-        "NONE",
-        "All assets successfully verified.",
-      ],
-      [
-        "Cryptographic Evidence",
-        "NONE",
-        "Evidence available for all assessed assets.",
-      ],
-      [
-        "Certificate Coverage",
-        "NONE",
-        "All assessed assets have certificates.",
-      ],
-    ],
+    body: riskRows,
+
+    theme: "grid",
 
     headStyles: {
-      fillColor: SUCCESS,
-      textColor: [255, 255, 255],
+      fillColor: WARNING,
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -718,39 +920,67 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
       fontSize: 8.5,
       cellPadding: 3,
+      textColor: DARK,
+    },
+
+    columnStyles: {
+      0: { cellWidth: 48 },
+      1: { cellWidth: 28, halign: "center" },
+      2: { cellWidth: 91 },
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // CRYPTOGRAPHIC EVIDENCE
-  // =================================================
+  // =========================================================
+
+  y = getTableEnd();
 
   y = sectionTitle(
     "Cryptographic Evidence",
-    nextY()
+    y
   );
 
-  const evidenceRows = Array.from(
-    { length: 10 },
-    (_, index) => [
-      `DEV-${String(index + 1).padStart(3, "0")}`,
-      `CERT-TW-${String(index + 1).padStart(4, "0")}`,
-      "SHA-256",
-      "VERIFIED",
-    ]
-  );
+  const evidenceRows = safeDevices.length
+    ? safeDevices.map((device, index) => [
+        device?.deviceId ||
+          `ASSET-${String(index + 1).padStart(3, "0")}`,
+
+        device?.serialNumber ||
+          device?.serial ||
+          "N/A",
+
+        device?.sha256 ||
+          device?.evidenceHash ||
+          device?.hash ||
+          "Not Recorded",
+
+        device?.sha256 ||
+          device?.evidenceHash ||
+          device?.hash
+          ? "RECORDED"
+          : "NOT AVAILABLE",
+      ])
+    : [
+        [
+          "N/A",
+          "N/A",
+          "N/A",
+          "NO EVIDENCE",
+        ],
+      ];
 
   autoTable(doc, {
     startY: y,
@@ -758,17 +988,19 @@ export default function generateComplianceReport(data = {}) {
     head: [
       [
         "Device ID",
-        "Certificate ID",
-        "Evidence",
+        "Serial",
+        "SHA-256 Evidence",
         "Status",
       ],
     ],
 
     body: evidenceRows,
 
+    theme: "grid",
+
     headStyles: {
       fillColor: DARK,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -776,39 +1008,59 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
-      fontSize: 8,
+      fontSize: 7.2,
       cellPadding: 2.5,
+      overflow: "linebreak",
+      textColor: DARK,
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // CERTIFICATE SUMMARY
-  // =================================================
+  // =========================================================
+
+  y = getTableEnd();
 
   y = sectionTitle(
     "Certificate Summary",
-    nextY()
+    y
   );
 
-  const certificateRows = Array.from(
-    { length: 10 },
-    (_, index) => [
-      `CERT-TW-${String(index + 1).padStart(4, "0")}`,
-      `DEV-${String(index + 1).padStart(3, "0")}`,
-      "VERIFIED",
-      generatedAt,
-    ]
-  );
+  const certificateRows = safeCertificates.length
+    ? safeCertificates.map((certificate, index) => [
+        certificate?.certificateId ||
+          certificate?.id ||
+          `CERT-TW-${String(index + 1).padStart(4, "0")}`,
+
+        certificate?.deviceId ||
+          certificate?.serialNumber ||
+          "N/A",
+
+        certificate?.status ||
+          "RECORDED",
+
+        certificate?.generatedAt ||
+          certificate?.createdAt ||
+          "N/A",
+      ])
+    : [
+        [
+          "No certificates recorded",
+          "N/A",
+          "N/A",
+          "N/A",
+        ],
+      ];
 
   autoTable(doc, {
     startY: y,
@@ -816,7 +1068,7 @@ export default function generateComplianceReport(data = {}) {
     head: [
       [
         "Certificate ID",
-        "Device ID",
+        "Device / Serial",
         "Status",
         "Generated",
       ],
@@ -824,9 +1076,11 @@ export default function generateComplianceReport(data = {}) {
 
     body: certificateRows,
 
+    theme: "grid",
+
     headStyles: {
       fillColor: SUCCESS,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -834,73 +1088,99 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
-      fontSize: 8,
-      cellPadding: 2.5,
+      fontSize: 7.5,
+      cellPadding: 2.7,
+      overflow: "linebreak",
+      textColor: DARK,
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
-  // AUDIT SUMMARY
-  // =================================================
+  // =========================================================
+  // AUDIT ACTIVITY SUMMARY
+  // =========================================================
+
+  y = getTableEnd();
 
   y = sectionTitle(
     "Audit Activity Summary",
-    nextY()
+    y
   );
+
+  /*
+   * These values summarize recorded TrustWipe operations.
+   * They are derived from the current device records.
+   */
+
+  const auditRows = [
+    [
+      "Device Identification",
+      identifiedAssets,
+      identifiedAssets === totalAssets
+        ? "PASS"
+        : "REVIEW",
+    ],
+
+    [
+      "Sanitization Completion",
+      completedAssets,
+      completedAssets === totalAssets
+        ? "PASS"
+        : "REVIEW",
+    ],
+
+    [
+      "Verification",
+      verifiedAssets,
+      verifiedAssets === totalAssets
+        ? "PASS"
+        : "REVIEW",
+    ],
+
+    [
+      "Certificate Generation",
+      certificateCount,
+      certificateCount >= totalAssets
+        ? "PASS"
+        : "REVIEW",
+    ],
+
+    [
+      "Evidence Records",
+      evidenceRecords,
+      evidenceRecords === totalAssets
+        ? "PASS"
+        : "REVIEW",
+    ],
+  ];
 
   autoTable(doc, {
     startY: y,
 
     head: [
-      ["Audit Control", "Events", "Status"],
+      [
+        "Audit Control",
+        "Recorded Events",
+        "Status",
+      ],
     ],
 
-    body: [
-      [
-        "Device Detection",
-        "10",
-        "PASS",
-      ],
-      [
-        "Sanitization Start",
-        "10",
-        "PASS",
-      ],
-      [
-        "Sanitization Completion",
-        "10",
-        "PASS",
-      ],
-      [
-        "Verification",
-        "10",
-        "PASS",
-      ],
-      [
-        "Evidence Generation",
-        "10",
-        "PASS",
-      ],
-      [
-        "Certificate Generation",
-        "10",
-        "PASS",
-      ],
-    ],
+    body: auditRows,
+
+    theme: "grid",
 
     headStyles: {
       fillColor: PRIMARY,
-      textColor: [255, 255, 255],
+      textColor: WHITE,
       fontStyle: "bold",
     },
 
@@ -908,57 +1188,67 @@ export default function generateComplianceReport(data = {}) {
       fillColor: LIGHT,
     },
 
-    theme: "grid",
-
     styles: {
       fontSize: 8.5,
       cellPadding: 3,
+      textColor: DARK,
     },
 
     margin: {
-      top: 40,
-      bottom: 30,
+      left: 15,
+      right: 15,
+      top: 35,
+      bottom: 28,
     },
 
     pageBreak: "auto",
   });
 
-  // =================================================
+  // =========================================================
   // DIGITAL VERIFICATION
-  // =================================================
+  // =========================================================
+
+  y = getTableEnd();
+
+  y = ensureSpace(y, 75);
 
   y = sectionTitle(
     "Digital Verification",
-    nextY()
+    y
   );
-
-  y = addPageIfNeeded(y, 65);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(...DARK);
+  setText(DARK);
 
   doc.text(
-    "TrustWipe Enterprise sanitization certificates are recorded",
+    "TrustWipe certificate records are identified using unique certificate IDs.",
     15,
     y
   );
 
   doc.text(
-    "with verification status and cryptographic evidence references.",
+    "Certificate verification status is reported from the supplied certificate records.",
     15,
-    y + 5
+    y + 6
   );
 
   doc.text(
-    "Certificate records are identified by their unique certificate ID.",
+    `Certificates recorded: ${certificateCount}`,
     15,
-    y + 10
+    y + 12
   );
 
-  y += 23;
+  doc.text(
+    `Certificates marked VERIFIED: ${certificateVerified}`,
+    15,
+    y + 18
+  );
+
+  y += 30;
 
   doc.setDrawColor(...PRIMARY);
+  doc.setLineWidth(0.6);
 
   doc.line(
     15,
@@ -970,42 +1260,45 @@ export default function generateComplianceReport(data = {}) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
 
+  setText(DARK);
+
   doc.text(
-    "Verification Status",
+    "Report Authentication Reference",
     15,
-    y + 7
+    y + 8
   );
 
-  drawStatusBox(
-    "VERIFIED",
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  setText(MUTED);
+
+  doc.text(
+    `Report ID: ${reportId}`,
     15,
-    y + 11,
-    65,
-    12
+    y + 15
   );
 
-  // =================================================
+  doc.text(
+    "This PDF is a generated assessment record and is not itself represented as a digitally signed PDF.",
+    15,
+    y + 22
+  );
+
+  // =========================================================
   // SCOPE & LIMITATIONS
-  // =================================================
+  // =========================================================
 
-  y += 31;
+  y += 34;
+
+  y = ensureSpace(y, 65);
 
   y = sectionTitle(
     "Assessment Scope & Limitations",
     y
   );
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-
   const scopeText =
-    "This report presents the recorded TrustWipe Enterprise " +
-    "sanitization assessment results for the reporting period. " +
-    "The assessment summarizes sanitization completion, verification, " +
-    "certificate generation, cryptographic evidence, and audit activity. " +
-    "Reference frameworks are provided for assessment context and do " +
-    "not represent independent legal, regulatory, or third-party certification.";
+    "This report presents the recorded TrustWipe Enterprise sanitization assessment results for the reporting period. The assessment summarizes device identification, sanitization completion, verification status, certificate records, cryptographic evidence, and operational activity supplied to the report generator. Reference frameworks are included for assessment context and do not represent independent legal, regulatory, or third-party certification.";
 
   const scopeLines =
     doc.splitTextToSize(
@@ -1013,54 +1306,21 @@ export default function generateComplianceReport(data = {}) {
       PAGE_WIDTH - 30
     );
 
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  setText(MUTED);
+
   doc.text(
     scopeLines,
     15,
     y + 5
   );
 
-  // =================================================
+  // =========================================================
   // FOOTER
-  // =================================================
+  // =========================================================
 
-  const totalPages = doc.getNumberOfPages();
-
-  for (let page = 1; page <= totalPages; page++) {
-    doc.setPage(page);
-
-    doc.setDrawColor(...BORDER);
-
-    doc.line(
-      15,
-      PAGE_HEIGHT - 18,
-      PAGE_WIDTH - 15,
-      PAGE_HEIGHT - 18
-    );
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...MUTED);
-
-    doc.text(
-      "TrustWipe Enterprise",
-      15,
-      PAGE_HEIGHT - 10
-    );
-
-    doc.text(
-      "Sanitization Assessment & Audit Report",
-      PAGE_WIDTH / 2,
-      PAGE_HEIGHT - 10,
-      { align: "center" }
-    );
-
-    doc.text(
-      `Page ${page} of ${totalPages}`,
-      PAGE_WIDTH - 15,
-      PAGE_HEIGHT - 10,
-      { align: "right" }
-    );
-  }
+  addFooter();
 
   return doc;
 }
