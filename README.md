@@ -548,3 +548,18 @@ toward:
 > **"I performed a defined sanitization process, recorded what happened, preserved the integrity of the evidence, and provided a mechanism to verify the resulting destruction record."**
 
 That distinction is the core security idea behind TrustWipe.
+
+
+## 🏆 Technical Achievements
+
+* **DeepSprint Hackathon 2026 — Top 40 Finalist**, CIT Innovation Labs, Chennai Institute of Technology, as **Team Leader of Team SMIS**, presenting TrustWipe.
+* **Designed and developed TrustWipe**, a security-focused data sanitization and verification platform combining a web application with a Windows desktop sanitization agent.
+* **Implemented cryptographically verifiable destruction certificates** using SHA-256 integrity hashing and RSA digital signatures. - **Designed a threat model for TrustWipe** covering certificate modification, certificate forgery, unauthorized API access, token theft, sanitization interruption, and compromised desktop agents. - **Designed failure-aware sanitization workflows** that distinguish SUCCESS, FAILED, INTERRUPTED, and IN_PROGRESS states rather than treating every agent response as successful.
+* **Implemented an auditable certificate-verification concept** using QR-based verification, integrity hashes, digital signatures, and audit records.
+* **Designed role-based authentication and authorization architecture** using JWT-protected APIs.
+* **Developed a security-focused full-stack architecture** using React, JavaScript/TypeScript, Node.js, Express.js, MongoDB, JWT, Socket.IO, SHA-256, and RSA.
+* **Developed a security testing strategy** covering authentication, API security, certificate integrity, agent behavior, authorization, malformed requests, forged certificates, and interrupted sanitization.
+* **Applied security-by-design principles**, including fail-safe behavior, separation of authentication and authorization, separation of integrity from confidentiality, and explicit security limitations.
+* **Analyzed storage-technology limitations of secure deletion**, including SSD wear leveling, over-provisioning, and flash translation layers, rather than making unsupported claims about universal data destruction.
+* **Defined an extended cybersecurity roadmap** including SSD/NVMe secure erase, cryptographic erasure, stronger agent authentication, certificate revocation, tamper-evident audit logs, OWASP API testing, penetration testing, forensic recovery testing, TPM-backed key protection, and signed desktop-agent binaries.
+
