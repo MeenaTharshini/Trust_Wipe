@@ -9,7 +9,8 @@ Unlike conventional file deletion, TrustWipe focuses on the complete lifecycle o
 The system combines a web platform with a Windows desktop agent to perform and monitor sanitization operations while maintaining a verifiable record of the destruction process.
 
 ---
-
+Linkedin url: https://github.com/MeenaTharshini
+Live Link: https://trust-wipe-tau.vercel.app/
 ## 🎯 Problem Statement
 
 Deleting a file does not necessarily mean that its underlying data is immediately unrecoverable.
